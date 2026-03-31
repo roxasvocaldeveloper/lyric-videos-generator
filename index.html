@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lyric Video Maker | Soundvertise</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Lyric Video Maker | Soundvertise Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@800&family=DM+Sans:wght@400;700&family=Bangers&family=Inter:wght@900&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0b;
@@ -13,1579 +13,445 @@
   --border: rgba(255,255,255,0.08);
   --border2: rgba(255,255,255,0.14);
   --accent: #e4ff4a;
-  --accent2: #7b4dff;
-  --accent3: #ff4d9e;
   --text: #f0f0f2;
   --muted: #6b6b78;
   --muted2: #9999a8;
-  --beat-color: #e4ff4a;
-  --beat-inactive: rgba(228,255,74,0.18);
 }
+
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+body { 
+  background: var(--bg); 
+  color: var(--text); 
+  font-family: 'DM Sans', sans-serif; 
+  height: 100vh; 
+  overflow: hidden;
+  display: flex;
+}
 
-/* LAYOUT */
-.app { display:grid; grid-template-columns:340px 1fr; grid-template-rows:auto 1fr; height:100vh; }
-.topbar { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 24px; height:52px; border-bottom:1px solid var(--border); background:var(--surface); }
-.topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:0.05em; display:flex; align-items:center; gap:8px; }
-.logo-dot { width:8px; height:8px; background:var(--accent); border-radius:50%; animation:pulse 2s ease infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-.topbar-actions { display:flex; align-items:center; gap:10px; }
+aside {
+  width: 350px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
 
-/* SIDEBAR */
-.sidebar { background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
-.panel { padding:16px; border-bottom:1px solid var(--border); }
-.panel-title { font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
-.panel-title .badge { background:var(--accent); color:#000; font-size:8px; padding:1px 5px; border-radius:3px; }
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--accent);
+  margin-bottom: 25px;
+}
 
-/* Upload zones */
-.upload-zone { border:1px dashed var(--border2); border-radius:8px; padding:16px 12px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
-.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:rgba(228,255,74,0.04); }
-.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-.upload-zone .icon { font-size:20px; margin-bottom:6px; }
-.upload-zone p { font-size:11px; color:var(--muted2); }
-.upload-zone .filename { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
 
-/* Clips grid */
-.clips-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.clip-thumb { position:relative; aspect-ratio:9/16; background:var(--surface2); border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
-.clip-thumb.selected { border-color:var(--accent); }
-.clip-thumb video { width:100%; height:100%; object-fit:cover; pointer-events:none; }
-.clip-thumb .clip-dur { position:absolute; bottom:4px; right:4px; font-family:'Space Mono',monospace; font-size:8px; background:rgba(0,0,0,0.8); color:var(--accent); padding:2px 4px; border-radius:3px; }
-.clip-thumb .clip-del { position:absolute; top:3px; right:3px; width:14px; height:14px; background:rgba(0,0,0,0.7); border-radius:50%; display:none; align-items:center; justify-content:center; font-size:8px; color:#fff; cursor:pointer; }
-.clip-thumb:hover .clip-del { display:flex; }
-.clip-add { aspect-ratio:9/16; background:var(--surface2); border:1px dashed var(--border2); border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:18px; color:var(--muted); transition:all 0.2s; position:relative; }
-.clip-add:hover { border-color:var(--accent2); color:var(--accent2); }
-.clip-add input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.panel-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+}
 
-/* Mode selector */
-.mode-row { display:flex; gap:6px; }
-.mode-btn { flex:1; padding:8px 4px; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; font-size:10px; font-weight:500; color:var(--muted2); cursor:pointer; text-align:center; transition:all 0.2s; }
-.mode-btn.active { background:rgba(228,255,74,0.12); border-color:var(--accent); color:var(--accent); }
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 13px;
+  width: 100%;
+  margin-top: 5px;
+}
 
-/* Settings sliders */
-.setting-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.setting-row label { font-size:11px; color:var(--muted2); }
-.setting-row .val { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); }
-input[type=range] { width:100%; accent-color:var(--accent); height:2px; background:var(--border2); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text); }
+.btn-outline:hover { background: var(--border); }
+.btn-sync { background: #ff4d9e; color: white; }
 
-/* MAIN AREA */
-.main { display:flex; flex-direction:column; overflow:hidden; }
+textarea {
+  width: 100%;
+  height: 120px;
+  background: #000;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  resize: none;
+  margin-bottom: 10px;
+}
 
-/* WAVEFORM AREA */
-.wave-area { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; flex-shrink:0; }
-.wave-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-.wave-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
-.time-display { font-family:'Space Mono',monospace; font-size:11px; color:var(--accent); }
-.wave-container { position:relative; height:80px; background:var(--surface2); border-radius:8px; cursor:crosshair; overflow:hidden; border:1px solid var(--border); }
-#waveCanvas { position:absolute; inset:0; width:100%; height:100%; }
-#playhead { position:absolute; top:0; width:2px; height:100%; background:var(--accent); pointer-events:none; transition:left 0.05s linear; box-shadow:0 0 8px var(--accent); }
-.beat-marker { position:absolute; top:0; width:3px; height:100%; cursor:pointer; border-radius:1px; transition:opacity 0.2s; }
-.beat-marker .beat-top { position:absolute; top:0; width:100%; height:100%; background:var(--beat-color); opacity:0.85; }
-.beat-marker .beat-handle { position:absolute; top:-4px; left:-4px; width:11px; height:11px; background:var(--beat-color); border-radius:50%; cursor:grab; border:2px solid var(--bg); }
-.beat-marker:hover .beat-top { opacity:1; }
-.transport { display:flex; align-items:center; gap:12px; margin-top:10px; }
-.transport-btn { width:32px; height:32px; border-radius:50%; border:1px solid var(--border2); background:var(--surface2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; font-size:12px; }
-.transport-btn:hover { border-color:var(--accent); }
-.transport-btn.active { background:var(--accent); border-color:var(--accent); }
-.transport-btn.active svg { color:#000; }
-.beat-count-display { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted2); }
-.beats-row { display:flex; gap:6px; align-items:center; }
-.beat-pill { background:var(--beat-inactive); color:var(--accent); border:1px solid rgba(228,255,74,0.25); font-family:'Space Mono',monospace; font-size:9px; padding:3px 7px; border-radius:12px; transition:all 0.15s; }
-.beat-pill.active { background:var(--accent); color:#000; }
+select {
+  width: 100%;
+  padding: 8px;
+  background: #000;
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
 
-/* LYRICS AREA */
-.lyrics-area { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px; flex-shrink:0; }
-.lyrics-scroll { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
-.lyric-block { flex-shrink:0; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; transition:all 0.2s; min-width:80px; max-width:140px; }
-.lyric-block:hover { border-color:var(--border2); }
-.lyric-block.assigned { border-color:var(--accent2); background:rgba(123,77,255,0.1); }
-.lyric-block.active-line { border-color:var(--accent); background:rgba(228,255,74,0.08); }
-.lyric-block .ltime { font-family:'Space Mono',monospace; font-size:8px; color:var(--muted); margin-bottom:2px; }
-.lyric-block .ltext { font-size:10px; color:var(--text); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+main { flex: 1; display: flex; flex-direction: column; }
 
-/* PREVIEW + QUEUE */
-.bottom-row { flex:1; display:grid; grid-template-columns:1fr 260px; overflow:hidden; }
-.preview-area { display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg); position:relative; overflow:hidden; padding:20px; }
-.phone-frame { width:190px; height:calc(190px*16/9); border:8px solid #1a1a22; border-radius:30px; overflow:hidden; position:relative; box-shadow:0 0 0 1px rgba(255,255,255,0.06), 0 30px 80px rgba(0,0,0,0.6); }
-.phone-screen { width:100%; height:100%; background:#000; position:relative; overflow:hidden; }
-#previewVideo { width:100%; height:100%; object-fit:cover; }
-.overlay-caption { position:absolute; left:50%; transform:translateX(-50%); width:80%; text-align:center; pointer-events:none; z-index:10; transition:all 0.3s; }
-.preview-controls { margin-top:16px; display:flex; gap:8px; }
+.waveform-container {
+  height: 120px;
+  background: #000;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
 
-/* QUEUE PANEL */
-.queue-panel { background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-.queue-header { padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.queue-list { flex:1; overflow-y:auto; }
-.queue-item { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer; transition:all 0.15s; }
-.queue-item:hover { background:rgba(255,255,255,0.03); }
-.queue-item.active { background:rgba(228,255,74,0.06); }
-.queue-item .qi-num { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); width:16px; flex-shrink:0; }
-.queue-item .qi-thumb { width:28px; height:50px; background:var(--surface2); border-radius:3px; overflow:hidden; flex-shrink:0; }
-.queue-item .qi-thumb video { width:100%; height:100%; object-fit:cover; }
-.queue-item .qi-info { flex:1; min-width:0; }
-.queue-item .qi-lyric { font-size:10px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.queue-item .qi-clip { font-size:9px; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.queue-item .qi-status { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-.queue-bottom { padding:12px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+#waveform-canvas { width: 100%; height: 100%; }
 
-/* Buttons */
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer; border:none; transition:all 0.2s; white-space:nowrap; font-family:'DM Sans',sans-serif; }
-.btn-accent { background:var(--accent); color:#000; font-weight:700; }
-.btn-accent:hover { filter:brightness(1.08); transform:scale(1.02); }
-.btn-accent:disabled { opacity:0.4; cursor:not-allowed; transform:none; filter:none; }
-.btn-outline { background:transparent; color:var(--text); border:1px solid var(--border2); }
-.btn-outline:hover { border-color:var(--border2); background:rgba(255,255,255,0.05); }
-.btn-ghost { background:transparent; color:var(--muted2); }
-.btn-ghost:hover { color:var(--text); }
-.btn-purple { background:var(--accent2); color:#fff; }
-.btn-purple:hover { filter:brightness(1.1); }
-.btn-sm { padding:5px 10px; font-size:10px; }
-.btn-danger { background:rgba(255,77,100,0.15); color:#ff4d64; border:1px solid rgba(255,77,100,0.2); }
+.range-overlay {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  pointer-events: none;
+}
 
-/* GENERATE / SHUFFLE */
-.generate-bar { padding:12px 20px; background:var(--surface); border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-.generate-progress { flex:1; height:3px; background:var(--border2); border-radius:2px; overflow:hidden; }
-.generate-progress-fill { height:100%; background:var(--accent); width:0; transition:width 0.3s; }
+.preview-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050505;
+}
 
-/* Toast */
-.toast { position:fixed; top:60px; right:20px; background:var(--surface2); border:1px solid var(--border2); padding:10px 16px; border-radius:8px; font-size:12px; z-index:1000; opacity:0; transform:translateY(-8px); transition:all 0.3s; pointer-events:none; }
-.toast.show { opacity:1; transform:translateY(0); }
-.toast.success { border-color:rgba(228,255,74,0.4); color:var(--accent); }
-.toast.error { border-color:rgba(255,77,100,0.4); color:#ff4d64; }
+.phone-mockup {
+  width: 280px;
+  height: 500px;
+  background: #000;
+  border-radius: 30px;
+  border: 6px solid #222;
+  position: relative;
+  overflow: hidden;
+}
 
-/* Overlay panels */
-.overlay-panel { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center; }
-.overlay-panel.open { display:flex; }
-.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; padding:24px; width:480px; max-width:90vw; max-height:80vh; overflow-y:auto; }
-.modal h2 { font-family:'Syne',sans-serif; font-size:16px; margin-bottom:4px; }
-.modal p.sub { font-size:12px; color:var(--muted2); margin-bottom:16px; }
-.lyrics-textarea { width:100%; height:200px; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:12px; color:var(--text); font-family:'Space Mono',monospace; font-size:11px; resize:vertical; outline:none; line-height:1.6; }
-.lyrics-textarea:focus { border-color:var(--accent2); }
+.lyric-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  pointer-events: none;
+  z-index: 10;
+}
 
-/* Status tags */
-.tag { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; font-family:'Space Mono',monospace; }
-.tag-ok { background:rgba(228,255,74,0.15); color:var(--accent); }
-.tag-pending { background:rgba(255,255,255,0.08); color:var(--muted); }
-.tag-active { background:rgba(123,77,255,0.2); color:#a97cff; }
+.lyric-text {
+  color: white;
+  font-size: 32px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-/* Export progress overlay */
-.export-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:none; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
-.export-overlay.open { display:flex; }
-.export-box { background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:32px; width:360px; text-align:center; }
-.export-box h2 { font-family:'Syne',sans-serif; font-size:20px; margin-bottom:6px; }
-.export-box .sub { font-size:12px; color:var(--muted2); margin-bottom:24px; }
-.big-progress { height:4px; background:var(--border2); border-radius:4px; overflow:hidden; margin-bottom:8px; }
-.big-progress-fill { height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); width:0; transition:width 0.4s; }
+.sync-indicator {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 77, 158, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  color: #ff4d9e;
+  border: 1px solid #ff4d9e;
+  display: none;
+}
 
-/* Scrollbars */
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+.clips-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
 
-/* Caption style preview */
-.caption-style-row { display:flex; gap:6px; flex-wrap:wrap; }
-.cap-style-btn { padding:5px 10px; border:1px solid var(--border); border-radius:5px; font-size:10px; cursor:pointer; background:var(--surface2); color:var(--muted2); transition:all 0.15s; }
-.cap-style-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(228,255,74,0.08); }
+.clip-thumb { aspect-ratio: 1; background: #222; border-radius: 4px; overflow: hidden; }
+.clip-thumb video { width: 100%; height: 100%; object-fit: cover; }
 
-/* Empty state */
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:8px; color:var(--muted); text-align:center; padding:20px; }
-.empty-state .big { font-size:32px; margin-bottom:8px; }
-.empty-state p { font-size:11px; line-height:1.5; max-width:180px; }
+.range-slider-group { display: flex; align-items: center; gap: 8px; margin-top: 5px;}
+.range-slider-group label { font-size: 10px; width: 40px; color: var(--muted); }
+input[type=range] { flex: 1; accent-color: var(--accent); }
+.badge { background: var(--border2); padding: 2px 6px; border-radius: 4px; font-size: 9px; }
+
 </style>
 </head>
 <body>
 
-<div class="app">
+<aside>
+  <div class="logo">LYRIC MAKER PRO</div>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-logo">
-    <div class="logo-dot"></div>
-    SOUNDVERTISE — <span style="color:var(--accent);margin-left:4px;">LYRIC VIDEO MAKER</span>
-  </div>
-  <div class="topbar-actions">
-    <button class="btn btn-ghost btn-sm" id="helpBtn">?&nbsp;Guide</button>
-    <button class="btn btn-outline btn-sm" id="clearAllBtn">Clear all</button>
-    <button class="btn btn-accent btn-sm" id="mainGenerateBtn" disabled>&#x25B6;&nbsp;Generate video</button>
-  </div>
-</div>
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-
-  <!-- SONG UPLOAD -->
   <div class="panel">
-    <div class="panel-title">1 — Upload song</div>
-    <div class="upload-zone" id="songZone">
-      <input type="file" id="songFile" accept="audio/*">
-      <div class="icon">♪</div>
-      <p>Drop your track here<br><span style="color:var(--muted)">MP3, WAV, AAC</span></p>
-      <div class="filename" id="songName">No file loaded</div>
+    <div class="panel-title">1 — Audio & Range</div>
+    <button class="btn btn-outline" onclick="document.getElementById('audioInput').click()">Carica Canzone</button>
+    <input type="file" id="audioInput" accept="audio/*" style="display:none">
+    
+    <div class="range-controls" id="rangePanel" style="display:none; margin-top:10px;">
+      <div class="range-slider-group">
+        <label>START</label>
+        <input type="range" id="trimStart" min="0" value="0" step="0.1">
+        <span class="badge" id="startVal">0.0s</span>
+      </div>
+      <div class="range-slider-group">
+        <label>END</label>
+        <input type="range" id="trimEnd" min="0" value="100" step="0.1">
+        <span class="badge" id="endVal">--</span>
+      </div>
     </div>
   </div>
 
-  <!-- LYRICS -->
   <div class="panel">
-    <div class="panel-title">2 — Lyrics <span id="lyricStatus" class="tag tag-pending">0 righe</span></div>
-    <button class="btn btn-outline" style="width:100%;font-size:11px;" id="editLyricsBtn">✎ Scrivi / sync lyrics…</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--muted2);">Scrivi le lyrics riga per riga, poi battila in tempo reale con <strong style="color:var(--text)">Spazio</strong>.</div>
+    <div class="panel-title">2 — Lyrics & Font</div>
+    <select id="fontSelector">
+      <option value="'Syne', sans-serif">Syne Heavy (Default)</option>
+      <option value="'Inter', sans-serif">Inter Black</option>
+      <option value="'Bangers', cursive">Bangers (Cartoon)</option>
+      <option value="'Playfair Display', serif">Playfair Italic</option>
+      <option value="'Space Mono', monospace">Space Mono</option>
+    </select>
+    <textarea id="lyricsText" placeholder="Incolla qui il testo...&#10;Ogni riga = una scritta"></textarea>
+    <button class="btn btn-sync" id="startSyncBtn">Avvia Sync (Premi SPAZIO)</button>
+    <div id="syncStatus" style="font-size:10px; margin-top:8px; color:var(--muted2); text-align:center;">
+      Premi SPAZIO per registrare la riga
+    </div>
   </div>
 
-  <!-- FOOTAGE CLIPS -->
   <div class="panel">
-    <div class="panel-title">3 — Footage clips <span class="badge" id="clipCount">0</span></div>
-    <div class="clips-grid" id="clipsGrid">
-      <div class="clip-add">
-        <input type="file" id="clipsInput" accept="video/*" multiple>
-        <div>+</div>
-        <div style="font-size:8px;margin-top:2px;">Add</div>
+    <div class="panel-title">3 — Footage <span class="badge" id="clipCount">0</span></div>
+    <button class="btn btn-outline" onclick="document.getElementById('videoInput').click()">+ Importa Video</button>
+    <input type="file" id="videoInput" accept="video/*" multiple style="display:none">
+    <div class="clips-grid" id="clipsGrid"></div>
+  </div>
+
+  <button class="btn btn-primary" id="generateBtn" style="margin-top:auto">GENERA VIDEO</button>
+</aside>
+
+<main>
+  <div class="waveform-container">
+    <canvas id="waveform-canvas"></canvas>
+    <div id="leftOverlay" class="range-overlay" style="left: 0; width: 0;"></div>
+    <div id="rightOverlay" class="range-overlay" style="right: 0; width: 0;"></div>
+    <div id="playhead" style="position:absolute; top:0; bottom:0; width:2px; background:white; left:0; pointer-events:none; display:none;"></div>
+  </div>
+
+  <div class="preview-stage">
+    <div class="sync-indicator" id="syncIndicator">REC SYNC: TENERE PREMUTO SPAZIO</div>
+    <div class="phone-mockup">
+      <video id="bgVideo" muted loop style="width:100%; height:100%; object-fit:cover;"></video>
+      <div class="lyric-overlay">
+        <div class="lyric-text" id="activeLyric">READY</div>
       </div>
     </div>
   </div>
-
-  <!-- CLIP MODE -->
-  <div class="panel">
-    <div class="panel-title">4 — Clip assignment</div>
-    <div class="mode-row">
-      <div class="mode-btn active" id="modeAuto" data-mode="auto">Auto<br><span style="font-size:8px;color:inherit;opacity:0.7">random each gen</span></div>
-      <div class="mode-btn" id="modeManual" data-mode="manual">Manual<br><span style="font-size:8px;color:inherit;opacity:0.7">drag to assign</span></div>
-    </div>
-  </div>
-
-  <!-- STYLE SETTINGS -->
-  <div class="panel">
-    <div class="panel-title">5 — Caption style</div>
-    <div class="caption-style-row" style="margin-bottom:10px;">
-      <div class="cap-style-btn active" data-style="bold" onclick="setCapStyle(this,'bold')">BOLD</div>
-      <div class="cap-style-btn" data-style="outline" onclick="setCapStyle(this,'outline')">OUTLINE</div>
-      <div class="cap-style-btn" data-style="minimal" onclick="setCapStyle(this,'minimal')">MINIMAL</div>
-      <div class="cap-style-btn" data-style="big" onclick="setCapStyle(this,'big')">HUGE</div>
-    </div>
-    <div class="setting-row" style="margin-bottom:6px;">
-      <label>Font size</label>
-      <span class="val" id="fsVal">32px</span>
-    </div>
-    <input type="range" id="fontSizeSlider" min="16" max="60" value="32" style="margin-bottom:12px;">
-    <div class="setting-row">
-      <label>Caption position</label>
-      <span class="val" id="posVal">50%</span>
-    </div>
-    <input type="range" id="captionPosSlider" min="10" max="85" value="50" style="margin-bottom:12px;">
-    <div class="setting-row">
-      <label>Text color</label>
-      <div class="color-pick-wrap" style="display:flex;gap:6px;">
-        <input type="color" id="textColorPick" value="#ffffff" style="width:28px;height:22px;border:none;border-radius:4px;background:none;cursor:pointer;padding:0;">
-        <input type="color" id="outlineColorPick" value="#000000" style="width:28px;height:22px;border:none;border-radius:4px;background:none;cursor:pointer;padding:0;">
-      </div>
-    </div>
-  </div>
-
-  <!-- GENERATE CONTROLS -->
-  <div class="panel">
-    <div class="panel-title">6 — Generate</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn btn-accent" id="generateBtn" disabled style="width:100%;">&#x2605;&nbsp;Generate edit</button>
-      <button class="btn btn-purple" id="shuffleBtn" disabled style="width:100%;">&#x21BA;&nbsp;Shuffle — new edit</button>
-      <div style="font-size:9px;color:var(--muted);text-align:center;">Each shuffle picks new clips &amp; cuts from same beats</div>
-      <button class="btn btn-outline btn-sm" id="exportAllBtn" disabled style="width:100%;">&#x2193;&nbsp;Export all queue</button>
-    </div>
-  </div>
-
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-  <!-- WAVEFORM -->
-  <div class="wave-area">
-    <div class="wave-header">
-      <span class="wave-label">Waveform — click to add beat marker</span>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span id="beatCountLabel" class="beat-count-display">0 beats</span>
-        <button class="btn btn-ghost btn-sm" id="clearBeatsBtn">Clear beats</button>
-        <button class="btn btn-outline btn-sm" id="autoDetectBtn" disabled>&#9889;&nbsp;Auto-detect</button>
-        <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
-      </div>
-    </div>
-    <div class="wave-container" id="waveContainer">
-      <canvas id="waveCanvas"></canvas>
-      <div id="playhead"></div>
-      <div id="beatMarkersContainer"></div>
-    </div>
-    <div class="transport" style="margin-top:10px;">
-      <button class="transport-btn" id="playPauseBtn" title="Play/Pause">
-        <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0 L10 6 L0 12Z"/></svg>
-      </button>
-      <button class="transport-btn btn-sm" id="stopBtn" title="Stop" style="font-size:10px;">&#9632;</button>
-      <div style="flex:1;"></div>
-      <div id="activeBeatPills" class="beats-row" style="flex-wrap:nowrap;overflow:hidden;max-width:340px;"></div>
-    </div>
-  </div>
-
-  <!-- LYRICS STRIP -->
-  <div class="lyrics-area">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Lyrics sincronizzate</span>
-      <span style="font-size:10px;color:var(--muted2);" id="lyricsSyncStatus">Non sincronizzato</span>
-    </div>
-    <div class="lyrics-scroll" id="lyricsScroll">
-      <div style="font-size:11px;color:var(--muted);padding:8px;white-space:nowrap;">Load a song &amp; paste lyrics to begin</div>
-    </div>
-  </div>
-
-  <!-- PREVIEW + QUEUE -->
-  <div class="bottom-row">
-    <div class="preview-area">
-      <div id="noPreviewState" class="empty-state" style="">
-        <div class="big">▶</div>
-        <p>Load a song, mark beats, add clips, then hit <strong>Generate</strong></p>
-      </div>
-      <div id="previewContainer" style="display:none;flex-direction:column;align-items:center;gap:16px;">
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <video id="previewVideo" loop muted playsinline></video>
-            <div class="overlay-caption" id="captionOverlay" style="top:50%;transform:translate(-50%,-50%);">
-              <span id="captionText" style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#fff;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;line-height:1.1;display:block;"></span>
-            </div>
-          </div>
-        </div>
-        <div class="preview-controls">
-          <button class="btn btn-outline btn-sm" id="prevEditBtn">&#9664; Prev</button>
-          <button class="btn btn-outline btn-sm" id="playPreviewBtn">&#9654; Play</button>
-          <button class="btn btn-outline btn-sm" id="nextEditBtn">Next &#9654;</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- QUEUE -->
-    <div class="queue-panel">
-      <div class="queue-header">
-        <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Generated edits</span>
-        <span class="tag tag-pending" id="queueCountTag">0 / 50</span>
-      </div>
-      <div class="queue-list" id="queueList">
-        <div style="color:var(--muted);font-size:11px;text-align:center;padding:24px 12px;">Generate edits to fill queue</div>
-      </div>
-      <div class="queue-bottom">
-        <button class="btn btn-accent" id="exportSingleBtn" disabled style="width:100%;font-size:11px;">&#x2193;&nbsp;Export selected</button>
-        <button class="btn btn-outline btn-sm" id="exportAllBtn2" disabled style="width:100%;">&#x2193;&nbsp;Export all (MP4)</button>
-        <button class="btn btn-danger btn-sm" id="clearQueueBtn" style="width:100%;">Clear queue</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-</div><!-- end .app -->
-
-<!-- LYRICS MODAL — full Distrokid-style tap sync -->
-<div class="overlay-panel" id="lyricsModal">
-  <div class="modal" style="width:600px;max-width:95vw;">
-
-    <!-- STEP 1: WRITE -->
-    <div id="lyricsStep1">
-      <h2>Lyrics</h2>
-      <p class="sub">Scrivi o incolla le lyrics. <strong>Ogni riga = una scritta.</strong> Riga vuota = pausa (nessun testo).</p>
-      <textarea class="lyrics-textarea" id="lyricsInput" style="height:240px;" placeholder="Never gonna give you up&#10;Never gonna let you down&#10;&#10;Never gonna run around&#10;And desert you"></textarea>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
-        <button class="btn btn-ghost" id="closeLyricsBtn">Annulla</button>
-        <button class="btn btn-accent" id="goToSyncBtn">Avanti — Sync timing ▶</button>
-      </div>
-    </div>
-
-    <!-- STEP 2: SYNC -->
-    <div id="lyricsStep2" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <h2>Sync timing</h2>
-        <button class="btn btn-ghost btn-sm" id="backToEditBtn">← Modifica lyrics</button>
-      </div>
-      <p class="sub" id="syncInstructions">Scegli il punto di partenza sulla waveform, poi premi <kbd style="background:var(--surface2);border:1px solid var(--border2);padding:1px 6px;border-radius:4px;font-size:11px;">▶ Avvia</kbd>. Tieni premuta <kbd style="background:var(--surface2);border:1px solid var(--border2);padding:1px 6px;border-radius:4px;font-size:11px;">Spazio</kbd> mentre la riga è a schermo, rilascia per passare alla successiva.</p>
-
-      <!-- Mini waveform per la posizione di partenza -->
-      <div style="margin-bottom:12px;">
-        <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Punto di partenza</div>
-        <div style="position:relative;height:48px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);overflow:hidden;cursor:pointer;" id="miniWaveContainer">
-          <canvas id="miniWaveCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
-          <div id="miniPlayhead" style="position:absolute;top:0;width:2px;height:100%;background:var(--accent);pointer-events:none;left:0;"></div>
-          <div id="miniStartMarker" style="position:absolute;top:0;width:3px;height:100%;background:#ff4d9e;pointer-events:none;left:0;box-shadow:0 0 6px #ff4d9e;"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);" id="syncStartLabel">Inizio: 0:00</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);" id="syncCurrentLabel">Posizione: 0:00</span>
-        </div>
-      </div>
-
-      <!-- Queue visuale delle righe -->
-      <div style="background:var(--surface2);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px;">
-        <!-- Riga precedente (sbiadita) -->
-        <div style="padding:8px 14px;border-bottom:1px solid var(--border);opacity:0.35;" id="syncPrevLine">
-          <span style="font-size:10px;color:var(--muted);">—</span>
-        </div>
-        <!-- Riga CORRENTE (in evidenza) -->
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(228,255,74,0.06);position:relative;" id="syncCurrentLineBox">
-          <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:0;"></div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div id="spaceIndicator" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);transition:all 0.1s;flex-shrink:0;">SPC</div>
-            <div style="flex:1;">
-              <div style="font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:2px;" id="syncLineNum">Riga 1 / 12</div>
-              <div style="font-size:16px;font-weight:700;color:var(--text);line-height:1.2;" id="syncCurrentLineText">—</div>
-            </div>
-            <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);min-width:40px;text-align:right;" id="syncLineTime">—</div>
-          </div>
-        </div>
-        <!-- Riga successiva (preview) -->
-        <div style="padding:8px 14px;opacity:0.45;" id="syncNextLine">
-          <span style="font-size:12px;color:var(--muted2);">—</span>
-        </div>
-      </div>
-
-      <!-- Progress bar righe -->
-      <div style="background:var(--border);border-radius:4px;height:3px;margin-bottom:12px;overflow:hidden;">
-        <div id="syncProgressBar" style="height:100%;background:var(--accent);width:0;transition:width 0.3s;"></div>
-      </div>
-
-      <!-- Controls -->
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn btn-accent" id="startSyncBtn" style="flex:1;">▶ Avvia</button>
-        <button class="btn btn-outline" id="pauseSyncBtn" style="display:none;flex:1;">⏸ Pausa</button>
-        <button class="btn btn-outline btn-sm" id="undoLastSyncBtn" style="display:none;">↩ Annulla ultima</button>
-        <button class="btn btn-ghost btn-sm" id="resetSyncBtn">↺ Reset</button>
-        <button class="btn btn-accent" id="saveSyncBtn" style="display:none;">✓ Salva sync</button>
-      </div>
-      <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center;" id="syncStatusMsg">Premi Avvia per iniziare</div>
-    </div>
-
-  </div>
-</div>
-
-<!-- EXPORT OVERLAY -->
-<div class="export-overlay" id="exportOverlay">
-  <div class="export-box">
-    <h2>Exporting…</h2>
-    <p class="sub" id="exportSubText">Preparing video 1 of 1</p>
-    <div class="big-progress"><div class="big-progress-fill" id="exportProgressFill"></div></div>
-    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);" id="exportPctLabel">0%</div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<audio id="bgAudio" crossorigin="anonymous"></audio>
-<canvas id="renderCanvas" style="display:none;"></canvas>
-<video id="sourceVideoEl" style="display:none;"></video>
+</main>
 
 <script>
-// ─────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────
-const state = {
-  audioFile: null,
-  audioDuration: 0,
-  beats: [],          // sorted array of times (seconds)
-  lyrics: [],         // [{text, time|null}]
-  clips: [],          // [{file, duration, url}]
-  capStyle: 'bold',
-  fontSize: 32,
-  captionPos: 50,
-  textColor: '#ffffff',
-  outlineColor: '#000000',
-  clipMode: 'auto',   // 'auto' | 'manual'
-  manualAssign: {},   // beatIndex -> clipIndex
-  queue: [],          // [{beatAssign:[{beatIdx,clipIdx,lyricText}], id}]
-  activeQueueIdx: -1,
-  isPlaying: false,
-  currentTime: 0,
-  animFrame: null,
+let audioBuffer = null;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let source = null;
+let duration = 0;
+let startTime = 0;
+let endTime = 0;
+let clips = [];
+
+// Stato Sync
+let isSyncing = false;
+let lyrics = [];
+let currentLyricIdx = 0;
+let syncedData = []; // {text, start, end}
+let syncStartTime = 0;
+let lastSpacePress = 0;
+
+// Elementi
+const lyricsText = document.getElementById('lyricsText');
+const activeLyric = document.getElementById('activeLyric');
+const fontSelector = document.getElementById('fontSelector');
+const playhead = document.getElementById('playhead');
+const syncIndicator = document.getElementById('syncIndicator');
+
+// Font Change
+fontSelector.onchange = () => {
+  activeLyric.style.fontFamily = fontSelector.value;
 };
 
-// ─────────────────────────────────────────────────────
-// DOM REFS
-// ─────────────────────────────────────────────────────
-const bgAudio = document.getElementById('bgAudio');
-const waveCanvas = document.getElementById('waveCanvas');
-const wctx = waveCanvas.getContext('2d');
-const waveContainer = document.getElementById('waveContainer');
-const beatMarkersContainer = document.getElementById('beatMarkersContainer');
-const playheadEl = document.getElementById('playhead');
-const timeDisplayEl = document.getElementById('timeDisplay');
-const previewVideo = document.getElementById('previewVideo');
-const captionText = document.getElementById('captionText');
-const captionOverlay = document.getElementById('captionOverlay');
-const queueList = document.getElementById('queueList');
-const previewContainer = document.getElementById('previewContainer');
-const noPreviewState = document.getElementById('noPreviewState');
+// Caricamento Audio & Waveform
+document.getElementById('audioInput').onchange = async (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const arrayBuffer = await file.arrayBuffer();
+  audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  duration = audioBuffer.duration;
+  
+  document.getElementById('trimStart').max = duration;
+  document.getElementById('trimEnd').max = duration;
+  document.getElementById('trimEnd').value = duration;
+  endTime = duration;
+  
+  document.getElementById('rangePanel').style.display = 'block';
+  updateRangeUI();
+  drawWaveform();
+};
 
-// ─────────────────────────────────────────────────────
-// UTILITIES
-// ─────────────────────────────────────────────────────
-function toast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 2500);
-}
-function fmt(s) {
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
-  return `${m}:${sec.toString().padStart(2,'0')}`;
-}
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-function randInt(a,b){ return Math.floor(Math.random()*(b-a))+a; }
-function shuffleArr(arr){ let a=[...arr]; for(let i=a.length-1;i>0;i--){const j=randInt(0,i+1);[a[i],a[j]]=[a[j],a[i]];}return a; }
-
-// ─────────────────────────────────────────────────────
-// WAVEFORM
-// ─────────────────────────────────────────────────────
-let waveData = null;
-
-function resizeWave() {
-  waveCanvas.width = waveContainer.clientWidth * window.devicePixelRatio;
-  waveCanvas.height = waveContainer.clientHeight * window.devicePixelRatio;
-  waveCanvas.style.width = waveContainer.clientWidth + 'px';
-  waveCanvas.style.height = waveContainer.clientHeight + 'px';
-  drawWave();
-}
-
-async function loadWaveform(file) {
-  const ab = await file.arrayBuffer();
-  const ac = new (window.AudioContext || window.webkitAudioContext)();
-  const decoded = await ac.decodeAudioData(ab);
-  state.audioDuration = decoded.duration;
-  const raw = decoded.getChannelData(0);
-  const samples = 400;
-  const block = Math.floor(raw.length / samples);
-  waveData = Array.from({length: samples}, (_,i) => {
-    let s=0; for(let j=0;j<block;j++) s+=Math.abs(raw[i*block+j]||0); return s/block;
+// Caricamento Video
+document.getElementById('videoInput').onchange = (e) => {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const url = URL.createObjectURL(file);
+    clips.push(url);
+    const div = document.createElement('div');
+    div.className = 'clip-thumb';
+    div.innerHTML = `<video src="${url}"></video>`;
+    document.getElementById('clipsGrid').appendChild(div);
   });
-  const mx = Math.max(...waveData);
-  waveData = waveData.map(v => v/mx);
-  drawWave();
-  document.getElementById('autoDetectBtn').disabled = false;
-  updateTimeDisplay();
-}
-
-function drawWave() {
-  const W = waveCanvas.width, H = waveCanvas.height;
-  wctx.clearRect(0,0,W,H);
-  if (!waveData) {
-    wctx.fillStyle = 'rgba(255,255,255,0.04)';
-    wctx.fillRect(0,0,W,H);
-    wctx.fillStyle = 'rgba(255,255,255,0.08)';
-    wctx.font = `${11*window.devicePixelRatio}px Space Mono`;
-    wctx.textAlign = 'center';
-    wctx.fillText('Upload a song to see waveform', W/2, H/2);
-    return;
-  }
-  const step = W / waveData.length;
-  // played region
-  const playFrac = state.audioDuration > 0 ? state.currentTime / state.audioDuration : 0;
-  waveData.forEach((v,i) => {
-    const x = i*step, h = v*H*0.75, y = (H-h)/2;
-    const played = (i/waveData.length) < playFrac;
-    wctx.fillStyle = played ? '#e4ff4a' : 'rgba(228,255,74,0.25)';
-    const rw = Math.max(1, step-1);
-    wctx.beginPath();
-    wctx.roundRect(x, y, rw, h, 1);
-    wctx.fill();
-  });
-}
-
-function updatePlayhead() {
-  if (state.audioDuration > 0) {
-    const pct = state.currentTime / state.audioDuration * 100;
-    playheadEl.style.left = pct + '%';
-  }
-  updateTimeDisplay();
-  drawWave();
-  updateBeatPills();
-}
-
-function updateTimeDisplay() {
-  timeDisplayEl.textContent = `${fmt(state.currentTime)} / ${fmt(state.audioDuration)}`;
-}
-
-// ─────────────────────────────────────────────────────
-// PLAYBACK
-// ─────────────────────────────────────────────────────
-function rafLoop() {
-  state.currentTime = bgAudio.currentTime;
-  updatePlayhead();
-  if (!bgAudio.paused) {
-    state.animFrame = requestAnimationFrame(rafLoop);
-  }
-}
-
-document.getElementById('playPauseBtn').onclick = () => {
-  if (!bgAudio.src) { toast('Load a song first', 'error'); return; }
-  if (bgAudio.paused) {
-    bgAudio.play();
-    state.animFrame = requestAnimationFrame(rafLoop);
-    document.querySelector('#playPauseBtn svg path').setAttribute('d', 'M0 0 H4 V12 H0Z M6 0 H10 V12 H6Z');
-  } else {
-    bgAudio.pause();
-    cancelAnimationFrame(state.animFrame);
-    document.querySelector('#playPauseBtn svg path').setAttribute('d', 'M0 0 L10 6 L0 12Z');
-  }
+  document.getElementById('clipCount').textContent = clips.length;
+  if(clips.length > 0) document.getElementById('bgVideo').src = clips[0];
 };
 
-document.getElementById('stopBtn').onclick = () => {
-  bgAudio.pause(); bgAudio.currentTime = 0;
-  state.currentTime = 0;
-  cancelAnimationFrame(state.animFrame);
-  document.querySelector('#playPauseBtn svg path').setAttribute('d', 'M0 0 L10 6 L0 12Z');
-  updatePlayhead();
+// Range Update
+const updateRangeUI = () => {
+  startTime = parseFloat(document.getElementById('trimStart').value);
+  endTime = parseFloat(document.getElementById('trimEnd').value);
+  document.getElementById('startVal').textContent = startTime.toFixed(1) + 's';
+  document.getElementById('endVal').textContent = endTime.toFixed(1) + 's';
+  document.getElementById('leftOverlay').style.width = (startTime / duration * 100) + '%';
+  document.getElementById('rightOverlay').style.width = (100 - (endTime / duration * 100)) + '%';
 };
+document.getElementById('trimStart').oninput = updateRangeUI;
+document.getElementById('trimEnd').oninput = updateRangeUI;
 
-waveContainer.addEventListener('click', (e) => {
-  const rect = waveContainer.getBoundingClientRect();
-  const frac = (e.clientX - rect.left) / rect.width;
-  const t = frac * state.audioDuration;
-  if (state.audioDuration === 0) return;
-  if (e.shiftKey || !bgAudio.src) {
-    bgAudio.currentTime = t; state.currentTime = t; updatePlayhead(); return;
-  }
-  // Add beat marker
-  addBeat(t);
-  bgAudio.currentTime = t; state.currentTime = t; updatePlayhead();
-});
+// --- LOGICA SYNC (STILE DISTROKID) ---
 
-// ─────────────────────────────────────────────────────
-// BEAT MARKERS
-// ─────────────────────────────────────────────────────
-function addBeat(t) {
-  if (state.audioDuration === 0) return;
-  t = clamp(t, 0, state.audioDuration);
-  // Prevent duplicates within 0.1s
-  if (state.beats.some(b => Math.abs(b-t) < 0.1)) return;
-  state.beats.push(t);
-  state.beats.sort((a,b) => a-b);
-  renderBeatMarkers();
-  updateBeatCount();
-  checkReady();
-}
-
-function renderBeatMarkers() {
-  beatMarkersContainer.innerHTML = '';
-  state.beats.forEach((t, i) => {
-    const pct = (t / state.audioDuration) * 100;
-    const el = document.createElement('div');
-    el.className = 'beat-marker';
-    el.style.left = pct + '%';
-    el.dataset.idx = i;
-    el.innerHTML = `<div class="beat-top"></div><div class="beat-handle"></div>`;
-
-    // Drag beat
-    let dragging = false, startX, startT;
-    el.querySelector('.beat-handle').addEventListener('mousedown', ev => {
-      dragging = true; startX = ev.clientX; startT = t; ev.stopPropagation();
-      document.addEventListener('mousemove', onDrag);
-      document.addEventListener('mouseup', () => {
-        dragging = false;
-        document.removeEventListener('mousemove', onDrag);
-      }, {once:true});
-    });
-    function onDrag(ev) {
-      if (!dragging) return;
-      const rect = waveContainer.getBoundingClientRect();
-      const dx = ev.clientX - startX;
-      const dt = (dx / rect.width) * state.audioDuration;
-      state.beats[i] = clamp(startT + dt, 0, state.audioDuration);
-      state.beats.sort((a,b) => a-b);
-      renderBeatMarkers(); updateBeatCount();
-    }
-    // Right-click to delete
-    el.addEventListener('contextmenu', ev => {
-      ev.preventDefault();
-      state.beats.splice(i,1);
-      renderBeatMarkers(); updateBeatCount(); checkReady();
-    });
-    beatMarkersContainer.appendChild(el);
-  });
-}
-
-function updateBeatCount() {
-  document.getElementById('beatCountLabel').textContent = state.beats.length + ' beats';
-  updateBeatPills();
-}
-
-function updateBeatPills() {
-  const container = document.getElementById('activeBeatPills');
-  container.innerHTML = '';
-  const maxShow = 12;
-  const visible = state.beats.slice(0, maxShow);
-  visible.forEach((t, i) => {
-    const pill = document.createElement('div');
-    pill.className = 'beat-pill' + (Math.abs(t - state.currentTime) < 0.25 ? ' active' : '');
-    pill.textContent = fmt(t);
-    container.appendChild(pill);
-  });
-  if (state.beats.length > maxShow) {
-    const more = document.createElement('div');
-    more.className = 'beat-pill';
-    more.textContent = `+${state.beats.length - maxShow}`;
-    container.appendChild(more);
-  }
-}
-
-document.getElementById('clearBeatsBtn').onclick = () => {
-  state.beats = []; renderBeatMarkers(); updateBeatCount(); checkReady();
-};
-
-// Auto-detect beats (BPM-based simple detection)
-document.getElementById('autoDetectBtn').onclick = async () => {
-  if (!bgAudio.src) return;
-  const btn = document.getElementById('autoDetectBtn');
-  btn.disabled = true; btn.textContent = 'Detecting…';
-  try {
-    const ab = await state.audioFile.arrayBuffer();
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
-    const decoded = await ac.decodeAudioData(ab);
-    const beats = detectBeats(decoded);
-    state.beats = beats; state.beats.sort((a,b)=>a-b);
-    renderBeatMarkers(); updateBeatCount(); checkReady();
-    toast(`Auto-detected ${beats.length} beats!`);
-  } catch(e) { toast('Beat detection failed: '+e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = '&#9889;&nbsp;Auto-detect';
-};
-
-function detectBeats(buffer) {
-  const data = buffer.getChannelData(0);
-  const sr = buffer.sampleRate;
-  const windowSize = Math.floor(sr * 0.025);
-  const hopSize = Math.floor(sr * 0.01);
-  const energies = [];
-  for (let i=0; i+windowSize < data.length; i+=hopSize) {
-    let e=0; for(let j=0;j<windowSize;j++) e+=data[i+j]*data[i+j]; energies.push(e/windowSize);
-  }
-  const smoothed = energies.map((v,i) => {
-    let s=0,c=0; for(let j=Math.max(0,i-5);j<Math.min(energies.length,i+5);j++){s+=energies[j];c++;} return s/c;
-  });
-  const beats = [];
-  const minGap = Math.floor(0.3 / 0.01);
-  let last = -minGap;
-  for (let i=1;i<smoothed.length-1;i++) {
-    if (smoothed[i] > smoothed[i-1]*1.5 && smoothed[i] > smoothed[i+1]*1.2 && i-last > minGap) {
-      beats.push((i*hopSize)/sr); last=i;
-    }
-  }
-  return beats.slice(0,80);
-}
-
-// ─────────────────────────────────────────────────────
-// LYRICS — DISTROKID-STYLE TAP SYNC
-// ─────────────────────────────────────────────────────
-const syncState = {
-  lines: [],         // [{text, time}] — testo puro, una voce per riga (vuota = pausa)
-  cursor: 0,         // quale riga stiamo aspettando
-  startOffset: 0,    // secondi in cui abbiamo premuto Avvia
-  isRunning: false,
-  spaceDown: false,
-  spaceStartTime: 0,
-  syncAnimFrame: null,
-};
-
-// ── Apri modale ──
-document.getElementById('editLyricsBtn').onclick = () => {
-  document.getElementById('lyricsStep1').style.display = '';
-  document.getElementById('lyricsStep2').style.display = 'none';
-  document.getElementById('lyricsModal').classList.add('open');
-  // Se abbiamo già lyrics, popoliamo la textarea
-  if (state.lyrics.length) {
-    document.getElementById('lyricsInput').value = state.lyrics.map(l=>l.text).join('\n');
-  }
-};
-document.getElementById('closeLyricsBtn').onclick = () => {
-  stopSync();
-  document.getElementById('lyricsModal').classList.remove('open');
-};
-
-// ── Step 1 → Step 2 ──
-document.getElementById('goToSyncBtn').onclick = () => {
-  const raw = document.getElementById('lyricsInput').value;
-  if (!raw.trim()) { alert('Inserisci prima le lyrics!'); return; }
-  // Parsa righe (incluse righe vuote come pause)
-  syncState.lines = raw.split('\n').map(l => ({ text: l.trim(), time: null }));
-  syncState.cursor = 0;
-  document.getElementById('lyricsStep1').style.display = 'none';
-  document.getElementById('lyricsStep2').style.display = '';
-  buildMiniWave();
-  renderSyncUI();
-  // Imposta il punto di partenza al currentTime corrente del audio principale
-  syncState.startOffset = state.currentTime;
-  updateMiniStartMarker();
-  document.getElementById('syncStatusMsg').textContent = 'Clicca sulla mini-waveform per scegliere il punto di partenza, poi premi Avvia.';
-};
-document.getElementById('backToEditBtn').onclick = () => {
-  stopSync();
-  document.getElementById('lyricsStep1').style.display = '';
-  document.getElementById('lyricsStep2').style.display = 'none';
-};
-
-// ── Mini waveform nel modale ──
-function buildMiniWave() {
-  const canvas = document.getElementById('miniWaveCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.offsetWidth * devicePixelRatio || 1000;
-  canvas.height = canvas.offsetHeight * devicePixelRatio || 96;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  if (!waveData) { ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(0,0,canvas.width,canvas.height); return; }
-  const W=canvas.width,H=canvas.height,step=W/waveData.length;
-  waveData.forEach((v,i)=>{
-    const h=v*H*0.75,y=(H-h)/2;
-    ctx.fillStyle='rgba(228,255,74,0.3)';
-    ctx.beginPath(); ctx.roundRect(i*step,y,Math.max(1,step-1),h,1); ctx.fill();
-  });
-}
-
-function updateMiniStartMarker() {
-  if (!state.audioDuration) return;
-  const pct = (syncState.startOffset / state.audioDuration)*100;
-  document.getElementById('miniStartMarker').style.left = pct+'%';
-  document.getElementById('syncStartLabel').textContent = 'Inizio: '+fmt(syncState.startOffset);
-}
-function updateMiniPlayhead() {
-  if (!state.audioDuration) return;
-  const pct = (bgAudio.currentTime / state.audioDuration)*100;
-  document.getElementById('miniPlayhead').style.left = pct+'%';
-  document.getElementById('syncCurrentLabel').textContent = 'Posizione: '+fmt(bgAudio.currentTime);
-}
-
-// Click su mini-waveform = imposta punto di partenza
-document.getElementById('miniWaveContainer').addEventListener('click', (e) => {
-  if (syncState.isRunning) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const frac = (e.clientX - rect.left) / rect.width;
-  syncState.startOffset = frac * state.audioDuration;
-  bgAudio.currentTime = syncState.startOffset;
-  state.currentTime = syncState.startOffset;
-  updatePlayhead();
-  updateMiniStartMarker();
-  updateMiniPlayhead();
-});
-
-// ── Render UI righe corrente/prev/next ──
-function renderSyncUI() {
-  const lines = syncState.lines;
-  const cur = syncState.cursor;
-  const total = lines.length;
-
-  // Riga precedente
-  const prevL = cur > 0 ? lines[cur-1] : null;
-  document.getElementById('syncPrevLine').innerHTML = prevL
-    ? `<span style="font-size:12px;color:var(--muted2);">${prevL.text||'<em style="color:var(--muted)">(pausa)</em>'}</span>${prevL.time!==null?`<span style="float:right;font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);">${fmt(prevL.time)}</span>`:''}`
-    : '<span style="font-size:10px;color:var(--muted);">—</span>';
-
-  // Riga corrente
-  if (cur < total) {
-    const l = lines[cur];
-    document.getElementById('syncCurrentLineText').textContent = l.text || '(pausa — nessun testo)';
-    document.getElementById('syncLineNum').textContent = `Riga ${cur+1} / ${total}`;
-    document.getElementById('syncLineTime').textContent = l.time !== null ? fmt(l.time) : '—';
-  } else {
-    document.getElementById('syncCurrentLineText').textContent = '✓ Fine!';
-    document.getElementById('syncLineNum').textContent = `Completato`;
-    document.getElementById('syncLineTime').textContent = '';
-  }
-
-  // Riga successiva
-  const nextL = cur+1 < total ? lines[cur+1] : null;
-  document.getElementById('syncNextLine').innerHTML = nextL
-    ? `<span style="font-size:12px;color:var(--muted2);">${nextL.text||'<em style="color:var(--muted)">(pausa)</em>'}</span>`
-    : '<span style="font-size:10px;color:var(--muted);">—</span>';
-
-  // Progress bar
-  const pct = total > 0 ? (cur/total)*100 : 0;
-  document.getElementById('syncProgressBar').style.width = pct+'%';
-
-  // Mostra/nascondi "Salva" se tutte sincronizzate
-  const allDone = cur >= total;
-  document.getElementById('saveSyncBtn').style.display = allDone ? '' : 'none';
-  if (allDone) {
-    stopSync();
-    document.getElementById('syncStatusMsg').textContent = '✓ Tutte le righe sincronizzate! Premi Salva.';
-  }
-}
-
-// ── AVVIA ──
 document.getElementById('startSyncBtn').onclick = () => {
-  if (!state.audioDuration) { alert('Carica prima la canzone!'); return; }
-  syncState.cursor = 0;
-  syncState.lines.forEach(l => l.time = null);
-  bgAudio.currentTime = syncState.startOffset;
-  bgAudio.play();
-  syncState.isRunning = true;
-  document.getElementById('startSyncBtn').style.display = 'none';
-  document.getElementById('pauseSyncBtn').style.display = '';
-  document.getElementById('undoLastSyncBtn').style.display = '';
-  document.getElementById('saveSyncBtn').style.display = 'none';
-  document.getElementById('syncStatusMsg').textContent = 'In corso — tieni premuto SPAZIO mentre la riga è in scena, rilascia per avanzare';
-  // RAF per aggiornare playhead
-  function miniRaf(){ updateMiniPlayhead(); if(syncState.isRunning) requestAnimationFrame(miniRaf); }
-  requestAnimationFrame(miniRaf);
-  renderSyncUI();
-  // Focus sul modale per catturare spazio
-  document.getElementById('lyricsStep2').setAttribute('tabindex','-1');
-  document.getElementById('lyricsStep2').focus();
+  if(!audioBuffer) return alert("Carica un audio!");
+  if(!lyricsText.value.trim()) return alert("Inserisci il testo prima!");
+  
+  // Prepariamo i lyrics
+  lyrics = lyricsText.value.split('\n').filter(l => l.trim() !== "");
+  currentLyricIdx = 0;
+  syncedData = [];
+  isSyncing = true;
+  
+  // UI
+  syncIndicator.style.display = 'block';
+  activeLyric.textContent = lyrics[0];
+  activeLyric.style.opacity = "0.3";
+  
+  // Play Audio dal punto START scelto
+  if(source) source.stop();
+  source = audioCtx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(audioCtx.destination);
+  source.start(0, startTime);
+  syncStartTime = audioCtx.currentTime;
+  
+  playhead.style.display = 'block';
+  animatePlayhead();
 };
 
-// ── PAUSA ──
-document.getElementById('pauseSyncBtn').onclick = () => {
-  if (bgAudio.paused) {
-    bgAudio.play();
-    document.getElementById('pauseSyncBtn').textContent = '⏸ Pausa';
+function animatePlayhead() {
+  if(!isSyncing) return;
+  let elapsed = (audioCtx.currentTime - syncStartTime) + startTime;
+  let pct = (elapsed / duration) * 100;
+  playhead.style.left = pct + '%';
+  
+  if(elapsed >= endTime) {
+    stopSync();
   } else {
-    bgAudio.pause();
-    document.getElementById('pauseSyncBtn').textContent = '▶ Riprendi';
+    requestAnimationFrame(animatePlayhead);
+  }
+}
+
+// Gestione SPAZIO
+window.onkeydown = (e) => {
+  if(e.code === 'Space' && isSyncing) {
+    e.preventDefault();
+    if(e.repeat) return; // evita trigger ripetuti se tieni premuto
+    
+    // Inizio riga
+    lastSpacePress = (audioCtx.currentTime - syncStartTime) + startTime;
+    activeLyric.style.opacity = "1";
+    activeLyric.style.transform = "scale(1.1)";
   }
 };
 
-// ── UNDO ULTIMA ──
-document.getElementById('undoLastSyncBtn').onclick = () => {
-  if (syncState.cursor > 0) {
-    syncState.cursor--;
-    syncState.lines[syncState.cursor].time = null;
-    renderSyncUI();
-    document.getElementById('syncStatusMsg').textContent = 'Ultima riga annullata — ripremi SPAZIO per risinonizzare';
+window.onkeyup = (e) => {
+  if(e.code === 'Space' && isSyncing) {
+    let releaseTime = (audioCtx.currentTime - syncStartTime) + startTime;
+    
+    // Salva record
+    syncedData.push({
+      text: lyrics[currentLyricIdx],
+      start: lastSpacePress,
+      end: releaseTime
+    });
+    
+    currentLyricIdx++;
+    activeLyric.style.transform = "scale(1)";
+    
+    if(currentLyricIdx < lyrics.length) {
+      activeLyric.textContent = lyrics[currentLyricIdx];
+      activeLyric.style.opacity = "0.3";
+    } else {
+      stopSync();
+    }
   }
-};
-
-// ── RESET ──
-document.getElementById('resetSyncBtn').onclick = () => {
-  stopSync();
-  syncState.cursor = 0;
-  syncState.lines.forEach(l => l.time = null);
-  bgAudio.currentTime = syncState.startOffset;
-  state.currentTime = syncState.startOffset;
-  updatePlayhead(); updateMiniStartMarker(); updateMiniPlayhead();
-  document.getElementById('startSyncBtn').style.display = '';
-  document.getElementById('pauseSyncBtn').style.display = 'none';
-  document.getElementById('undoLastSyncBtn').style.display = 'none';
-  document.getElementById('saveSyncBtn').style.display = 'none';
-  document.getElementById('syncStatusMsg').textContent = 'Reset effettuato — premi Avvia per ricominciare';
-  renderSyncUI();
-};
-
-// ── SALVA SYNC ──
-document.getElementById('saveSyncBtn').onclick = () => {
-  // Trasferisci in state.lyrics
-  state.lyrics = syncState.lines.map(l => ({text: l.text, time: l.time}));
-  renderLyricsStrip();
-  const count = state.lyrics.filter(l=>l.text).length;
-  const synced = state.lyrics.filter(l=>l.time!==null).length;
-  document.getElementById('lyricStatus').textContent = count + ' lines';
-  document.getElementById('lyricStatus').className = 'tag tag-ok';
-  stopSync();
-  document.getElementById('lyricsModal').classList.remove('open');
-  checkReady();
-  toast(`✓ ${synced} righe sincronizzate!`);
 };
 
 function stopSync() {
-  syncState.isRunning = false;
-  syncState.spaceDown = false;
-  bgAudio.pause();
-  // ripristina stato main playback
-  document.querySelector('#playPauseBtn svg path').setAttribute('d','M0 0 L10 6 L0 12Z');
-  document.getElementById('startSyncBtn').style.display = '';
-  document.getElementById('pauseSyncBtn').style.display = 'none';
-  document.getElementById('undoLastSyncBtn').style.display = 'none';
-  resetSpaceIndicator();
+  isSyncing = false;
+  if(source) source.stop();
+  syncIndicator.style.display = 'none';
+  playhead.style.display = 'none';
+  activeLyric.textContent = "SYNC COMPLETATO";
+  activeLyric.style.opacity = "1";
+  console.log("Dati Sincronizzati:", syncedData);
 }
 
-function resetSpaceIndicator() {
-  const ind = document.getElementById('spaceIndicator');
-  if (ind) {
-    ind.style.background = 'transparent';
-    ind.style.borderColor = 'var(--border2)';
-    ind.style.color = 'var(--muted)';
-  }
-}
-
-// ── SPACEBAR HANDLER — cattura sia nel modale che nella pagina ──
-// HOLD spazio → la riga è "in scena" (timestamp = momento pressione)
-// RELEASE spazio → si avanza alla riga successiva
-document.addEventListener('keydown', (e) => {
-  // Non intercettare se il focus è in textarea (step 1)
-  if (document.activeElement === document.getElementById('lyricsInput')) return;
-  if (!syncState.isRunning) return;
-  if (e.code !== 'Space') return;
-  e.preventDefault();
-  if (syncState.spaceDown) return; // già premuto, ignora ripetizione
-  syncState.spaceDown = true;
-  syncState.spaceStartTime = bgAudio.currentTime;
-  // Assegna il timestamp alla riga corrente
-  if (syncState.cursor < syncState.lines.length) {
-    syncState.lines[syncState.cursor].time = bgAudio.currentTime;
-    renderSyncUI();
-  }
-  // Feedback visivo
-  const ind = document.getElementById('spaceIndicator');
-  if (ind) {
-    ind.style.background = 'var(--accent)';
-    ind.style.borderColor = 'var(--accent)';
-    ind.style.color = '#000';
-  }
-  document.getElementById('syncLineTime').textContent = fmt(bgAudio.currentTime);
-});
-
-document.addEventListener('keyup', (e) => {
-  if (!syncState.isRunning) return;
-  if (e.code !== 'Space') return;
-  e.preventDefault();
-  if (!syncState.spaceDown) return;
-  syncState.spaceDown = false;
-  resetSpaceIndicator();
-  // Avanza alla riga successiva
-  syncState.cursor++;
-  renderSyncUI();
-  document.getElementById('syncStatusMsg').textContent = syncState.cursor < syncState.lines.length
-    ? `Riga ${syncState.cursor+1}/${syncState.lines.length} — tieni SPAZIO quando compare la riga`
-    : '✓ Completato!';
-});
-
-// ── Render strip lyrics sincronizzate ──
-function renderLyricsStrip() {
-  const container = document.getElementById('lyricsScroll');
-  const allLines = state.lyrics.filter(l=>l.text);
-  if (!allLines.length) {
-    container.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px;white-space:nowrap;">Nessuna lyrics caricata</div>';
-    document.getElementById('lyricsSyncStatus').textContent = 'Non sincronizzato';
-    return;
-  }
-  const synced = state.lyrics.filter(l=>l.time!==null&&l.text).length;
-  document.getElementById('lyricsSyncStatus').textContent = `${synced}/${allLines.length} sincronizzate`;
-  container.innerHTML = '';
-  state.lyrics.forEach((l, i) => {
-    if (!l.text) return;
-    const el = document.createElement('div');
-    el.className = 'lyric-block' + (l.time!==null ? ' assigned':'');
-    el.dataset.idx = i;
-    el.innerHTML = `<div class="ltime">${l.time!==null ? fmt(l.time) : '—:——'}</div><div class="ltext">${l.text}</div>`;
-    el.addEventListener('click', () => {
-      if (l.time !== null && state.audioDuration > 0) {
-        bgAudio.currentTime = l.time; state.currentTime = l.time; updatePlayhead();
-      }
-    });
-    container.appendChild(el);
-  });
-}
-
-// ── parseLyrics fallback (per compatibilità con buildEdit) ──
-function parseLyrics(raw) {
-  syncState.lines = raw.split('\n').map(l => ({text: l.trim(), time: null}));
-  state.lyrics = syncState.lines.map(l => ({text:l.text, time:l.time}));
-  renderLyricsStrip();
-  const count = state.lyrics.filter(l=>l.text).length;
-  document.getElementById('lyricStatus').textContent = count + ' lines';
-  document.getElementById('lyricStatus').className = 'tag tag-ok';
-}
-
-// ─────────────────────────────────────────────────────
-// CLIPS
-// ─────────────────────────────────────────────────────
-document.getElementById('clipsInput').onchange = async (e) => {
-  const files = Array.from(e.target.files);
-  for (const f of files) {
-    if (state.clips.length >= 30) break;
-    const url = URL.createObjectURL(f);
-    const dur = await getVideoDuration(url);
-    state.clips.push({file:f, duration:dur, url});
-  }
-  renderClipsGrid();
-  document.getElementById('clipCount').textContent = state.clips.length;
-  checkReady();
-  e.target.value = '';
-};
-
-function getVideoDuration(url) {
-  return new Promise(res => {
-    const v = document.createElement('video');
-    v.src = url; v.muted = true; v.playsInline = true;
-    v.onloadedmetadata = () => res(v.duration);
-    v.onerror = () => res(5);
-  });
-}
-
-function renderClipsGrid() {
-  const grid = document.getElementById('clipsGrid');
-  grid.innerHTML = '';
-  state.clips.forEach((c, i) => {
-    const div = document.createElement('div');
-    div.className = 'clip-thumb';
-    div.dataset.idx = i;
-    const v = document.createElement('video');
-    v.src = c.url; v.muted = true; v.playsInline = true;
-    v.onmouseover = () => v.play();
-    v.onmouseout = () => { v.pause(); v.currentTime = 0; };
-    div.appendChild(v);
-    const dur = document.createElement('div');
-    dur.className = 'clip-dur'; dur.textContent = fmt(c.duration);
-    div.appendChild(dur);
-    const del = document.createElement('div');
-    del.className = 'clip-del'; del.textContent = '×';
-    del.onclick = (e) => { e.stopPropagation(); removeClip(i); };
-    div.appendChild(del);
-    grid.appendChild(div);
-  });
-  // Add button
-  const addDiv = document.createElement('div');
-  addDiv.className = 'clip-add';
-  addDiv.innerHTML = `<input type="file" accept="video/*" multiple><div>+</div><div style="font-size:8px;margin-top:2px;">Add</div>`;
-  addDiv.querySelector('input').onchange = document.getElementById('clipsInput').onchange;
-  grid.appendChild(addDiv);
-}
-
-function removeClip(i) {
-  URL.revokeObjectURL(state.clips[i].url);
-  state.clips.splice(i,1);
-  renderClipsGrid();
-  document.getElementById('clipCount').textContent = state.clips.length;
-  checkReady();
-}
-
-// ─────────────────────────────────────────────────────
-// CLIP MODE
-// ─────────────────────────────────────────────────────
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    state.clipMode = btn.dataset.mode;
-  };
-});
-
-// ─────────────────────────────────────────────────────
-// CAPTION STYLE
-// ─────────────────────────────────────────────────────
-function setCapStyle(el, style) {
-  document.querySelectorAll('.cap-style-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  state.capStyle = style;
-  updateCaptionPreview();
-}
-window.setCapStyle = setCapStyle;
-
-document.getElementById('fontSizeSlider').oninput = (e) => {
-  state.fontSize = +e.target.value;
-  document.getElementById('fsVal').textContent = e.target.value + 'px';
-  updateCaptionPreview();
-};
-document.getElementById('captionPosSlider').oninput = (e) => {
-  state.captionPos = +e.target.value;
-  document.getElementById('posVal').textContent = e.target.value + '%';
-  updateCaptionPreview();
-};
-document.getElementById('textColorPick').oninput = (e) => { state.textColor = e.target.value; updateCaptionPreview(); };
-document.getElementById('outlineColorPick').oninput = (e) => { state.outlineColor = e.target.value; updateCaptionPreview(); };
-
-function updateCaptionPreview() {
-  const el = document.getElementById('captionText');
-  const overlay = document.getElementById('captionOverlay');
-  el.style.fontSize = state.fontSize + 'px';
-  el.style.color = state.textColor;
-  overlay.style.top = state.captionPos + '%';
-  overlay.style.transform = `translateX(-50%) translateY(-50%)`;
-  const oc = state.outlineColor;
-  switch (state.capStyle) {
-    case 'bold':
-      el.style.fontFamily = "'Syne', sans-serif"; el.style.fontWeight = '800';
-      el.style.textShadow = `-2px -2px 0 ${oc},2px -2px 0 ${oc},-2px 2px 0 ${oc},2px 2px 0 ${oc}`;
-      break;
-    case 'outline':
-      el.style.fontFamily = "'Space Mono', monospace"; el.style.fontWeight = '700';
-      el.style.textShadow = `-1px -1px 0 ${oc},1px -1px 0 ${oc},-1px 1px 0 ${oc},1px 1px 0 ${oc},0 0 20px rgba(228,255,74,0.5)`;
-      break;
-    case 'minimal':
-      el.style.fontFamily = "'DM Sans', sans-serif"; el.style.fontWeight = '300';
-      el.style.textShadow = `0 2px 12px rgba(0,0,0,0.8)`;
-      break;
-    case 'big':
-      el.style.fontFamily = "'Syne', sans-serif"; el.style.fontWeight = '800';
-      el.style.textShadow = `-3px -3px 0 ${oc},3px -3px 0 ${oc},-3px 3px 0 ${oc},3px 3px 0 ${oc}`;
-      break;
-  }
-}
-
-// ─────────────────────────────────────────────────────
-// GENERATE EDIT
-// ─────────────────────────────────────────────────────
-function checkReady() {
-  const ready = state.audioDuration > 0 && state.beats.length >= 2 && state.clips.length > 0;
-  document.getElementById('generateBtn').disabled = !ready;
-  document.getElementById('mainGenerateBtn').disabled = !ready;
-  document.getElementById('shuffleBtn').disabled = !(ready && state.queue.length > 0);
-}
-
-function buildEdit() {
-  // For each beat interval, pick a clip segment
-  const n = state.beats.length;
-  const beatAssign = [];
-  // Shuffle clips array for variety
-  const clipIdxPool = shuffleArr(state.clips.map((_,i)=>i));
-  let poolCursor = 0;
-
-  for (let i = 0; i < n; i++) {
-    const beatTime = state.beats[i];
-    const nextBeat = state.beats[i+1] ?? (beatTime + 2);
-    const duration = Math.min(nextBeat - beatTime, 8);
-
-    // Assign lyric
-    let lyricText = '';
-    if (state.lyrics.length > 0) {
-      // Find lyric closest to this beat
-      const synced = state.lyrics.filter(l=>l.text && l.time!==null);
-      if (synced.length > 0) {
-        const closest = synced.reduce((a,b) => Math.abs(b.time-beatTime) < Math.abs(a.time-beatTime) ? b : a);
-        if (Math.abs(closest.time - beatTime) < (nextBeat - beatTime) * 1.5) lyricText = closest.text;
-      } else {
-        // Distribute evenly
-        const idx = Math.floor((i / n) * state.lyrics.filter(l=>l.text).length);
-        lyricText = state.lyrics.filter(l=>l.text)[idx]?.text || '';
-      }
+// Disegno Waveform
+function drawWaveform() {
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = canvas.offsetHeight;
+  const data = audioBuffer.getChannelData(0);
+  const step = Math.ceil(data.length / w);
+  const amp = h / 2;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#e4ff4a';
+  for(let i=0; i<w; i++) {
+    let min=1, max=-1;
+    for(let j=0; j<step; j++) {
+      let d = data[(i*step)+j];
+      if(d<min) min=d; if(d>max) max=d;
     }
-
-    // Assign clip
-    let clipIdx;
-    if (state.clipMode === 'manual' && state.manualAssign[i] !== undefined) {
-      clipIdx = state.manualAssign[i];
-    } else {
-      clipIdx = clipIdxPool[poolCursor % clipIdxPool.length];
-      poolCursor++;
-    }
-
-    // Pick random start within clip
-    const clip = state.clips[clipIdx];
-    const maxStart = Math.max(0, clip.duration - duration - 0.1);
-    const clipStart = Math.random() * maxStart;
-
-    beatAssign.push({beatIdx: i, beatTime, duration, clipIdx, clipStart, lyricText});
+    ctx.fillRect(i, (1+min)*amp, 1, Math.max(1,(max-min)*amp));
   }
-  return {beatAssign, id: Date.now(), settings:{capStyle:state.capStyle, fontSize:state.fontSize, captionPos:state.captionPos, textColor:state.textColor, outlineColor:state.outlineColor}};
 }
 
-document.getElementById('generateBtn').onclick = () => generateEdit();
-document.getElementById('mainGenerateBtn').onclick = () => generateEdit();
-
-function generateEdit() {
-  if (state.queue.length >= 50) { toast('Queue is full (50 edits)! Clear some first.', 'error'); return; }
-  const edit = buildEdit();
-  state.queue.push(edit);
-  state.activeQueueIdx = state.queue.length - 1;
-  renderQueue();
-  previewEdit(state.activeQueueIdx);
-  document.getElementById('shuffleBtn').disabled = false;
-  document.getElementById('exportAllBtn').disabled = false;
-  document.getElementById('exportAllBtn2').disabled = false;
-  document.getElementById('exportSingleBtn').disabled = false;
-  document.getElementById('clearQueueBtn').disabled = false;
-  document.getElementById('queueCountTag').textContent = state.queue.length + ' / 50';
-  toast(`Edit #${state.queue.length} generated!`);
-}
-
-document.getElementById('shuffleBtn').onclick = () => {
-  generateEdit();
-  toast('New shuffle added to queue!');
+document.getElementById('generateBtn').onclick = () => {
+  if(syncedData.length === 0) return alert("Esegui prima il Sync!");
+  alert("Generazione video in corso con " + syncedData.length + " linee sincronizzate.");
 };
 
-// ─────────────────────────────────────────────────────
-// QUEUE
-// ─────────────────────────────────────────────────────
-function renderQueue() {
-  if (!state.queue.length) {
-    queueList.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:24px 12px;">Generate edits to fill queue</div>';
-    return;
-  }
-  queueList.innerHTML = '';
-  state.queue.forEach((edit, i) => {
-    const item = document.createElement('div');
-    item.className = 'queue-item' + (i === state.activeQueueIdx ? ' active' : '');
-    const firstBeat = edit.beatAssign[0];
-    const clip = firstBeat ? state.clips[firstBeat.clipIdx] : null;
-    item.innerHTML = `
-      <div class="qi-num">#${i+1}</div>
-      <div class="qi-thumb">${clip ? `<video src="${clip.url}" muted playsinline></video>` : ''}</div>
-      <div class="qi-info">
-        <div class="qi-lyric">${firstBeat?.lyricText || '(no lyrics)'}</div>
-        <div class="qi-clip">${edit.beatAssign.length} beats · ${[...new Set(edit.beatAssign.map(b=>b.clipIdx))].length} clips</div>
-      </div>
-      <div class="qi-status" style="background:${i===state.activeQueueIdx?'var(--accent)':'var(--border2)'}"></div>
-    `;
-    item.onclick = () => { state.activeQueueIdx = i; previewEdit(i); renderQueue(); };
-    queueList.appendChild(item);
-  });
-}
-
-document.getElementById('clearQueueBtn').onclick = () => {
-  state.queue = []; state.activeQueueIdx = -1;
-  renderQueue();
-  noPreviewState.style.display = '';
-  previewContainer.style.display = 'none';
-  document.getElementById('queueCountTag').textContent = '0 / 50';
-  document.getElementById('shuffleBtn').disabled = true;
-  document.getElementById('exportSingleBtn').disabled = true;
-  document.getElementById('exportAllBtn').disabled = true;
-  document.getElementById('exportAllBtn2').disabled = true;
-};
-
-// ─────────────────────────────────────────────────────
-// PREVIEW
-// ─────────────────────────────────────────────────────
-let previewTimeout = null;
-let previewSegIdx = 0;
-
-function previewEdit(queueIdx) {
-  if (queueIdx < 0 || queueIdx >= state.queue.length) return;
-  noPreviewState.style.display = 'none';
-  previewContainer.style.display = 'flex';
-  const edit = state.queue[queueIdx];
-  previewSegIdx = 0;
-  if (previewTimeout) clearTimeout(previewTimeout);
-  playPreviewSegment(edit, 0);
-}
-
-function playPreviewSegment(edit, segIdx) {
-  if (segIdx >= edit.beatAssign.length) segIdx = 0;
-  const seg = edit.beatAssign[segIdx];
-  const clip = state.clips[seg.clipIdx];
-  previewVideo.src = clip.url;
-  previewVideo.currentTime = seg.clipStart;
-  previewVideo.muted = true;
-  previewVideo.play().catch(()=>{});
-  captionText.textContent = seg.lyricText;
-  updateCaptionPreview();
-  const dur = Math.min(seg.duration * 1000, 4000);
-  previewTimeout = setTimeout(() => {
-    playPreviewSegment(edit, segIdx + 1);
-  }, dur);
-}
-
-document.getElementById('playPreviewBtn').onclick = () => {
-  if (state.activeQueueIdx >= 0) previewEdit(state.activeQueueIdx);
-};
-document.getElementById('prevEditBtn').onclick = () => {
-  if (state.activeQueueIdx > 0) { state.activeQueueIdx--; previewEdit(state.activeQueueIdx); renderQueue(); }
-};
-document.getElementById('nextEditBtn').onclick = () => {
-  if (state.activeQueueIdx < state.queue.length-1) { state.activeQueueIdx++; previewEdit(state.activeQueueIdx); renderQueue(); }
-};
-
-// ─────────────────────────────────────────────────────
-// SONG UPLOAD
-// ─────────────────────────────────────────────────────
-document.getElementById('songFile').onchange = async (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  state.audioFile = f;
-  bgAudio.src = URL.createObjectURL(f);
-  document.getElementById('songName').textContent = f.name;
-  await loadWaveform(f);
-  toast('Song loaded — click waveform to add beat markers');
-  checkReady();
-};
-
-// Drag to waveform
-['dragover','dragenter'].forEach(ev => {
-  document.getElementById('songZone').addEventListener(ev, e => { e.preventDefault(); e.currentTarget.classList.add('drag'); });
-});
-document.getElementById('songZone').addEventListener('dragleave', e => e.currentTarget.classList.remove('drag'));
-document.getElementById('songZone').addEventListener('drop', async e => {
-  e.preventDefault(); e.currentTarget.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('audio/')) {
-    state.audioFile = f; bgAudio.src = URL.createObjectURL(f);
-    document.getElementById('songName').textContent = f.name;
-    await loadWaveform(f);
-    toast('Song loaded!');
-    checkReady();
-  }
-});
-
-// ─────────────────────────────────────────────────────
-// EXPORT
-// ─────────────────────────────────────────────────────
-async function exportEdit(edit, filename, onProgress) {
-  const sv = document.getElementById('sourceVideoEl');
-  const rc = document.getElementById('renderCanvas');
-  const rx = rc.getContext('2d');
-  rc.width = 720; rc.height = 1280;
-  const fps = 30;
-
-  // Load mp4-muxer
-  if (!window.Mp4Muxer) {
-    await new Promise((res,rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://unpkg.com/mp4-muxer@latest/build/mp4-muxer.js';
-      s.onload = res; s.onerror = rej;
-      document.head.appendChild(s);
-    });
-  }
-  const {Muxer, ArrayBufferTarget} = window.Mp4Muxer;
-  const muxer = new Muxer({
-    target: new ArrayBufferTarget(),
-    video: {codec:'avc', width:720, height:1280},
-    audio: {codec:'aac', numberOfChannels:2, sampleRate:48000},
-    fastStart: 'in-memory'
-  });
-  const ve = new VideoEncoder({
-    output:(c,m)=>muxer.addVideoChunk(c,m),
-    error:e=>{throw new Error(e.message);}
-  });
-  ve.configure({codec:'avc1.42001F',width:720,height:1280,bitrate:8_000_000,framerate:fps,avc:{format:'avc'}});
-
-  // Audio encoder
-  let ae = null, audioSegments = null;
-  if (state.audioFile) {
-    const ac2 = new AudioContext({sampleRate:48000});
-    const decoded = await ac2.decodeAudioData(await state.audioFile.arrayBuffer());
-    ae = new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>{throw new Error(e.message);}});
-    ae.configure({codec:'mp4a.40.2',sampleRate:48000,numberOfChannels:2,bitrate:128000});
-    audioSegments = decoded;
-  }
-
-  let totalFrames = 0;
-  for (const seg of edit.beatAssign) totalFrames += Math.ceil(seg.duration * fps);
-
-  let frameCount = 0;
-  let videoTimeMs = 0;
-  let audioTimeUs = 0;
-  const spf = Math.floor(48000/fps);
-
-  for (const seg of edit.beatAssign) {
-    const clip = state.clips[seg.clipIdx];
-    sv.src = clip.url;
-    await new Promise(r => sv.onloadedmetadata = r);
-    const segFrames = Math.ceil(seg.duration * fps);
-    for (let f=0; f<segFrames; f++) {
-      sv.currentTime = seg.clipStart + f/fps;
-      await new Promise(r => sv.onseeked = r);
-      // Scale to fill 9:16
-      const scale = 1.05;
-      const sw = sv.videoWidth * scale, sh = sv.videoHeight * scale;
-      rx.drawImage(sv, -(sw-720)/2, -(sh-1280)/2, sw, sh);
-      // Draw caption
-      drawCaptionOnCanvas(rx, seg.lyricText, 720, 1280, edit.settings);
-      const vf = new VideoFrame(rc, {timestamp: frameCount*1_000_000/fps});
-      ve.encode(vf, {keyFrame: frameCount%30===0}); vf.close();
-      // Audio
-      if (ae && audioSegments) {
-        const audioStartSec = edit.beatAssign[0].beatTime;
-        const elapsedSec = audioStartSec + frameCount/fps;
-        const sampleIdx = Math.floor(elapsedSec * audioSegments.sampleRate);
-        const lc = audioSegments.getChannelData(0);
-        const rch = audioSegments.numberOfChannels > 1 ? audioSegments.getChannelData(1) : lc;
-        const lbuf = new Float32Array(spf), rbuf = new Float32Array(spf);
-        for (let j=0;j<spf;j++){lbuf[j]=lc[sampleIdx+j]||0;rbuf[j]=rch[sampleIdx+j]||0;}
-        const af = new AudioData({format:'f32-planar',sampleRate:48000,numberOfFrames:spf,numberOfChannels:2,timestamp:frameCount*1_000_000/fps,data:new Float32Array([...lbuf,...rbuf])});
-        ae.encode(af); af.close();
-      }
-      frameCount++;
-      if (onProgress) onProgress(Math.round(frameCount/totalFrames*100));
-      if (frameCount % 8 === 0) await new Promise(r=>setTimeout(r,0));
-    }
-  }
-  await ve.flush(); if(ae) await ae.flush(); muxer.finalize();
-  const blob = new Blob([muxer.target.buffer], {type:'video/mp4'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
-}
-
-function drawCaptionOnCanvas(ctx, text, W, H, settings) {
-  if (!text || !text.trim()) return;
-  const fs = settings.fontSize || 32;
-  const pos = (settings.captionPos || 50) / 100 * H;
-  const oc = settings.outlineColor || '#000000';
-  const tc = settings.textColor || '#ffffff';
-  const style = settings.capStyle || 'bold';
-  let fontStr = `800 ${fs}px Syne, sans-serif`;
-  if (style === 'outline') fontStr = `700 ${fs}px Space Mono, monospace`;
-  if (style === 'minimal') fontStr = `300 ${fs}px DM Sans, sans-serif`;
-  ctx.font = fontStr;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const maxW = W * 0.78;
-  const words = text.split(' ');
-  const lines = [];
-  let cur = '';
-  words.forEach(w => {
-    const test = cur ? cur+' '+w : w;
-    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test;
-  });
-  if (cur) lines.push(cur);
-  const lh = fs * 1.2;
-  const startY = pos - (lines.length-1)*lh/2;
-  lines.forEach((line, li) => {
-    const y = startY + li * lh;
-    if (style !== 'minimal') {
-      ctx.strokeStyle = oc;
-      ctx.lineWidth = Math.max(fs*0.1, 2);
-      ctx.lineJoin = 'round';
-      ctx.strokeText(line, W/2, y);
-    }
-    ctx.fillStyle = tc;
-    ctx.fillText(line, W/2, y);
-  });
-}
-
-document.getElementById('exportSingleBtn').onclick = async () => {
-  if (state.activeQueueIdx < 0) return;
-  const edit = state.queue[state.activeQueueIdx];
-  const overlay = document.getElementById('exportOverlay');
-  overlay.classList.add('open');
-  document.getElementById('exportSubText').textContent = 'Exporting edit #'+(state.activeQueueIdx+1);
-  try {
-    await exportEdit(edit, `LyricVideo_${state.activeQueueIdx+1}.mp4`, p => {
-      document.getElementById('exportProgressFill').style.width = p + '%';
-      document.getElementById('exportPctLabel').textContent = p + '%';
-    });
-    toast('Export complete!');
-  } catch(e) { toast('Export failed: '+e.message, 'error'); }
-  overlay.classList.remove('open');
-};
-
-async function exportAll() {
-  const overlay = document.getElementById('exportOverlay');
-  overlay.classList.add('open');
-  for (let i=0;i<state.queue.length;i++) {
-    document.getElementById('exportSubText').textContent = `Exporting ${i+1} of ${state.queue.length}…`;
-    document.getElementById('exportProgressFill').style.width = '0%';
-    await exportEdit(state.queue[i], `LyricVideo_${i+1}.mp4`, p => {
-      document.getElementById('exportProgressFill').style.width = p + '%';
-      document.getElementById('exportPctLabel').textContent = p + '%';
-    });
-    await new Promise(r=>setTimeout(r,400));
-  }
-  overlay.classList.remove('open');
-  toast(`All ${state.queue.length} exports done!`);
-}
-document.getElementById('exportAllBtn').onclick = exportAll;
-document.getElementById('exportAllBtn2').onclick = exportAll;
-
-// ─────────────────────────────────────────────────────
-// MISC
-// ─────────────────────────────────────────────────────
-document.getElementById('clearAllBtn').onclick = () => {
-  state.beats = []; state.lyrics = []; state.clips = []; state.queue = [];
-  state.audioDuration = 0; state.audioFile = null; state.activeQueueIdx = -1;
-  bgAudio.src = ''; waveData = null;
-  syncState.lines = []; syncState.cursor = 0; syncState.isRunning = false;
-  drawWave(); renderBeatMarkers(); renderLyricsStrip(); renderClipsGrid(); renderQueue();
-  document.getElementById('songName').textContent = 'No file loaded';
-  document.getElementById('lyricStatus').textContent = '0 righe';
-  document.getElementById('lyricStatus').className = 'tag tag-pending';
-  document.getElementById('clipCount').textContent = '0';
-  document.getElementById('queueCountTag').textContent = '0 / 50';
-  noPreviewState.style.display = ''; previewContainer.style.display = 'none';
-  checkReady();
-};
-
-document.getElementById('helpBtn').onclick = () => {
-  alert(`LYRIC VIDEO MAKER — Guida rapida:\n\n1. Carica la canzone (sidebar)\n2. Clicca "Scrivi / sync lyrics"\n   → Passo 1: scrivi o incolla le lyrics (una riga = una scritta, riga vuota = pausa)\n   → Passo 2: clicca sulla mini-waveform per scegliere il punto di partenza\n   → Premi AVVIA: la canzone parte\n   → Tieni premuto SPAZIO mentre quella riga è "in scena"\n   → Rilascia SPAZIO per passare alla riga successiva\n   → Ripeti fino alla fine → Salva\n3. Aggiungi i tuoi video clip\n4. Segna i beat sulla waveform (o usa Auto-detect)\n5. Premi GENERA → primo edit in coda\n6. Premi SHUFFLE → nuovo edit casuale dagli stessi beat\n7. Ripeti fino ad avere 20-50 edit\n8. Esporta uno o tutti\n\nConsigli:\n• Click destro su un beat marker = cancellalo\n• Trascina il pallino del beat per aggiustare il timing\n• Ogni shuffle sceglie clip e punti di taglio diversi\n• La preview mostra ogni segmento in sequenza`);
-};
-
-// Init
-resizeWave();
-window.addEventListener('resize', resizeWave);
-updateCaptionPreview();
-renderClipsGrid();
-checkReady();
+window.onresize = drawWaveform;
 </script>
 </body>
 </html>
