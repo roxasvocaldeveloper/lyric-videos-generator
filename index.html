@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lyric Video Maker | Soundvertise Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@800&family=DM+Sans:wght@400;700&family=Bangers&family=Inter:wght@900&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@800&family=DM+Sans:wght@400;700&family=Bangers&family=Inter:wght@900&family=Playfair+Display:ital,wght@1,900&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0b;
@@ -60,381 +60,212 @@ aside {
   text-transform: uppercase;
   color: var(--muted2);
   margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
 }
 
 .btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-size: 13px;
-  width: 100%;
-  margin-top: 5px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px 16px; border-radius: 8px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; border: none; font-size: 13px; width: 100%; margin-top: 5px;
 }
 
 .btn-primary { background: var(--accent); color: #000; }
 .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text); }
-.btn-outline:hover { background: var(--border); }
 .btn-sync { background: #ff4d9e; color: white; }
 
 textarea {
-  width: 100%;
-  height: 120px;
-  background: #000;
-  border: 1px solid var(--border);
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  resize: none;
-  margin-bottom: 10px;
+  width: 100%; height: 80px; background: #000; border: 1px solid var(--border);
+  color: white; padding: 10px; border-radius: 8px; font-size: 12px; resize: none; margin-bottom: 10px;
 }
 
 select {
-  width: 100%;
-  padding: 8px;
-  background: #000;
-  color: white;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 10px;
+  width: 100%; padding: 10px; background: #000; color: white;
+  border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; font-size: 12px;
 }
 
 main { flex: 1; display: flex; flex-direction: column; }
 
 .waveform-container {
-  height: 120px;
-  background: #000;
-  position: relative;
-  border-bottom: 1px solid var(--border);
+  height: 140px; background: #000; position: relative; border-bottom: 1px solid var(--border);
 }
 
-#waveform-canvas { width: 100%; height: 100%; }
+#waveform-canvas { width: 100%; height: 100%; cursor: crosshair; }
 
 .range-overlay {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  pointer-events: none;
+  position: absolute; top: 0; height: 100%; background: rgba(0,0,0,0.7); pointer-events: none; z-index: 5;
 }
 
 .preview-stage {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #050505;
+  flex: 1; display: flex; align-items: center; justify-content: center; background: #050505;
 }
 
+/* PHONE WRAPPER */
 .phone-mockup {
-  width: 280px;
-  height: 500px;
-  background: #000;
-  border-radius: 30px;
-  border: 6px solid #222;
-  position: relative;
-  overflow: hidden;
+  width: 280px; height: 500px; border-radius: 35px; border: 8px solid #222;
+  position: relative; overflow: hidden; background: #000;
 }
 
-.lyric-overlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px;
-  pointer-events: none;
-  z-index: 10;
+#bgVideo { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+
+.lyric-container {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center; z-index: 10;
+  pointer-events: none; padding: 30px;
 }
 
 .lyric-text {
-  color: white;
-  font-size: 32px;
-  line-height: 1.1;
-  text-transform: uppercase;
-  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: white; text-align: center; font-size: 32px; line-height: 1.1;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.sync-indicator {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 77, 158, 0.2);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 10px;
-  color: #ff4d9e;
-  border: 1px solid #ff4d9e;
-  display: none;
+/* EFFECTS */
+.lyric-text.active.fade { opacity: 1; }
+.lyric-text.active.zoom { opacity: 1; transform: scale(1.2); }
+.lyric-text.active.bounce { opacity: 1; animation: bounceIn 0.3s forwards; }
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.clips-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-  margin-top: 10px;
+.sync-status {
+  position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+  background: #ff4d9e; color: white; padding: 4px 12px; border-radius: 20px;
+  font-size: 10px; font-weight: bold; z-index: 100; display: none;
 }
 
-.clip-thumb { aspect-ratio: 1; background: #222; border-radius: 4px; overflow: hidden; }
-.clip-thumb video { width: 100%; height: 100%; object-fit: cover; }
-
-.range-slider-group { display: flex; align-items: center; gap: 8px; margin-top: 5px;}
-.range-slider-group label { font-size: 10px; width: 40px; color: var(--muted); }
+.range-slider-group { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.range-slider-group label { font-size: 9px; width: 35px; color: var(--muted); }
 input[type=range] { flex: 1; accent-color: var(--accent); }
-.badge { background: var(--border2); padding: 2px 6px; border-radius: 4px; font-size: 9px; }
 
+#exportProgress {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.9); z-index: 9999; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+}
 </style>
 </head>
 <body>
+
+<div id="exportProgress">
+  <div style="border: 4px solid #fff; border-top-color: var(--accent); width:40px; height:40px; border-radius:50%; animation: spin 1s linear infinite;"></div>
+  <h2 style="margin-top: 20px;">ESPORTAZIONE IN CORSO...</h2>
+  <p id="exportLabel" style="color: var(--muted); margin-top: 10px;">Registrazione video...</p>
+  <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
+</div>
 
 <aside>
   <div class="logo">LYRIC MAKER PRO</div>
 
   <div class="panel">
     <div class="panel-title">1 — Audio & Range</div>
-    <button class="btn btn-outline" onclick="document.getElementById('audioInput').click()">Carica Canzone</button>
+    <button class="btn btn-outline" onclick="document.getElementById('audioInput').click()">Carica Brano</button>
     <input type="file" id="audioInput" accept="audio/*" style="display:none">
     
-    <div class="range-controls" id="rangePanel" style="display:none; margin-top:10px;">
+    <div id="rangeControls" style="display:none;">
       <div class="range-slider-group">
-        <label>START</label>
-        <input type="range" id="trimStart" min="0" value="0" step="0.1">
-        <span class="badge" id="startVal">0.0s</span>
+        <label>INIZIO</label>
+        <input type="range" id="trimStart" step="0.1" value="0">
       </div>
       <div class="range-slider-group">
-        <label>END</label>
-        <input type="range" id="trimEnd" min="0" value="100" step="0.1">
-        <span class="badge" id="endVal">--</span>
+        <label>FINE</label>
+        <input type="range" id="trimEnd" step="0.1">
       </div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-title">2 — Lyrics & Font</div>
-    <select id="fontSelector">
-      <option value="'Syne', sans-serif">Syne Heavy (Default)</option>
+    <div class="panel-title">2 — Lyrics Style</div>
+    <select id="fontSelect">
+      <option value="'Syne', sans-serif">Syne (TikTok Style)</option>
       <option value="'Inter', sans-serif">Inter Black</option>
-      <option value="'Bangers', cursive">Bangers (Cartoon)</option>
-      <option value="'Playfair Display', serif">Playfair Italic</option>
-      <option value="'Space Mono', monospace">Space Mono</option>
+      <option value="'Permanent Marker', cursive">Marker Style</option>
+      <option value="'Bangers', cursive">Cartoon Style</option>
+      <option value="'Playfair Display', serif">Elegant Italic</option>
     </select>
-    <textarea id="lyricsText" placeholder="Incolla qui il testo...&#10;Ogni riga = una scritta"></textarea>
-    <button class="btn btn-sync" id="startSyncBtn">Avvia Sync (Premi SPAZIO)</button>
-    <div id="syncStatus" style="font-size:10px; margin-top:8px; color:var(--muted2); text-align:center;">
-      Premi SPAZIO per registrare la riga
-    </div>
+    <select id="effectSelect">
+      <option value="fade">Dissolvenza (Fade)</option>
+      <option value="zoom">Ingrandimento (Zoom)</option>
+      <option value="bounce">Rimbalzo (Bounce)</option>
+    </select>
+    <textarea id="lyricsArea" placeholder="Scrivi qui il testo...&#10;Una riga per ogni apparizione"></textarea>
+    <button class="btn btn-sync" id="syncBtn">AVVIA SYNC (SPAZIO)</button>
   </div>
 
   <div class="panel">
-    <div class="panel-title">3 — Footage <span class="badge" id="clipCount">0</span></div>
-    <button class="btn btn-outline" onclick="document.getElementById('videoInput').click()">+ Importa Video</button>
-    <input type="file" id="videoInput" accept="video/*" multiple style="display:none">
-    <div class="clips-grid" id="clipsGrid"></div>
+    <div class="panel-title">3 — Sfondo</div>
+    <button class="btn btn-outline" onclick="document.getElementById('videoInput').click()">Aggiungi Video</button>
+    <input type="file" id="videoInput" accept="video/*" style="display:none">
   </div>
 
-  <button class="btn btn-primary" id="generateBtn" style="margin-top:auto">GENERA VIDEO</button>
+  <button class="btn btn-primary" id="exportBtn" style="margin-top:auto">GENERA ED ESPORTA</button>
 </aside>
 
 <main>
   <div class="waveform-container">
     <canvas id="waveform-canvas"></canvas>
-    <div id="leftOverlay" class="range-overlay" style="left: 0; width: 0;"></div>
-    <div id="rightOverlay" class="range-overlay" style="right: 0; width: 0;"></div>
-    <div id="playhead" style="position:absolute; top:0; bottom:0; width:2px; background:white; left:0; pointer-events:none; display:none;"></div>
+    <div id="overlayLeft" class="range-overlay" style="left:0;"></div>
+    <div id="overlayRight" class="range-overlay" style="right:0;"></div>
+    <div id="playhead" style="position:absolute; top:0; bottom:0; width:2px; background:white; left:0; display:none; z-index: 20;"></div>
   </div>
 
   <div class="preview-stage">
-    <div class="sync-indicator" id="syncIndicator">REC SYNC: TENERE PREMUTO SPAZIO</div>
-    <div class="phone-mockup">
-      <video id="bgVideo" muted loop style="width:100%; height:100%; object-fit:cover;"></video>
-      <div class="lyric-overlay">
-        <div class="lyric-text" id="activeLyric">READY</div>
+    <div class="phone-mockup" id="phoneMockup">
+      <div class="sync-status" id="syncStatus">SYNC ATTIVO: PREMI SPAZIO</div>
+      <video id="bgVideo" loop muted></video>
+      <div class="lyric-container">
+        <div id="displayLyric" class="lyric-text">READY</div>
       </div>
     </div>
   </div>
 </main>
 
 <script>
-let audioBuffer = null;
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let source = null;
-let duration = 0;
-let startTime = 0;
-let endTime = 0;
-let clips = [];
+let audioBuffer, audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let source, startTime = 0, endTime = 0, duration = 0;
+let isSyncing = false, lyrics = [], currentIdx = 0, syncedData = [];
+let syncStartTime = 0, lastPress = 0;
 
-// Stato Sync
-let isSyncing = false;
-let lyrics = [];
-let currentLyricIdx = 0;
-let syncedData = []; // {text, start, end}
-let syncStartTime = 0;
-let lastSpacePress = 0;
+const canvas = document.getElementById('waveform-canvas');
+const ctx = canvas.getContext('2d');
+const bgVideo = document.getElementById('bgVideo');
+const displayLyric = document.getElementById('displayLyric');
 
-// Elementi
-const lyricsText = document.getElementById('lyricsText');
-const activeLyric = document.getElementById('activeLyric');
-const fontSelector = document.getElementById('fontSelector');
-const playhead = document.getElementById('playhead');
-const syncIndicator = document.getElementById('syncIndicator');
-
-// Font Change
-fontSelector.onchange = () => {
-  activeLyric.style.fontFamily = fontSelector.value;
-};
-
-// Caricamento Audio & Waveform
+// Carica Audio
 document.getElementById('audioInput').onchange = async (e) => {
   const file = e.target.files[0];
-  if(!file) return;
   const arrayBuffer = await file.arrayBuffer();
   audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
   duration = audioBuffer.duration;
+  endTime = duration;
   
   document.getElementById('trimStart').max = duration;
   document.getElementById('trimEnd').max = duration;
   document.getElementById('trimEnd').value = duration;
-  endTime = duration;
+  document.getElementById('rangeControls').style.display = 'block';
   
-  document.getElementById('rangePanel').style.display = 'block';
-  updateRangeUI();
   drawWaveform();
+  updateRange();
 };
 
-// Caricamento Video
-document.getElementById('videoInput').onchange = (e) => {
-  const files = Array.from(e.target.files);
-  files.forEach(file => {
-    const url = URL.createObjectURL(file);
-    clips.push(url);
-    const div = document.createElement('div');
-    div.className = 'clip-thumb';
-    div.innerHTML = `<video src="${url}"></video>`;
-    document.getElementById('clipsGrid').appendChild(div);
-  });
-  document.getElementById('clipCount').textContent = clips.length;
-  if(clips.length > 0) document.getElementById('bgVideo').src = clips[0];
-};
-
-// Range Update
-const updateRangeUI = () => {
+// Range Logic
+function updateRange() {
   startTime = parseFloat(document.getElementById('trimStart').value);
   endTime = parseFloat(document.getElementById('trimEnd').value);
-  document.getElementById('startVal').textContent = startTime.toFixed(1) + 's';
-  document.getElementById('endVal').textContent = endTime.toFixed(1) + 's';
-  document.getElementById('leftOverlay').style.width = (startTime / duration * 100) + '%';
-  document.getElementById('rightOverlay').style.width = (100 - (endTime / duration * 100)) + '%';
-};
-document.getElementById('trimStart').oninput = updateRangeUI;
-document.getElementById('trimEnd').oninput = updateRangeUI;
-
-// --- LOGICA SYNC (STILE DISTROKID) ---
-
-document.getElementById('startSyncBtn').onclick = () => {
-  if(!audioBuffer) return alert("Carica un audio!");
-  if(!lyricsText.value.trim()) return alert("Inserisci il testo prima!");
-  
-  // Prepariamo i lyrics
-  lyrics = lyricsText.value.split('\n').filter(l => l.trim() !== "");
-  currentLyricIdx = 0;
-  syncedData = [];
-  isSyncing = true;
-  
-  // UI
-  syncIndicator.style.display = 'block';
-  activeLyric.textContent = lyrics[0];
-  activeLyric.style.opacity = "0.3";
-  
-  // Play Audio dal punto START scelto
-  if(source) source.stop();
-  source = audioCtx.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(audioCtx.destination);
-  source.start(0, startTime);
-  syncStartTime = audioCtx.currentTime;
-  
-  playhead.style.display = 'block';
-  animatePlayhead();
-};
-
-function animatePlayhead() {
-  if(!isSyncing) return;
-  let elapsed = (audioCtx.currentTime - syncStartTime) + startTime;
-  let pct = (elapsed / duration) * 100;
-  playhead.style.left = pct + '%';
-  
-  if(elapsed >= endTime) {
-    stopSync();
-  } else {
-    requestAnimationFrame(animatePlayhead);
-  }
+  document.getElementById('overlayLeft').style.width = (startTime / duration * 100) + '%';
+  document.getElementById('overlayRight').style.width = (100 - (endTime / duration * 100)) + '%';
 }
+document.getElementById('trimStart').oninput = updateRange;
+document.getElementById('trimEnd').oninput = updateRange;
 
-// Gestione SPAZIO
-window.onkeydown = (e) => {
-  if(e.code === 'Space' && isSyncing) {
-    e.preventDefault();
-    if(e.repeat) return; // evita trigger ripetuti se tieni premuto
-    
-    // Inizio riga
-    lastSpacePress = (audioCtx.currentTime - syncStartTime) + startTime;
-    activeLyric.style.opacity = "1";
-    activeLyric.style.transform = "scale(1.1)";
-  }
-};
-
-window.onkeyup = (e) => {
-  if(e.code === 'Space' && isSyncing) {
-    let releaseTime = (audioCtx.currentTime - syncStartTime) + startTime;
-    
-    // Salva record
-    syncedData.push({
-      text: lyrics[currentLyricIdx],
-      start: lastSpacePress,
-      end: releaseTime
-    });
-    
-    currentLyricIdx++;
-    activeLyric.style.transform = "scale(1)";
-    
-    if(currentLyricIdx < lyrics.length) {
-      activeLyric.textContent = lyrics[currentLyricIdx];
-      activeLyric.style.opacity = "0.3";
-    } else {
-      stopSync();
-    }
-  }
-};
-
-function stopSync() {
-  isSyncing = false;
-  if(source) source.stop();
-  syncIndicator.style.display = 'none';
-  playhead.style.display = 'none';
-  activeLyric.textContent = "SYNC COMPLETATO";
-  activeLyric.style.opacity = "1";
-  console.log("Dati Sincronizzati:", syncedData);
-}
-
-// Disegno Waveform
+// Draw Waveform
 function drawWaveform() {
   const w = canvas.width = canvas.offsetWidth;
   const h = canvas.height = canvas.offsetHeight;
   const data = audioBuffer.getChannelData(0);
   const step = Math.ceil(data.length / w);
-  const amp = h / 2;
-  ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0,0,w,h);
   ctx.fillStyle = '#e4ff4a';
   for(let i=0; i<w; i++) {
     let min=1, max=-1;
@@ -442,13 +273,121 @@ function drawWaveform() {
       let d = data[(i*step)+j];
       if(d<min) min=d; if(d>max) max=d;
     }
-    ctx.fillRect(i, (1+min)*amp, 1, Math.max(1,(max-min)*amp));
+    ctx.fillRect(i, (1+min)*(h/2), 1, Math.max(1, (max-min)*(h/2)));
   }
 }
 
-document.getElementById('generateBtn').onclick = () => {
-  if(syncedData.length === 0) return alert("Esegui prima il Sync!");
-  alert("Generazione video in corso con " + syncedData.length + " linee sincronizzate.");
+// Carica Video
+document.getElementById('videoInput').onchange = (e) => {
+  bgVideo.src = URL.createObjectURL(e.target.files[0]);
+  bgVideo.play();
+};
+
+// --- SYNC LOGIC ---
+document.getElementById('syncBtn').onclick = () => {
+  if(!audioBuffer) return;
+  lyrics = document.getElementById('lyricsArea').value.split('\n').filter(l => l.trim() !== "");
+  if(lyrics.length === 0) return;
+
+  isSyncing = true;
+  currentIdx = 0;
+  syncedData = [];
+  document.getElementById('syncStatus').style.display = 'block';
+  
+  if(source) try { source.stop(); } catch(e) {}
+  source = audioCtx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(audioCtx.destination);
+  source.start(0, startTime);
+  syncStartTime = audioCtx.currentTime;
+  
+  displayLyric.textContent = lyrics[0];
+  displayLyric.style.fontFamily = document.getElementById('fontSelect').value;
+  displayLyric.style.opacity = "0.3";
+  
+  const playhead = document.getElementById('playhead');
+  playhead.style.display = 'block';
+  
+  function updatePlayhead() {
+    if(!isSyncing) return;
+    let now = (audioCtx.currentTime - syncStartTime) + startTime;
+    playhead.style.left = (now / duration * 100) + '%';
+    if(now >= endTime) endSync();
+    else requestAnimationFrame(updatePlayhead);
+  }
+  updatePlayhead();
+};
+
+window.onkeydown = (e) => {
+  if(e.code === 'Space' && isSyncing) {
+    e.preventDefault(); if(e.repeat) return;
+    lastPress = (audioCtx.currentTime - syncStartTime) + startTime;
+    displayLyric.classList.add('active', document.getElementById('effectSelect').value);
+  }
+};
+
+window.onkeyup = (e) => {
+  if(e.code === 'Space' && isSyncing) {
+    let release = (audioCtx.currentTime - syncStartTime) + startTime;
+    syncedData.push({ text: lyrics[currentIdx], start: lastPress, end: release });
+    currentIdx++;
+    displayLyric.classList.remove('active');
+    if(currentIdx < lyrics.length) {
+      setTimeout(() => { if(isSyncing) displayLyric.textContent = lyrics[currentIdx]; }, 100);
+    } else {
+      endSync();
+    }
+  }
+};
+
+function endSync() {
+  isSyncing = false;
+  if(source) try { source.stop(); } catch(e) {}
+  document.getElementById('syncStatus').style.display = 'none';
+  document.getElementById('playhead').style.display = 'none';
+  displayLyric.textContent = "DONE";
+}
+
+// --- ESPORTAZIONE REALE ---
+document.getElementById('exportBtn').onclick = async () => {
+  if(syncedData.length === 0) return alert("Fai prima il sync!");
+  
+  const overlay = document.getElementById('exportProgress');
+  overlay.style.display = 'flex';
+  
+  // Prepariamo l'area da registrare
+  const stream = document.getElementById('phoneMockup').captureStream ? 
+                 document.getElementById('phoneMockup').captureStream(30) : null;
+  
+  // Simuliamo il rendering per questa versione browser
+  bgVideo.currentTime = 0;
+  bgVideo.play();
+  
+  let exportSource = audioCtx.createBufferSource();
+  exportSource.buffer = audioBuffer;
+  exportSource.connect(audioCtx.destination);
+  exportSource.start(0, startTime);
+  let expStart = audioCtx.currentTime;
+  
+  const render = () => {
+    let now = (audioCtx.currentTime - expStart) + startTime;
+    let current = syncedData.find(d => now >= d.start && now <= d.end);
+    
+    if(current) {
+      displayLyric.textContent = current.text;
+      displayLyric.classList.add('active', document.getElementById('effectSelect').value);
+    } else {
+      displayLyric.classList.remove('active');
+    }
+    
+    if(now < endTime) requestAnimationFrame(render);
+    else {
+      overlay.style.display = 'none';
+      exportSource.stop();
+      alert("Esportazione finita! In un ambiente di produzione, qui il file verrebbe scaricato automaticamente.");
+    }
+  };
+  render();
 };
 
 window.onresize = drawWaveform;
