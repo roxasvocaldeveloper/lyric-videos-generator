@@ -5,99 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lyric Video Maker | Soundvertise</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;800&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Oswald:wght@700&family=Anton&family=Permanent+Marker&family=Righteous&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;800&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Oswald:wght@700&family=Anton&family=Black+Han+Sans&family=Lilita+One&family=Boogaloo&family=Bangers&display=swap" rel="stylesheet">
 <style>
 :root{--p:#8B5CF6;--b:#3B82F6;--bg:#050505;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
 
-/* PHONE */
-.iphone-frame{width:252px;height:calc(252px*16/9);border:9px solid #1A1A1A;border-radius:40px;position:relative;background:#000;overflow:hidden;box-shadow:0 0 0 2px #000,0 24px 60px rgba(0,0,0,.6);flex-shrink:0;}
-.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:65px;height:18px;background:#000;border-radius:20px;z-index:50;border:1px solid #222;}
-.video-con{width:100%;height:100%;position:relative;background:#000;overflow:hidden;}
-#PV{width:100%;height:100%;object-fit:cover;display:block;}
-.veo-on #PV{transform:scale(1.1);}
-.tk-grad{position:absolute;inset:0;pointer-events:none;z-index:20;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 28%,transparent 72%,rgba(0,0,0,.14) 100%);}
-#capEl{position:absolute;left:50%;transform:translateX(-50%);width:86%;text-align:center;z-index:30;line-height:1.15;pointer-events:none;transition:opacity .05s;}
+/* ─── STEP SYSTEM ─── */
+.step-panel{display:none;animation:stepIn .25s ease;}
+.step-panel.active{display:flex;}
+@keyframes stepIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* TEXT ENTRANCE ANIMATIONS */
+/* ─── STEP TABS ─── */
+.step-tab{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;background:#0d0d0d;border:1px solid #2a2a2a;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer;transition:all .18s;color:#444;white-space:nowrap;letter-spacing:.05em;}
+.step-tab .snum{width:18px;height:18px;border-radius:50%;background:#1a1a1a;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;flex-shrink:0;}
+.step-tab.done .snum{background:var(--p);border-color:var(--p);color:#fff;}
+.step-tab.active{background:rgba(59,130,246,.12);border-color:var(--b);color:#fff;}
+.step-tab.active .snum{background:var(--b);border-color:var(--b);color:#fff;}
+.step-tab:not(.active):not(.done):hover{border-color:#444;color:#888;}
+
+/* ─── PHONE ─── */
+.iphone-frame{width:260px;height:calc(260px*16/9);border:9px solid #1a1a1a;border-radius:40px;position:relative;background:#000;overflow:hidden;box-shadow:0 0 0 2px #000,0 28px 70px rgba(0,0,0,.7);flex-shrink:0;}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:64px;height:18px;background:#000;border-radius:20px;z-index:50;border:1px solid #222;}
+.video-con{width:100%;height:100%;position:relative;background:#000;overflow:hidden;}
+#PV{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+.veo-on #PV{transform:scale(1.1);}
+.tk-grad{position:absolute;inset:0;pointer-events:none;z-index:20;background:linear-gradient(to top,rgba(0,0,0,.52) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.14) 100%);}
+#capEl{position:absolute;left:50%;transform:translateX(-50%);width:88%;text-align:center;z-index:30;line-height:1.12;pointer-events:none;}
+/* Blur overlay - proper canvas-based sim */
+#vtrBlurOv{position:absolute;inset:0;z-index:24;pointer-events:none;opacity:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(0,0,0,.2);}
+#vtrDarkOv{position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0;background:#000;}
+
+/* ─── TEXT ANIMATIONS ─── */
 @keyframes an-fade{from{opacity:0}to{opacity:1}}
-@keyframes an-up{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes an-left{from{opacity:0;transform:translateX(calc(-50% + 44px))}to{opacity:1;transform:translateX(-50%)}}
-@keyframes an-zoom{from{opacity:0;transform:translateX(-50%) scale(.65)}to{opacity:1;transform:translateX(-50%) scale(1)}}
-@keyframes an-swipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
-.anim-fade{animation:an-fade .38s ease forwards;}
-.anim-up{animation:an-up .32s cubic-bezier(.22,.68,0,1.2) forwards;}
+@keyframes an-up{from{opacity:0;transform:translateX(-50%) translateY(22px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes an-left{from{opacity:0;transform:translateX(calc(-50% + 48px))}to{opacity:1;transform:translateX(-50%)}}
+@keyframes an-zoom{from{opacity:0;transform:translateX(-50%) scale(.6)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes an-swipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes an-drop{from{opacity:0;transform:translateX(-50%) translateY(-22px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes an-pop{from{opacity:0;transform:translateX(-50%) scale(1.35)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.anim-fade{animation:an-fade .36s ease forwards;}
+.anim-up{animation:an-up .3s cubic-bezier(.22,.68,0,1.2) forwards;}
 .anim-left{animation:an-left .3s ease-out forwards;}
 .anim-zoom{animation:an-zoom .3s cubic-bezier(.34,1.56,.64,1) forwards;}
-.anim-swipe{animation:an-swipe .38s ease-out forwards;}
+.anim-swipe{animation:an-swipe .36s ease-out forwards;}
+.anim-drop{animation:an-drop .3s cubic-bezier(.22,.68,0,1.2) forwards;}
+.anim-pop{animation:an-pop .3s cubic-bezier(.34,1.56,.64,1) forwards;}
 
-/* VIDEO TRANSITION overlays */
-#vtrOverlay{position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0;background:#000;}
-#vtrFlash{position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0;background:#fff;}
-
-/* TRIMMER */
-.trimmer-track{position:relative;width:100%;background:#0d0d0d;border-radius:10px;border:1px solid #2a2a2a;overflow:hidden;cursor:pointer;}
-.trim-ov{position:absolute;top:0;height:100%;z-index:5;background:rgba(139,92,246,.1);border:2.5px solid var(--p);box-shadow:0 0 14px rgba(139,92,246,.16);}
-.trim-h{position:absolute;top:50%;transform:translateY(-50%);width:12px;height:28px;background:var(--p);border-radius:4px;cursor:ew-resize;display:flex;align-items:center;justify-content:center;}
-.trim-h::after{content:'';width:2px;height:12px;background:rgba(255,255,255,.55);border-radius:2px;}
-.trim-hl{left:-6px;}.trim-hr{right:-6px;}
+/* ─── TRIMMER ─── */
+.trimmer-track{position:relative;width:100%;background:#0d0d0d;border-radius:10px;border:1px solid #2a2a2a;overflow:hidden;cursor:pointer;user-select:none;}
+.trim-ov{position:absolute;top:0;height:100%;z-index:5;background:rgba(139,92,246,.1);border:2.5px solid var(--p);box-shadow:0 0 16px rgba(139,92,246,.18);}
+.trim-h{position:absolute;top:50%;transform:translateY(-50%);width:13px;height:30px;background:var(--p);border-radius:4px;cursor:ew-resize;display:flex;align-items:center;justify-content:center;}
+.trim-h::after{content:'';width:2px;height:13px;background:rgba(255,255,255,.6);border-radius:2px;}
+.trim-hl{left:-6.5px;}.trim-hr{right:-6.5px;}
 #wvC{position:absolute;inset:0;width:100%;height:100%;}
-#aphd{position:absolute;top:0;width:2px;height:100%;background:#fff;z-index:20;pointer-events:none;box-shadow:0 0 5px rgba(255,255,255,.7);display:none;}
+#aphd{position:absolute;top:0;width:2px;height:100%;background:#fff;z-index:20;pointer-events:none;box-shadow:0 0 6px rgba(255,255,255,.7);display:none;}
 #lyricMk{position:absolute;inset:0;pointer-events:none;z-index:10;}
-.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:rgba(59,130,246,.75);}
+.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:rgba(59,130,246,.7);}
 
-/* FONTS */
-.fnt-tiktok{font-family:'Montserrat',sans-serif;font-weight:900;letter-spacing:-.5px;}
-.fnt-bebas{font-family:'Bebas Neue',sans-serif;font-weight:400;letter-spacing:2px;}
-.fnt-oswald{font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:1px;}
-.fnt-anton{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:1.5px;}
+/* ─── FONTS ─── */
+.fnt-montserrat{font-family:'Montserrat',sans-serif;font-weight:900;letter-spacing:-.5px;}
+.fnt-bebas{font-family:'Bebas Neue',sans-serif;font-weight:400;letter-spacing:3px;}
+.fnt-bangers{font-family:'Bangers',cursive;letter-spacing:2px;}
+.fnt-lilita{font-family:'Lilita One',cursive;}
+.fnt-boogaloo{font-family:'Boogaloo',cursive;letter-spacing:.5px;}
 .fnt-retro{font-family:'Courier Prime',monospace;font-weight:700;}
 .fnt-hand{font-family:'Dancing Script',cursive;font-weight:700;}
 .fnt-marker{font-family:'Permanent Marker',cursive;}
-.fnt-right{font-family:'Righteous',sans-serif;}
 
-/* BUTTONS */
+/* ─── BUTTONS ─── */
 .btn-sv{background:linear-gradient(135deg,var(--b) 0%,var(--p) 100%);transition:all .2s;}
 .btn-sv:hover:not(:disabled){filter:brightness(1.1);transform:scale(1.02);}
-.btn-sv:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-.tog{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:9px;background:#111;border:1px solid #2a2a2a;font-size:9px;font-weight:800;text-transform:uppercase;transition:all .18s;color:#555;cursor:pointer;white-space:nowrap;}
+.btn-sv:disabled{opacity:.32;cursor:not-allowed;transform:none;}
+.smb{background:#0d0d0d;border:1px solid #2a2a2a;padding:6px 8px;border-radius:7px;font-size:9px;transition:all .15s;color:#555;cursor:pointer;font-weight:700;text-align:center;}
+.smb:hover{border-color:#444;color:#888;}
+.smb.on{border-color:var(--b);background:rgba(59,130,246,.12);color:#fff;}
+.smb.onp{border-color:var(--p);background:rgba(139,92,246,.12);color:#fff;}
+.smb.shuf{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#fbbf24;}
+.tog{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;background:#111;border:1px solid #2a2a2a;font-size:9px;font-weight:800;text-transform:uppercase;transition:all .18s;color:#555;cursor:pointer;}
 .tog.on{background:rgba(59,130,246,.15);border-color:var(--b);color:#fff;}
-.smb{background:#000;border:1px solid #2a2a2a;padding:5px 8px;border-radius:7px;font-size:9px;transition:all .15s;color:#555;cursor:pointer;font-weight:700;text-align:center;}
-.smb.on{border-color:var(--b);background:rgba(59,130,246,.1);color:#fff;}
-.smb.onp{border-color:var(--p);background:rgba(139,92,246,.1);color:#fff;}
 
-/* LYRIC CHIPS */
-.lchip{flex-shrink:0;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:4px 8px;cursor:pointer;transition:all .15s;max-width:120px;}
+/* ─── LYRIC CHIPS ─── */
+.lchip{flex-shrink:0;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px;padding:4px 8px;cursor:pointer;transition:all .15s;max-width:130px;}
 .lchip.syn{border-color:var(--p);background:rgba(139,92,246,.07);}
+.lchip.cur{border-color:var(--b);background:rgba(59,130,246,.1);}
 .lchip .lt{font-family:'Courier Prime',monospace;font-size:7px;color:#555;margin-bottom:1px;}
 .lchip .ll{font-size:9px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* SYNC MODAL */
-.sync-modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;display:none;align-items:center;justify-content:center;}
+/* ─── SYNC MODAL ─── */
+.sync-modal{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:200;display:none;align-items:center;justify-content:center;}
 .sync-modal.open{display:flex;}
-#spaceBar{display:flex;align-items:center;justify-content:center;width:100%;height:42px;background:#0a0a0a;border:2px solid #2a2a2a;border-radius:10px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#444;transition:all .1s;user-select:none;}
+#spaceBar{display:flex;align-items:center;justify-content:center;width:100%;height:44px;background:#0a0a0a;border:2px solid #2a2a2a;border-radius:10px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#444;transition:all .1s;user-select:none;}
 #spaceBar.pressed{background:rgba(59,130,246,.2);border-color:var(--b);color:var(--b);}
 
-/* EXPORT OV */
-.exp-ov{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;display:none;align-items:center;justify-content:center;}
+/* ─── EXPORT OV ─── */
+.exp-ov{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:300;display:none;align-items:center;justify-content:center;}
 .exp-ov.open{display:flex;}
 
-/* TOAST */
+/* ─── TOAST ─── */
 .toast-el{position:fixed;top:14px;right:14px;background:#111;border:1px solid #333;padding:8px 14px;border-radius:10px;font-size:11px;z-index:999;opacity:0;transform:translateY(-5px);transition:all .25s;pointer-events:none;}
 .toast-el.show{opacity:1;transform:translateY(0);}
 .toast-el.ok{border-color:rgba(59,130,246,.5);color:var(--b);}
 .toast-el.err{border-color:rgba(239,68,68,.4);color:#f87171;}
 
-/* CLIPS */
-.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+/* ─── CLIPS ─── */
+.cg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
 .cth{position:relative;aspect-ratio:9/16;background:#0d0d0d;border-radius:4px;overflow:hidden;border:1.5px solid transparent;cursor:pointer;transition:border-color .15s;}
 .cth:hover{border-color:#3a3a3a;}
 .cth video{width:100%;height:100%;object-fit:cover;pointer-events:none;}
 .cth .cd{position:absolute;bottom:2px;right:2px;font-family:'Courier Prime',monospace;font-size:7px;background:rgba(0,0,0,.8);color:var(--p);padding:1px 3px;border-radius:2px;}
 .cth .cx{position:absolute;top:2px;right:2px;width:13px;height:13px;background:rgba(0,0,0,.75);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:7px;cursor:pointer;color:#fff;}
 .cth:hover .cx{display:flex;}
-.cadd{aspect-ratio:9/16;background:#080808;border:1px dashed #222;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#333;transition:all .15s;position:relative;font-size:16px;}
+.cadd{aspect-ratio:9/16;background:#080808;border:1px dashed #222;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#333;transition:all .15s;position:relative;}
 .cadd:hover{border-color:var(--p);color:var(--p);}
 .cadd input{position:absolute;inset:0;opacity:0;cursor:pointer;}
 
@@ -106,217 +125,269 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 input[type=range]{accent-color:var(--p);}
 </style>
 </head>
-<body class="p-3">
+<body class="p-4">
 
-<!-- HEADER -->
-<div class="flex items-center justify-between mb-3 max-w-[1500px] mx-auto">
+<!-- ─── HEADER ─── -->
+<div class="flex items-center justify-between mb-4">
   <div>
-    <h1 class="text-base font-black italic uppercase tracking-tight">Lyric <span class="text-blue-400">Video</span> Maker</h1>
+    <h1 class="text-lg font-black italic uppercase tracking-tight">Lyric <span class="text-blue-400">Video</span> Maker</h1>
     <p class="text-[8px] font-bold tracking-widest text-zinc-700 uppercase">Soundvertise</p>
   </div>
-  <div class="flex gap-2">
-    <button id="veoBtn" class="tog on">⊞ VEO ON</button>
-    <button id="helpBtn" class="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-[9px] font-bold text-zinc-500 hover:text-white transition-all">? Guida</button>
+  <!-- STEP TABS -->
+  <div class="flex items-center gap-2">
+    <button class="step-tab active" data-step="1" id="tab1">
+      <span class="snum">1</span> Audio
+    </button>
+    <div class="w-6 h-px bg-zinc-800"></div>
+    <button class="step-tab" data-step="2" id="tab2">
+      <span class="snum">2</span> Sync
+    </button>
+    <div class="w-6 h-px bg-zinc-800"></div>
+    <button class="step-tab" data-step="3" id="tab3">
+      <span class="snum">3</span> Video + Edit
+    </button>
   </div>
 </div>
 
-<!-- MAIN: LEFT | CENTER | RIGHT -->
-<div class="max-w-[1500px] mx-auto grid gap-4" style="grid-template-columns:340px 1fr 300px;align-items:start;">
+<!-- ═══════════════ STEP 1: AUDIO ═══════════════ -->
+<div class="step-panel active flex-col gap-4" id="step1">
+  <div class="max-w-3xl mx-auto w-full space-y-4">
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-4">
+      <h2 class="text-sm font-black uppercase text-zinc-300">Carica il tuo brano</h2>
 
-<!-- ════════════ LEFT: SETUP ════════════ -->
-<div class="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl space-y-3 backdrop-blur-xl">
-  <div class="text-[8px] font-black uppercase text-zinc-600 tracking-widest border-b border-zinc-800/50 pb-2">Setup</div>
+      <!-- Upload -->
+      <label class="flex flex-col items-center justify-center gap-3 bg-black border-2 border-dashed border-zinc-700 hover:border-violet-500 rounded-2xl p-8 cursor-pointer transition-all group">
+        <svg class="w-10 h-10 text-zinc-600 group-hover:text-violet-400 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+        <div class="text-center">
+          <div class="font-black text-zinc-400 group-hover:text-white transition-all" id="audioLabel">Trascina o clicca per caricare</div>
+          <div class="text-[10px] text-zinc-600 mt-1">MP3 · WAV · AAC · M4A</div>
+        </div>
+        <input type="file" id="audioInput" accept="audio/*" class="hidden">
+      </label>
 
-  <!-- AUDIO -->
-  <div class="space-y-1.5">
-    <div class="text-[8px] font-black uppercase text-zinc-600">1 — Brano</div>
-    <label class="flex items-center gap-2 bg-black border border-zinc-800 p-2 rounded-xl cursor-pointer hover:border-violet-500 transition-all">
-      <svg class="w-3.5 h-3.5 text-violet-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-      <span class="text-[9px] text-zinc-400 truncate flex-1" id="audioLabel">Carica brano (MP3 / WAV)</span>
-      <input type="file" id="audioInput" accept="audio/*" class="hidden">
-    </label>
-    <div>
-      <div class="flex justify-between text-[8px] font-black uppercase text-zinc-600 mb-1">
-        <span>Ritaglia (max 30s)</span><span id="trimRange" class="text-violet-400 font-mono">—</span>
-      </div>
-      <div class="trimmer-track h-[60px] relative" id="trimTrack">
-        <canvas id="wvC"></canvas>
-        <div id="lyricMk"></div>
-        <div id="aphd"></div>
-        <div id="trimOv" class="trim-ov" style="left:0%;width:100%;">
-          <div class="trim-h trim-hl" id="trimL"></div>
-          <div class="trim-h trim-hr" id="trimR"></div>
+      <!-- Waveform + Trim -->
+      <div id="waveSection" class="hidden space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Ritaglia il range (max 30s)</span>
+          <span id="trimRange" class="text-violet-400 font-mono text-xs">—</span>
+        </div>
+        <div class="trimmer-track h-[80px] relative" id="trimTrack">
+          <canvas id="wvC"></canvas>
+          <div id="lyricMk"></div>
+          <div id="aphd"></div>
+          <div id="trimOv" class="trim-ov" style="left:0%;width:100%;">
+            <div class="trim-h trim-hl" id="trimL"></div>
+            <div class="trim-h trim-hr" id="trimR"></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="playBtn" class="w-10 h-10 rounded-full btn-sv flex items-center justify-center shrink-0">
+            <svg id="playIcon" width="10" height="12" viewBox="0 0 10 12" fill="white"><path d="M0 0 L10 6 L0 12Z"/></svg>
+          </button>
+          <span id="curTime" class="font-mono text-sm text-zinc-400">0:00</span>
+          <div class="flex-1 h-px bg-zinc-800"></div>
+          <span id="durLabel" class="text-blue-400 font-mono text-sm font-bold">—</span>
+          <span class="text-[9px] text-zinc-600">Drag bordi = ritaglia · Click = seek</span>
         </div>
       </div>
-      <div class="flex items-center gap-2 mt-1">
-        <button id="playBtn" class="w-7 h-7 rounded-full btn-sv flex items-center justify-center shrink-0">
-          <svg id="playIcon" width="8" height="10" viewBox="0 0 10 12" fill="white"><path d="M0 0 L10 6 L0 12Z"/></svg>
-        </button>
-        <span id="curTime" class="text-[8px] font-mono text-zinc-600">0:00</span>
-        <span id="durLabel" class="text-[8px] font-mono text-blue-400 ml-auto">—</span>
-      </div>
-    </div>
-  </div>
 
-  <!-- LYRICS -->
-  <div class="border-t border-zinc-800/40 pt-2.5 space-y-1.5">
-    <div class="flex items-center justify-between">
-      <span class="text-[8px] font-black uppercase text-zinc-600">2 — Lyrics</span>
-      <div class="flex gap-1">
-        <button id="btnML" class="tog on text-[8px] px-2 py-1">♪ Con</button>
-        <button id="btnMNL" class="tog text-[8px] px-2 py-1">∞ No</button>
-      </div>
-    </div>
-    <div id="panL">
-      <textarea id="lyricsTA" rows="6" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" class="w-full bg-black border border-zinc-800 rounded-xl p-2.5 outline-none resize-none text-zinc-300 placeholder-zinc-700 focus:border-violet-600 text-[10px] leading-relaxed" style="font-family:'Courier Prime',monospace;"></textarea>
-      <button id="openSyncBtn" class="btn-sv w-full text-white font-black py-2 rounded-xl text-[9px] uppercase mt-1.5" disabled>♪ Avvia Sync</button>
-    </div>
-    <div id="panNL" class="hidden">
-      <div class="bg-black border border-zinc-800 rounded-xl p-3 space-y-2">
-        <div class="flex justify-between"><label class="text-[9px] font-black text-zinc-400 uppercase">Cambio ogni</label><span id="intVal" class="text-violet-400 font-mono text-xs">3.0s</span></div>
-        <input type="range" id="intSlider" min="2" max="6" step="0.5" value="3" class="w-full">
-        <div class="flex justify-between text-[7px] text-zinc-700"><span>2s</span><span>4s</span><span>6s</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CLIPS -->
-  <div class="border-t border-zinc-800/40 pt-2.5 space-y-1.5">
-    <div class="flex items-center justify-between">
-      <span class="text-[8px] font-black uppercase text-zinc-600">3 — Clips <span id="clipCount" class="text-violet-400">0</span></span>
-      <label class="cursor-pointer px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-lg text-[8px] font-bold text-zinc-400 hover:border-violet-500 hover:text-white transition-all relative">
-        + Add<input type="file" id="clipsInput" accept="video/*" multiple class="absolute inset-0 opacity-0 cursor-pointer">
-      </label>
-    </div>
-    <div id="clipsGrid" class="cg"></div>
-  </div>
-
-  <!-- EXPORT -->
-  <div class="border-t border-zinc-800/40 pt-2.5 space-y-1.5">
-    <span class="text-[8px] font-black uppercase text-zinc-600 block">4 — Esporta</span>
-    <div class="grid grid-cols-3 gap-1.5">
-      <button id="exp1Btn" class="btn-sv text-white font-black py-2 rounded-xl text-[9px] uppercase" disabled>↓ 1</button>
-      <button id="exp3Btn" class="bg-violet-700 hover:bg-violet-600 disabled:opacity-35 disabled:cursor-not-allowed text-white font-black py-2 rounded-xl text-[9px] uppercase transition-all" disabled>↓ 3</button>
-      <button id="exp6Btn" class="bg-violet-900 hover:bg-violet-700 disabled:opacity-35 disabled:cursor-not-allowed text-white font-black py-2 rounded-xl text-[9px] uppercase transition-all" disabled>↓ 6</button>
-    </div>
-    <p class="text-[7px] text-zinc-700 text-center">Ogni export = clip e tagli casuali diversi</p>
-    <div id="expStatus" class="hidden bg-black border border-zinc-800 p-2 rounded-xl">
-      <div class="flex justify-between text-[8px] font-black uppercase text-blue-400 mb-1"><span id="expStatTxt">…</span><span id="expPct">0%</span></div>
-      <div class="h-0.5 bg-zinc-900 rounded overflow-hidden"><div id="expBar" class="h-full bg-gradient-to-r from-blue-500 to-violet-500 w-0 transition-all"></div></div>
+      <!-- Next -->
+      <button id="goStep2" class="btn-sv w-full text-white font-black py-3 rounded-2xl uppercase tracking-widest text-sm" disabled>
+        Avanti → Sync Lyrics
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ════════════ CENTER: PHONE ════════════ -->
-<div class="flex flex-col items-center gap-3">
-  <div class="iphone-frame veo-on" id="iphoneFrame">
-    <div class="notch"></div>
-    <div class="video-con" id="videoCon">
-      <video id="PV" muted playsinline></video>
-      <div class="tk-grad"></div>
-      <!-- Video transition overlays -->
-      <div id="vtrOverlay"></div>
-      <div id="vtrFlash"></div>
-      <div id="capEl" class="fnt-tiktok" style="top:40%;font-size:22px;color:#fff;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;opacity:1;"></div>
-    </div>
-  </div>
+<!-- ═══════════════ STEP 2: SYNC ═══════════════ -->
+<div class="step-panel flex-col gap-4" id="step2">
+  <div class="max-w-3xl mx-auto w-full space-y-4">
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-black uppercase text-zinc-300">Sync Lyrics</h2>
+        <button class="step-tab text-[9px]" data-step="1"><span class="snum">1</span>← Indietro</button>
+      </div>
 
-  <!-- Transport preview -->
-  <div class="flex items-center gap-2">
-    <button id="prevBtn" class="btn-sv px-4 py-2 rounded-xl text-white font-black text-[10px] uppercase" disabled>▶ Preview</button>
-    <button id="stopBtn" class="px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-xl text-[10px] font-bold text-zinc-400 hover:text-white transition-all" disabled>■ Stop</button>
-  </div>
-  <span id="prevTimeLbl" class="text-[9px] font-mono text-zinc-600">—</span>
+      <!-- Mode -->
+      <div class="flex gap-3">
+        <button id="btnML" class="tog on flex-1 justify-center py-2.5 text-[10px]">♪ Con lyrics</button>
+        <button id="btnMNL" class="tog flex-1 justify-center py-2.5 text-[10px]">∞ No lyrics</button>
+      </div>
 
-  <!-- Lyrics strip -->
-  <div style="width:252px;">
-    <div class="flex justify-between mb-1">
-      <span class="text-[8px] font-black uppercase text-zinc-600 tracking-widest">Sync</span>
-      <span id="syncedCount" class="text-[8px] text-zinc-700 font-mono">0/0</span>
-    </div>
-    <div id="lyricsStrip" class="flex gap-1.5 overflow-x-auto pb-1" style="min-height:36px;">
-      <div class="text-[9px] text-zinc-700 py-2 italic">Nessuna lyrics</div>
+      <!-- CON LYRICS -->
+      <div id="panL" class="space-y-3">
+        <div class="text-[10px] text-zinc-500">Ogni riga = una scritta &nbsp;·&nbsp; Riga vuota = pausa</div>
+        <textarea id="lyricsTA" rows="8" placeholder="Scrivi o incolla le lyrics..." class="w-full bg-black border border-zinc-800 rounded-xl p-3 outline-none resize-none text-zinc-300 placeholder-zinc-700 focus:border-violet-600 text-sm" style="font-family:'Courier Prime',monospace;line-height:1.7;"></textarea>
+        <button id="openSyncBtn" class="btn-sv w-full text-white font-black py-3 rounded-xl uppercase text-[10px]" disabled>♪ Avvia Sync — premi SPAZIO sui beat</button>
+
+        <!-- Synced chips -->
+        <div id="lyricsStripWrap" class="hidden">
+          <div class="flex justify-between mb-2"><span class="text-[9px] font-black uppercase text-zinc-600">Sync completato</span><span id="syncedCount" class="text-[9px] text-zinc-600 font-mono">0/0</span></div>
+          <div id="lyricsStrip" class="flex gap-1.5 overflow-x-auto pb-1" style="min-height:40px;"></div>
+        </div>
+      </div>
+
+      <!-- NO LYRICS -->
+      <div id="panNL" class="hidden space-y-2">
+        <div class="bg-black border border-zinc-800 rounded-xl p-4 space-y-3">
+          <div class="flex justify-between"><label class="text-sm font-black text-zinc-400">Cambio video ogni</label><span id="intVal" class="text-violet-400 font-mono font-bold">3.0s</span></div>
+          <input type="range" id="intSlider" min="2" max="6" step="0.5" value="3" class="w-full">
+          <div class="flex justify-between text-[9px] text-zinc-700"><span>2s</span><span>3s</span><span>4s</span><span>5s</span><span>6s</span></div>
+        </div>
+      </div>
+
+      <button id="goStep3" class="btn-sv w-full text-white font-black py-3 rounded-2xl uppercase tracking-widest text-sm">
+        Avanti → Video + Edit
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ════════════ RIGHT: STYLE EDITOR ════════════ -->
-<div class="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl space-y-3 backdrop-blur-xl">
-  <div class="text-[8px] font-black uppercase text-zinc-600 tracking-widest border-b border-zinc-800/50 pb-2">Stile Caption</div>
+<!-- ═══════════════ STEP 3: VIDEO + EDIT ═══════════════ -->
+<div class="step-panel gap-5" id="step3">
 
-  <!-- FONT -->
-  <div>
-    <div class="text-[7px] font-black uppercase text-zinc-700 mb-1.5">Font</div>
-    <div class="grid grid-cols-2 gap-1">
-      <button class="smb on" data-font="fnt-tiktok" style="font-family:'Montserrat',sans-serif;font-weight:900;">TIKTOK</button>
-      <button class="smb" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;">BEBAS</button>
-      <button class="smb" data-font="fnt-oswald" style="font-family:'Oswald',sans-serif;font-weight:700;">OSWALD</button>
-      <button class="smb" data-font="fnt-anton" style="font-family:'Anton',sans-serif;">ANTON</button>
-      <button class="smb" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;font-size:8px;">RETRO</button>
-      <button class="smb" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;">Script</button>
-      <button class="smb" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;font-size:8px;">MARKER</button>
-      <button class="smb" data-font="fnt-right" style="font-family:'Righteous',sans-serif;font-size:8px;">RIGHTY</button>
+  <!-- LEFT: Clips + Export -->
+  <div class="flex flex-col gap-4" style="width:280px;flex-shrink:0;">
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Video Clips <span id="clipCount" class="text-violet-400 ml-1">0</span></h3>
+        <label class="cursor-pointer px-2.5 py-1 bg-zinc-900 border border-zinc-700 rounded-lg text-[9px] font-bold text-zinc-400 hover:border-violet-500 hover:text-white transition-all relative">
+          + Add<input type="file" id="clipsInput" accept="video/*" multiple class="absolute inset-0 opacity-0 cursor-pointer">
+        </label>
+      </div>
+      <div id="clipsGrid" class="cg"></div>
+    </div>
+
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3">
+      <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Esporta</h3>
+      <div class="grid grid-cols-3 gap-2">
+        <button id="exp1Btn" class="btn-sv text-white font-black py-2.5 rounded-xl text-[9px] uppercase" disabled>↓ 1</button>
+        <button id="exp3Btn" class="bg-violet-700 hover:bg-violet-600 disabled:opacity-35 disabled:cursor-not-allowed text-white font-black py-2.5 rounded-xl text-[9px] uppercase transition-all" disabled>↓ 3</button>
+        <button id="exp6Btn" class="bg-violet-900 hover:bg-violet-700 disabled:opacity-35 disabled:cursor-not-allowed text-white font-black py-2.5 rounded-xl text-[9px] uppercase transition-all" disabled>↓ 6</button>
+      </div>
+      <p class="text-[8px] text-zinc-700 text-center">Ogni export = clip e tagli diversi</p>
+      <div id="expStatus" class="hidden bg-black border border-zinc-800 p-2.5 rounded-xl">
+        <div class="flex justify-between text-[9px] font-black uppercase text-blue-400 mb-1.5"><span id="expStatTxt">…</span><span id="expPct">0%</span></div>
+        <div class="h-0.5 bg-zinc-900 rounded overflow-hidden"><div id="expBar" class="h-full bg-gradient-to-r from-blue-500 to-violet-500 w-0 transition-all"></div></div>
+      </div>
+
+      <!-- back btn -->
+      <button class="step-tab w-full justify-center text-[9px]" data-step="2">← Torna al Sync</button>
     </div>
   </div>
 
-  <!-- TRANSIZIONE VIDEO -->
-  <div>
-    <div class="text-[7px] font-black uppercase text-zinc-700 mb-1.5">Transizione clip</div>
-    <div class="grid grid-cols-3 gap-1">
-      <button class="smb on" data-vtr="cut">CUT</button>
-      <button class="smb" data-vtr="fade">FADE</button>
-      <button class="smb" data-vtr="flash">FLASH</button>
-      <button class="smb" data-vtr="blur">BLUR</button>
-      <button class="smb" data-vtr="zoom">ZOOM</button>
-      <button class="smb" data-vtr="wipe">WIPE</button>
+  <!-- CENTER: Phone Preview -->
+  <div class="flex flex-col items-center gap-3 flex-shrink-0">
+    <div class="iphone-frame veo-on" id="iphoneFrame">
+      <div class="notch"></div>
+      <div class="video-con" id="videoCon">
+        <video id="PV" muted playsinline></video>
+        <div class="tk-grad"></div>
+        <div id="vtrBlurOv"></div>
+        <div id="vtrDarkOv"></div>
+        <div id="capEl" class="fnt-montserrat" style="top:40%;font-size:22px;color:#fff;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000;"></div>
+      </div>
+    </div>
+    <!-- Lyrics strip under phone -->
+    <div style="width:260px;" class="space-y-1.5">
+      <div id="prevLyricBar" class="text-center text-[11px] font-bold text-zinc-500 min-h-[20px] truncate px-2"></div>
+      <div id="prevTimeLbl" class="text-center text-[9px] font-mono text-zinc-700">—</div>
+    </div>
+    <!-- Play/Stop -->
+    <button id="prevBtn" class="btn-sv px-8 py-2.5 rounded-2xl text-white font-black text-[11px] uppercase tracking-widest" disabled>▶ Play Preview</button>
+    <!-- VEO under preview -->
+    <button id="veoBtn" class="tog on w-[260px] justify-center py-2 text-[9px]">⊞ VEO — Zoom watermark OFF</button>
+  </div>
+
+  <!-- RIGHT: Style Editor -->
+  <div class="flex-1 min-w-0">
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-4 h-full">
+      <h3 class="text-[10px] font-black uppercase text-zinc-500 tracking-widest border-b border-zinc-800/50 pb-2">Stile Caption</h3>
+
+      <!-- FONT -->
+      <div class="space-y-1.5">
+        <div class="text-[9px] font-black uppercase text-zinc-600">Font</div>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button class="smb on" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;">BOLD</button>
+          <button class="smb" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;">BEBAS</button>
+          <button class="smb" data-font="fnt-bangers" style="font-family:'Bangers',cursive;font-size:12px;letter-spacing:1px;">BANG!</button>
+          <button class="smb" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;font-size:10px;">Lilita</button>
+          <button class="smb" data-font="fnt-boogaloo" style="font-family:'Boogaloo',cursive;font-size:11px;">Boogaloo</button>
+          <button class="smb" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;font-weight:700;font-size:9px;">RETRO</button>
+          <button class="smb" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;font-size:11px;">Script</button>
+          <button class="smb" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;font-size:9px;">Marker</button>
+        </div>
+      </div>
+
+      <!-- TRANSIZIONE VIDEO -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <div class="text-[9px] font-black uppercase text-zinc-600">Transizione clip</div>
+          <button class="smb shuf text-[8px] px-2.5 py-1" id="vtrShufBtn">⚡ SHUFFLE</button>
+        </div>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button class="smb on" data-vtr="cut">CUT</button>
+          <button class="smb" data-vtr="fade">FADE</button>
+          <button class="smb" data-vtr="blur">BLUR</button>
+          <button class="smb" data-vtr="zoom">ZOOM</button>
+        </div>
+      </div>
+
+      <!-- ANIMAZIONE TESTO -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <div class="text-[9px] font-black uppercase text-zinc-600">Entrata testo</div>
+          <button class="smb shuf text-[8px] px-2.5 py-1" id="taShufBtn">⚡ SHUFFLE</button>
+        </div>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button class="smb onp" data-ta="none">SENZA</button>
+          <button class="smb" data-ta="fade">FADE</button>
+          <button class="smb" data-ta="up">↑ SU</button>
+          <button class="smb" data-ta="left">← SX</button>
+          <button class="smb" data-ta="zoom">ZOOM</button>
+          <button class="smb" data-ta="swipe">SWIPE</button>
+          <button class="smb" data-ta="drop">↓ GIÙ</button>
+          <button class="smb" data-ta="pop">POP</button>
+        </div>
+      </div>
+
+      <!-- SIZE + POS -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <div class="flex justify-between text-[9px] font-black text-zinc-600 uppercase"><span>Dimensione</span><span id="fsLbl" class="text-blue-400">22px</span></div>
+          <input type="range" id="fsSlider" min="12" max="54" value="22" class="w-full">
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between text-[9px] font-black text-zinc-600 uppercase"><span>Posizione Y</span><span id="posLbl" class="text-blue-400">40%</span></div>
+          <input type="range" id="posSlider" min="8" max="82" value="40" class="w-full">
+        </div>
+      </div>
+
+      <!-- COLORI -->
+      <div class="space-y-1.5">
+        <div class="text-[9px] font-black uppercase text-zinc-600">Colori</div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg border border-zinc-700 overflow-hidden relative"><input type="color" id="txColor" value="#ffffff" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
+            <span class="text-[9px] text-zinc-500 uppercase font-bold">Testo</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg border border-zinc-700 overflow-hidden relative"><input type="color" id="olColor" value="#000000" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
+            <span class="text-[9px] text-zinc-500 uppercase font-bold">Bordo</span>
+          </div>
+          <button id="olToggle" class="tog on text-[8px] px-2.5 py-1.5">Bordo ON</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- ANIMAZIONE TESTO -->
-  <div>
-    <div class="text-[7px] font-black uppercase text-zinc-700 mb-1.5">Entrata testo</div>
-    <div class="grid grid-cols-3 gap-1">
-      <button class="smb onp" data-ta="none">SENZA</button>
-      <button class="smb" data-ta="fade">FADE</button>
-      <button class="smb" data-ta="up">↑ SU</button>
-      <button class="smb" data-ta="left">← SX</button>
-      <button class="smb" data-ta="zoom">ZOOM</button>
-      <button class="smb" data-ta="swipe">SWIPE</button>
-    </div>
-  </div>
+</div><!-- end step3 -->
 
-  <!-- SIZE + POS -->
-  <div class="space-y-2">
-    <div>
-      <div class="flex justify-between text-[7px] font-black text-zinc-600 uppercase mb-1"><span>Dimensione</span><span id="fsLbl" class="text-blue-400">22px</span></div>
-      <input type="range" id="fsSlider" min="12" max="54" value="22" class="w-full">
-    </div>
-    <div>
-      <div class="flex justify-between text-[7px] font-black text-zinc-600 uppercase mb-1"><span>Posizione</span><span id="posLbl" class="text-blue-400">40%</span></div>
-      <input type="range" id="posSlider" min="8" max="82" value="40" class="w-full">
-    </div>
-  </div>
-
-  <!-- COLORI -->
-  <div class="flex items-center gap-2 flex-wrap">
-    <div class="flex items-center gap-1.5">
-      <div class="w-6 h-6 rounded border border-zinc-700 overflow-hidden relative"><input type="color" id="txColor" value="#ffffff" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
-      <span class="text-[7px] text-zinc-600 uppercase font-bold">Testo</span>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <div class="w-6 h-6 rounded border border-zinc-700 overflow-hidden relative"><input type="color" id="olColor" value="#000000" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
-      <span class="text-[7px] text-zinc-600 uppercase font-bold">Bordo</span>
-    </div>
-    <button id="olToggle" class="tog on text-[7px] px-2 py-1 ml-auto">Bordo ON</button>
-  </div>
-</div>
-
-</div><!-- end grid -->
-
-<!-- ════════════ SYNC MODAL ════════════ -->
+<!-- ─── SYNC MODAL ─── -->
 <div class="sync-modal" id="syncModal">
-  <div style="background:#0d0d10;border:1px solid #2a2a2a;border-radius:20px;padding:24px;width:500px;max-width:96vw;">
-    <div class="flex justify-between items-start mb-3">
+  <div style="background:#0d0d10;border:1px solid #2a2a2a;border-radius:20px;padding:26px;width:520px;max-width:96vw;">
+    <div class="flex justify-between items-start mb-4">
       <div>
         <h2 class="text-sm font-black uppercase">Sync Lyrics</h2>
         <p class="text-[9px] text-zinc-600 mt-0.5">Tieni <kbd style="background:#111;border:1px solid #333;padding:1px 5px;border-radius:3px;font-size:8px;">SPAZIO</kbd> mentre la riga è a schermo · rilascia per avanzare</p>
@@ -324,42 +395,39 @@ input[type=range]{accent-color:var(--p);}
       <button id="closeSyncBtn" class="text-zinc-600 hover:text-white text-xl leading-none px-1">✕</button>
     </div>
     <div class="mb-3">
-      <div class="flex justify-between mb-1">
-        <span class="text-[8px] font-black uppercase text-zinc-600">Punto di partenza</span>
-        <span id="syncStartLbl" class="text-violet-400 font-mono text-[8px]">0:00</span>
-      </div>
-      <div id="miniWave" style="position:relative;height:34px;background:#0a0a0a;border-radius:7px;border:1px solid #2a2a2a;overflow:hidden;cursor:pointer;">
+      <div class="flex justify-between mb-1"><span class="text-[8px] font-black uppercase text-zinc-600">Punto di partenza</span><span id="syncStartLbl" class="text-violet-400 font-mono text-[9px]">0:00</span></div>
+      <div id="miniWave" style="position:relative;height:36px;background:#0a0a0a;border-radius:7px;border:1px solid #2a2a2a;overflow:hidden;cursor:pointer;">
         <canvas id="miniWC" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
         <div id="miniPH" style="position:absolute;top:0;width:2px;height:100%;background:rgba(255,255,255,.4);pointer-events:none;left:0;"></div>
         <div id="miniSM" style="position:absolute;top:0;width:2px;height:100%;background:var(--p);pointer-events:none;left:0;box-shadow:0 0 6px var(--p);"></div>
       </div>
     </div>
     <div style="background:#080810;border:1px solid #1e1e2a;border-radius:11px;overflow:hidden;margin-bottom:11px;">
-      <div id="sPrevRow" style="padding:6px 14px;border-bottom:1px solid #131318;opacity:.28;font-size:10px;color:#888;">—</div>
-      <div style="padding:11px 14px;border-bottom:1px solid #131318;background:rgba(59,130,246,.04);position:relative;">
+      <div id="sPrevRow" style="padding:7px 14px;border-bottom:1px solid #131318;opacity:.28;font-size:10px;color:#888;">—</div>
+      <div style="padding:12px 14px;border-bottom:1px solid #131318;background:rgba(59,130,246,.04);position:relative;">
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--b),var(--p));"></div>
         <div class="flex items-center gap-3">
-          <span id="sCursor" style="font-family:'Courier Prime',monospace;font-size:8px;color:#444;width:30px;flex-shrink:0;text-align:right;">—</span>
-          <div class="flex-1"><div id="sCurTxt" style="font-size:14px;font-weight:700;color:#fff;line-height:1.2;">—</div></div>
+          <span id="sCursor" style="font-family:'Courier Prime',monospace;font-size:8px;color:#444;width:32px;flex-shrink:0;text-align:right;">—</span>
+          <div class="flex-1"><div id="sCurTxt" style="font-size:15px;font-weight:700;color:#fff;line-height:1.2;">—</div></div>
           <span id="sCurTime" style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--p);flex-shrink:0;">—</span>
         </div>
       </div>
-      <div id="sNextRow" style="padding:6px 14px;opacity:.32;font-size:10px;color:#888;">—</div>
+      <div id="sNextRow" style="padding:7px 14px;opacity:.32;font-size:10px;color:#888;">—</div>
     </div>
     <div id="spaceBar" class="mb-3">SPAZIO — tieni premuto</div>
-    <div style="height:2px;background:#1a1a1a;border-radius:2px;margin-bottom:11px;overflow:hidden;"><div id="sProg" style="height:100%;background:linear-gradient(90deg,var(--b),var(--p));width:0;transition:width .2s;"></div></div>
+    <div style="height:2px;background:#1a1a1a;border-radius:2px;margin-bottom:12px;overflow:hidden;"><div id="sProg" style="height:100%;background:linear-gradient(90deg,var(--b),var(--p));width:0;transition:width .2s;"></div></div>
     <div class="flex gap-2">
       <button id="sStartBtn" class="btn-sv flex-1 text-white font-black py-2.5 rounded-xl uppercase text-[10px]">▶ Avvia</button>
-      <button id="sPauseBtn" class="hidden flex-1 text-white font-black py-2.5 rounded-xl uppercase text-[10px] transition-all" style="background:#1a1a1a;border:1px solid #333;">⏸ Pausa</button>
-      <button id="sUndoBtn" class="hidden px-3 py-2 rounded-xl text-[9px] font-bold text-zinc-500 hover:text-white" style="background:#0d0d0d;border:1px solid #2a2a2a;">↩</button>
-      <button id="sResetBtn" class="px-3 py-2 rounded-xl text-[9px] font-bold text-zinc-500 hover:text-white" style="background:#0d0d0d;border:1px solid #2a2a2a;">↺</button>
+      <button id="sPauseBtn" class="hidden flex-1 text-white font-black py-2.5 rounded-xl uppercase text-[10px]" style="background:#1a1a1a;border:1px solid #333;">⏸ Pausa</button>
+      <button id="sUndoBtn" class="hidden px-3 py-2.5 rounded-xl text-[9px] font-bold text-zinc-500 hover:text-white" style="background:#0d0d0d;border:1px solid #2a2a2a;">↩</button>
+      <button id="sResetBtn" class="px-3 py-2.5 rounded-xl text-[9px] font-bold text-zinc-500 hover:text-white" style="background:#0d0d0d;border:1px solid #2a2a2a;">↺</button>
       <button id="sSaveBtn" class="hidden btn-sv text-white font-black px-5 py-2.5 rounded-xl uppercase text-[10px]">✓ Salva</button>
     </div>
-    <div id="sStatusMsg" class="text-[9px] text-zinc-600 text-center mt-2">Clicca sulla waveform per scegliere il punto di partenza, poi premi Avvia</div>
+    <div id="sStatusMsg" class="text-[9px] text-zinc-600 text-center mt-2">Clicca sulla waveform per scegliere il punto di partenza</div>
   </div>
 </div>
 
-<!-- EXPORT OVERLAY -->
+<!-- EXPORT OV -->
 <div class="exp-ov" id="expOv">
   <div style="background:#0d0d10;border:1px solid #2a2a2a;border-radius:18px;padding:32px;width:300px;text-align:center;">
     <div style="font-size:20px;font-weight:900;text-transform:uppercase;margin-bottom:4px;">Esportazione</div>
@@ -371,7 +439,6 @@ input[type=range]{accent-color:var(--p);}
 
 <div class="toast-el" id="toastEl"></div>
 <audio id="bgAudio" crossorigin="anonymous"></audio>
-<!-- Separate audio for preview -->
 <audio id="prevAudio" crossorigin="anonymous"></audio>
 <canvas id="renderCanvas" style="display:none;"></canvas>
 <video id="srcVideo" style="display:none;" playsinline muted></video>
@@ -382,21 +449,20 @@ input[type=range]{accent-color:var(--p);}
 // ═══════════════════════════════════
 const S={
   audioFile:null,audioDuration:0,trimStart:0,trimEnd:0,
-  clips:[],mode:'lyrics',
-  lines:[],
-  capFont:'fnt-tiktok',capVtr:'cut',capTA:'none',
+  clips:[],mode:'lyrics',lines:[],
+  capFont:'fnt-montserrat',capVtr:'cut',capTA:'none',
+  capVtrShuffle:false,capTAShuffle:false,
   fontSize:22,capPos:40,
   txColor:'#ffffff',olColor:'#000000',olOn:true,
   interval:3,veoOn:true,
 };
-const PHONE_H=252*16/9; // ~448px — actual rendered height of the phone screen
-const EXPORT_H=1280;
-const EXPORT_W=720;
-const MAX_TRIM=30;
+const EXPORT_W=720,EXPORT_H=1280,MAX_TRIM=30;
 let waveData=null,isDrag=null,dragOff=0;
 const SS={lines:[],cursor:0,startOff:0,running:false,spaceDown:false};
 let prevSegs=[],prevIdx=0,prevRAF=null,prevPlaying=false,prevSegStart=0;
 let syncClipRR=[],syncClipRRIdx=0;
+const VTR_LIST=['cut','fade','blur','zoom'];
+const TA_LIST=['fade','up','left','zoom','swipe','drop','pop'];
 
 const bgAudio=document.getElementById('bgAudio');
 const prevAudio=document.getElementById('prevAudio');
@@ -406,8 +472,8 @@ const trimTrack=document.getElementById('trimTrack');
 const trimOvEl=document.getElementById('trimOv');
 const wvC=document.getElementById('wvC');
 const wctx=wvC.getContext('2d');
-const vtrOv=document.getElementById('vtrOverlay');
-const vtrFlash=document.getElementById('vtrFlash');
+const blurOv=document.getElementById('vtrBlurOv');
+const darkOv=document.getElementById('vtrDarkOv');
 
 // ═══════════════════════════════════
 // UTILS
@@ -418,12 +484,34 @@ function fmtI(s){const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<1
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function randInt(a,b){return Math.floor(Math.random()*(b-a))+a;}
 function shuffleArr(a){let r=[...a];for(let i=r.length-1;i>0;i--){const j=randInt(0,i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+function pickRandExcept(arr,excl){const f=arr.filter(x=>x!==excl);return f.length?f[randInt(0,f.length)]:arr[randInt(0,arr.length)];}
+
+// ═══════════════════════════════════
+// STEP NAVIGATION
+// ═══════════════════════════════════
+let currentStep=1;
+function goStep(n){
+  document.querySelectorAll('.step-panel').forEach((p,i)=>{p.classList.toggle('active',i===n-1);});
+  document.querySelectorAll('.step-tab[data-step]').forEach(t=>{
+    const s=+t.dataset.step;t.classList.remove('active');
+    if(s===n)t.classList.add('active');
+    else if(s<n)t.classList.add('done');
+    else t.classList.remove('done');
+  });
+  currentStep=n;
+}
+document.querySelectorAll('[data-step]').forEach(btn=>{
+  btn.addEventListener('click',()=>goStep(+btn.dataset.step));
+});
+document.getElementById('goStep2').onclick=()=>goStep(2);
+document.getElementById('goStep3').onclick=()=>goStep(3);
 
 // ═══════════════════════════════════
 // VEO
 // ═══════════════════════════════════
 document.getElementById('veoBtn').onclick=function(){
-  S.veoOn=!S.veoOn;this.classList.toggle('on',S.veoOn);this.textContent=S.veoOn?'⊞ VEO ON':'⊞ VEO OFF';
+  S.veoOn=!S.veoOn;this.classList.toggle('on',S.veoOn);
+  this.textContent=S.veoOn?'⊞ VEO — Zoom watermark OFF':'⊞ VEO — Zoom watermark ON';
   document.getElementById('iphoneFrame').classList.toggle('veo-on',S.veoOn);
 };
 
@@ -440,26 +528,28 @@ async function loadWaveform(file){
   const ab=await file.arrayBuffer(),ac=new(window.AudioContext||window.webkitAudioContext)();
   const dec=await ac.decodeAudioData(ab);
   S.audioDuration=dec.duration;S.trimStart=0;S.trimEnd=Math.min(dec.duration,15);
-  const raw=dec.getChannelData(0),N=300,block=Math.floor(raw.length/N);
+  const raw=dec.getChannelData(0),N=400,block=Math.floor(raw.length/N);
   waveData=Array.from({length:N},(_,i)=>{let s=0;for(let j=0;j<block;j++)s+=Math.abs(raw[i*block+j]||0);return s/block;});
   const mx=Math.max(...waveData)||1;waveData=waveData.map(v=>v/mx);
+  document.getElementById('waveSection').classList.remove('hidden');
   updateTrimUI();resizeWave();
-  document.getElementById('openSyncBtn').disabled=false;checkReady();
+  document.getElementById('goStep2').disabled=false;
+  document.getElementById('openSyncBtn').disabled=false;
 }
 function drawWave(){
   const W=wvC.width,H=wvC.height;wctx.clearRect(0,0,W,H);
-  if(!waveData){wctx.fillStyle='rgba(255,255,255,.04)';wctx.fillRect(0,0,W,H);wctx.fillStyle='rgba(255,255,255,.06)';wctx.font=`${9*(window.devicePixelRatio||1)}px Inter`;wctx.textAlign='center';wctx.fillText('Carica un brano',W/2,H/2);return;}
+  if(!waveData){wctx.fillStyle='rgba(255,255,255,.04)';wctx.fillRect(0,0,W,H);return;}
   const pf=S.audioDuration>0?bgAudio.currentTime/S.audioDuration:0,step=W/waveData.length;
   waveData.forEach((v,i)=>{
-    const x=i*step,h=v*H*.8,y=(H-h)/2,fr=i/waveData.length;
+    const x=i*step,h=v*H*.82,y=(H-h)/2,fr=i/waveData.length;
     const inT=fr>=S.trimStart/S.audioDuration&&fr<=S.trimEnd/S.audioDuration;
-    wctx.fillStyle=inT?(fr<pf?'rgba(139,92,246,1)':'rgba(139,92,246,.5)'):(fr<pf?'rgba(255,255,255,.22)':'rgba(255,255,255,.07)');
+    wctx.fillStyle=inT?(fr<pf?'rgba(139,92,246,1)':'rgba(139,92,246,.52)'):(fr<pf?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)');
     wctx.beginPath();wctx.roundRect(x,y,Math.max(1,step-.5),h,1);wctx.fill();
   });
 }
 
 // ═══════════════════════════════════
-// TRIM
+// TRIM — seek audio when dragging
 // ═══════════════════════════════════
 function updateTrimUI(){
   if(!S.audioDuration)return;
@@ -476,20 +566,33 @@ trimTrack.addEventListener('mousedown',e=>{
   if(Math.abs(x-lPx)<14){isDrag='left';dragOff=x-lPx;}
   else if(Math.abs(x-rPx)<14){isDrag='right';dragOff=x-rPx;}
   else if(x>lPx&&x<rPx){isDrag='center';dragOff=t-S.trimStart;}
-  else{bgAudio.currentTime=clamp(t,0,S.audioDuration);drawWave();document.getElementById('curTime').textContent=fmtI(bgAudio.currentTime);}
+  else{seekTo(clamp(t,0,S.audioDuration));}
   e.preventDefault();
 });
 window.addEventListener('mousemove',e=>{
   if(!isDrag||!S.audioDuration)return;
   const rect=trimTrack.getBoundingClientRect(),x=clamp(e.clientX-rect.left,0,rect.width),t=x/rect.width*S.audioDuration;
-  if(isDrag==='left'){const ns=clamp(t,0,S.trimEnd-.5);S.trimStart=S.trimEnd-ns>MAX_TRIM?S.trimEnd-MAX_TRIM:ns;}
-  else if(isDrag==='right'){const ns=clamp(t,S.trimStart+.5,S.audioDuration);S.trimEnd=ns-S.trimStart>MAX_TRIM?S.trimStart+MAX_TRIM:ns;}
-  else{const dur=S.trimEnd-S.trimStart,ns=clamp(t-dragOff,0,S.audioDuration-dur);S.trimStart=ns;S.trimEnd=ns+dur;}
+  if(isDrag==='left'){
+    const ns=clamp(t,0,S.trimEnd-.5);S.trimStart=S.trimEnd-ns>MAX_TRIM?S.trimEnd-MAX_TRIM:ns;
+    seekTo(S.trimStart); // seek audio to left edge while dragging
+  }else if(isDrag==='right'){
+    const ns=clamp(t,S.trimStart+.5,S.audioDuration);S.trimEnd=ns-S.trimStart>MAX_TRIM?S.trimStart+MAX_TRIM:ns;
+    seekTo(S.trimEnd-.05);
+  }else{
+    const dur=S.trimEnd-S.trimStart,ns=clamp(t-dragOff,0,S.audioDuration-dur);S.trimStart=ns;S.trimEnd=ns+dur;
+    seekTo(S.trimStart);
+  }
   updateTrimUI();
 });
 window.addEventListener('mouseup',()=>{isDrag=null;});
 
-// PLAYBACK — sempre da trimStart
+function seekTo(t){
+  bgAudio.currentTime=t;
+  document.getElementById('curTime').textContent=fmtI(t);
+  drawWave();
+}
+
+// PLAYBACK — always from trimStart
 let playRaf=null;
 document.getElementById('playBtn').onclick=()=>{
   if(!bgAudio.src)return;
@@ -509,9 +612,11 @@ document.getElementById('playBtn').onclick=()=>{
     document.querySelector('#playIcon path').setAttribute('d','M0 0 L10 6 L0 12Z');
   }
 };
+
 document.getElementById('audioInput').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
-  S.audioFile=f;bgAudio.src=URL.createObjectURL(f);prevAudio.src=bgAudio.src;
+  S.audioFile=f;
+  const url=URL.createObjectURL(f);bgAudio.src=url;prevAudio.src=url;
   document.getElementById('audioLabel').textContent=f.name;
   await loadWaveform(f);toast('Brano caricato!');
 };
@@ -542,16 +647,17 @@ function renderClips(){
     d.appendChild(dl);g.appendChild(d);
   });
   const a=document.createElement('div');a.className='cadd';
-  a.innerHTML='<input type="file" accept="video/*" multiple><div style="font-size:16px">+</div><div style="font-size:7px;margin-top:1px">Video</div>';
+  a.innerHTML='<input type="file" accept="video/*" multiple><div style="font-size:18px">+</div>';
   a.querySelector('input').onchange=e=>addClips(e.target.files);
   g.appendChild(a);
 }
 document.getElementById('clipsInput').onchange=e=>addClips(e.target.files);
+renderClips();
 
 // ═══════════════════════════════════
 // MODE
 // ═══════════════════════════════════
-document.getElementById('btnML').onclick=()=>{S.mode='lyrics';document.getElementById('btnML').classList.add('on');document.getElementById('btnMNL').classList.remove('on');document.getElementById('panL').classList.remove('hidden');document.getElementById('panNL').classList.add('hidden');checkReady();};
+document.getElementById('btnML').onclick=()=>{S.mode='lyrics';document.getElementById('btnML').classList.add('on');document.getElementById('btnMNL').classList.remove('on');document.getElementById('panL').classList.remove('hidden');document.getElementById('panNL').classList.add('hidden');};
 document.getElementById('btnMNL').onclick=()=>{S.mode='nolyrics';document.getElementById('btnMNL').classList.add('on');document.getElementById('btnML').classList.remove('on');document.getElementById('panNL').classList.remove('hidden');document.getElementById('panL').classList.add('hidden');checkReady();};
 document.getElementById('intSlider').oninput=e=>{S.interval=parseFloat(e.target.value);document.getElementById('intVal').textContent=S.interval.toFixed(1)+'s';};
 
@@ -562,21 +668,38 @@ document.querySelectorAll('[data-font]').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('[data-font]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');S.capFont=btn.dataset.font;applyStyle();
 });
 document.querySelectorAll('[data-vtr]').forEach(btn=>btn.onclick=()=>{
-  document.querySelectorAll('[data-vtr]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');S.capVtr=btn.dataset.vtr;
-  // Show immediate visual feedback on current preview
-  flashVtr();
+  document.querySelectorAll('[data-vtr]').forEach(b=>b.classList.remove('on','shuf'));
+  btn.classList.add('on');S.capVtr=btn.dataset.vtr;S.capVtrShuffle=false;
+  document.getElementById('vtrShufBtn').classList.remove('on');
+  demoVtr(S.capVtr);
 });
 document.querySelectorAll('[data-ta]').forEach(btn=>btn.onclick=()=>{
-  document.querySelectorAll('[data-ta]').forEach(b=>{b.classList.remove('on');b.classList.remove('onp');});btn.classList.add('onp');S.capTA=btn.dataset.ta;
-  triggerTextAnim();
+  document.querySelectorAll('[data-ta]').forEach(b=>{b.classList.remove('on','onp','shuf');});
+  btn.classList.add('onp');S.capTA=btn.dataset.ta;S.capTAShuffle=false;
+  document.getElementById('taShufBtn').classList.remove('on');
+  triggerAnim(capEl.textContent);
 });
+document.getElementById('vtrShufBtn').onclick=()=>{
+  S.capVtrShuffle=!S.capVtrShuffle;
+  document.getElementById('vtrShufBtn').classList.toggle('on',S.capVtrShuffle);
+  if(S.capVtrShuffle){document.querySelectorAll('[data-vtr]').forEach(b=>{b.classList.remove('on');});toast('Shuffle effetti video ON!');}
+};
+document.getElementById('taShufBtn').onclick=()=>{
+  S.capTAShuffle=!S.capTAShuffle;
+  document.getElementById('taShufBtn').classList.toggle('on',S.capTAShuffle);
+  if(S.capTAShuffle){document.querySelectorAll('[data-ta]').forEach(b=>{b.classList.remove('on','onp');});toast('Shuffle entrata testo ON!');}
+};
 document.getElementById('fsSlider').oninput=e=>{S.fontSize=+e.target.value;document.getElementById('fsLbl').textContent=e.target.value+'px';applyStyle();};
 document.getElementById('posSlider').oninput=e=>{S.capPos=+e.target.value;document.getElementById('posLbl').textContent=e.target.value+'%';applyStyle();};
 document.getElementById('txColor').oninput=e=>{S.txColor=e.target.value;applyStyle();};
 document.getElementById('olColor').oninput=e=>{S.olColor=e.target.value;applyStyle();};
 document.getElementById('olToggle').onclick=function(){S.olOn=!S.olOn;this.classList.toggle('on',S.olOn);this.textContent=S.olOn?'Bordo ON':'Bordo OFF';applyStyle();};
 
-// Apply style to capEl — fontSize in px matches phone screen height ratio
+let _lastVtr=S.capVtr;
+function getSegVtr(){if(S.capVtrShuffle){const v=pickRandExcept(VTR_LIST,_lastVtr);_lastVtr=v;return v;}return S.capVtr;}
+let _lastTA=S.capTA;
+function getSegTA(){if(S.capTAShuffle){const t=pickRandExcept(TA_LIST,_lastTA);_lastTA=t;return t;}return S.capTA;}
+
 function applyStyle(text){
   capEl.className=S.capFont;
   capEl.style.fontSize=S.fontSize+'px';
@@ -586,32 +709,19 @@ function applyStyle(text){
   else capEl.style.textShadow='none';
   if(text!==undefined)capEl.textContent=text;
 }
-function triggerTextAnim(text){
+function triggerAnim(text,ta){
+  const anim=ta||S.capTA;
   if(text!==undefined)capEl.textContent=text;
-  // Remove then re-add animation class to restart it
-  const animMap={fade:'anim-fade',up:'anim-up',left:'anim-left',zoom:'anim-zoom',swipe:'anim-swipe'};
-  ['anim-fade','anim-up','anim-left','anim-zoom','anim-swipe'].forEach(c=>capEl.classList.remove(c));
+  const am={fade:'anim-fade',up:'anim-up',left:'anim-left',zoom:'anim-zoom',swipe:'anim-swipe',drop:'anim-drop',pop:'anim-pop'};
+  ['anim-fade','anim-up','anim-left','anim-zoom','anim-swipe','anim-drop','anim-pop'].forEach(c=>capEl.classList.remove(c));
+  if(anim!=='none'&&am[anim]){void capEl.offsetWidth;capEl.classList.add(am[anim]);}
   capEl.style.opacity='1';
-  if(S.capTA!=='none'&&animMap[S.capTA]){
-    void capEl.offsetWidth;// reflow
-    capEl.classList.add(animMap[S.capTA]);
-  }
 }
-function flashVtr(){
-  // Demo flash of the current transition for the user to see
-  if(S.capVtr==='fade'||S.capVtr==='blur'){
-    vtrOv.style.transition='none';vtrOv.style.opacity='0.7';
-    requestAnimationFrame(()=>{vtrOv.style.transition='opacity .4s ease';vtrOv.style.opacity='0';});
-  }else if(S.capVtr==='flash'){
-    vtrFlash.style.transition='none';vtrFlash.style.opacity='0.6';
-    requestAnimationFrame(()=>{vtrFlash.style.transition='opacity .3s ease';vtrFlash.style.opacity='0';});
-  }else if(S.capVtr==='zoom'){
-    PV.style.transition='transform .25s ease';PV.style.transform=S.veoOn?'scale(1.25)':'scale(1.15)';
-    setTimeout(()=>{PV.style.transform=S.veoOn?'scale(1.1)':'scale(1)';setTimeout(()=>PV.style.transition='',300);},250);
-  }else if(S.capVtr==='wipe'){
-    vtrOv.style.transition='none';vtrOv.style.opacity='0.5';
-    requestAnimationFrame(()=>{vtrOv.style.transition='opacity .35s ease';vtrOv.style.opacity='0';});
-  }
+function demoVtr(vtr){
+  if(vtr==='fade'||vtr==='blur'){darkOv.style.transition='none';darkOv.style.opacity=vtr==='blur'?'.0':'.7';
+    if(vtr==='blur'){blurOv.style.transition='none';blurOv.style.opacity='.9';requestAnimationFrame(()=>{blurOv.style.transition='opacity .4s';blurOv.style.opacity='0';});}
+    else{requestAnimationFrame(()=>{darkOv.style.transition='opacity .35s';darkOv.style.opacity='0';});}}
+  else if(vtr==='zoom'){PV.style.transition='none';PV.style.transform=S.veoOn?'scale(1.22)':'scale(1.12)';requestAnimationFrame(()=>{PV.style.transition='transform .25s ease-out';PV.style.transform=S.veoOn?'scale(1.1)':'scale(1)';setTimeout(()=>PV.style.transition='',300);});}
 }
 applyStyle('Testo preview');
 
@@ -623,7 +733,7 @@ function renderLyricsStrip(){
   const valid=S.lines.filter(l=>l.text);
   const synced=valid.filter(l=>l.time!==null).length;
   document.getElementById('syncedCount').textContent=synced+'/'+valid.length;
-  if(!valid.length){strip.innerHTML='<div style="font-size:9px;color:#444;padding:6px;font-style:italic;">Nessuna lyrics</div>';return;}
+  if(!valid.length){strip.innerHTML='';return;}
   strip.innerHTML='';
   S.lines.forEach(l=>{
     if(!l.text)return;
@@ -632,19 +742,17 @@ function renderLyricsStrip(){
     el.onclick=()=>{if(l.time!==null){bgAudio.currentTime=l.time;drawWave();}};
     strip.appendChild(el);
   });
+  if(synced>0){document.getElementById('lyricsStripWrap').classList.remove('hidden');}
   updateLyricMk();
 }
 function updateLyricMk(){
   const c=document.getElementById('lyricMk');c.innerHTML='';
   if(!S.audioDuration)return;
-  S.lines.forEach(l=>{
-    if(l.time===null||!l.text)return;
-    const m=document.createElement('div');m.className='lyric-mk';m.style.left=(l.time/S.audioDuration*100)+'%';c.appendChild(m);
-  });
+  S.lines.forEach(l=>{if(l.time===null||!l.text)return;const m=document.createElement('div');m.className='lyric-mk';m.style.left=(l.time/S.audioDuration*100)+'%';c.appendChild(m);});
 }
 
 // ═══════════════════════════════════
-// BUILD SEGMENTS — round-robin, full trim duration
+// BUILD SEGMENTS
 // ═══════════════════════════════════
 function buildSegments(){
   const segs=[];
@@ -652,115 +760,97 @@ function buildSegments(){
     const sl=S.lines.filter(l=>l.time!==null&&l.text&&l.time>=S.trimStart&&l.time<=S.trimEnd).sort((a,b)=>a.time-b.time);
     if(!sl.length)return[];
     sl.forEach((l,i)=>{
-      // Last segment stretches to trimEnd
       const nextT=i+1<sl.length?sl[i+1].time:S.trimEnd;
       segs.push({time:l.time,duration:Math.max(.3,nextT-l.time),lyricText:l.text});
     });
   }else{
     let t=S.trimStart;
-    while(t<S.trimEnd){
-      const d=Math.min(S.interval,S.trimEnd-t);if(d<.2)break;
-      segs.push({time:t,duration:d,lyricText:''});t+=d;
-    }
+    while(t<S.trimEnd){const d=Math.min(S.interval,S.trimEnd-t);if(d<.2)break;segs.push({time:t,duration:d,lyricText:''});t+=d;}
   }
-  // Round-robin: shuffle once, then cycle
   const rrBase=shuffleArr(S.clips.map((_,i)=>i));
   segs.forEach((seg,i)=>{
     const ci=rrBase[i%rrBase.length];
     const clip=S.clips[ci];
     const maxS=Math.max(0,clip.duration-seg.duration-.05);
     seg.clipIdx=ci;seg.clipStart=Math.random()*maxS;
+    seg.vtr=getSegVtr();seg.ta=getSegTA();
   });
   return segs;
 }
 
 // ═══════════════════════════════════
-// PREVIEW — RAF loop, no setTimeout, separate audio
+// PREVIEW — RAF loop, loops back, separate audio
 // ═══════════════════════════════════
-// Scale factor: phone screen height to export height
-// fontSize in preview = S.fontSize (in phone px)
-// fontSize in export canvas = S.fontSize * (EXPORT_H / PHONE_H)
-// So we store S.fontSize in "phone px" and multiply for export
-
 function startPreview(){
-  if(!prevSegs.length){prevSegs=buildSegments();}
-  if(!prevSegs.length){toast('Nessun segmento da mostrare','err');return;}
+  if(!prevSegs.length)prevSegs=buildSegments();
+  if(!prevSegs.length){toast('Aggiungi clip e fai il sync prima!','err');return;}
   prevPlaying=true;prevIdx=0;
-  document.getElementById('prevBtn').textContent='⏹ Stop';
-  document.getElementById('stopBtn').disabled=false;
-  if(prevAudio.src){
+  document.getElementById('prevBtn').textContent='■ Stop';
+  // Audio
+  prevAudio.currentTime=prevSegs[0].time;
+  prevAudio.play().catch(()=>{});
+  loadPrevSeg();
+}
+function stopPreview(){
+  prevPlaying=false;cancelAnimationFrame(prevRAF);prevRAF=null;
+  PV.pause();prevAudio.pause();
+  document.getElementById('prevBtn').textContent='▶ Play Preview';
+  document.getElementById('prevTimeLbl').textContent='—';
+  document.getElementById('prevLyricBar').textContent='';
+}
+function loadPrevSeg(){
+  if(!prevPlaying)return;
+  if(prevIdx>=prevSegs.length){
+    // LOOP: restart from beginning
+    prevIdx=0;
     prevAudio.currentTime=prevSegs[0].time;
     prevAudio.play().catch(()=>{});
   }
-  loadPrevSeg();
-}
-
-function stopPreview(){
-  prevPlaying=false;
-  cancelAnimationFrame(prevRAF);prevRAF=null;
-  PV.pause();prevAudio.pause();
-  document.getElementById('prevBtn').textContent='▶ Preview';
-  document.getElementById('stopBtn').disabled=true;
-  document.getElementById('prevTimeLbl').textContent='—';
-}
-
-function loadPrevSeg(){
-  if(!prevPlaying||prevIdx>=prevSegs.length){
-    // Loop
-    if(prevPlaying){prevIdx=0;loadPrevSeg();}else stopPreview();return;
-  }
   const seg=prevSegs[prevIdx];
   const clip=S.clips[seg.clipIdx];
-
-  // Apply video transition effect via CSS
-  applyPrevTransition(()=>{
-    PV.src=clip.url;
-    PV.currentTime=seg.clipStart;
-    PV.muted=true;
-    PV.play().catch(()=>{});
+  applyPrevVtr(seg.vtr,()=>{
+    PV.src=clip.url;PV.muted=true;PV.currentTime=seg.clipStart;PV.play().catch(()=>{});
   });
-
-  // Text
-  triggerTextAnim(seg.lyricText);
+  triggerAnim(seg.lyricText,seg.ta);
   document.getElementById('prevTimeLbl').textContent=fmtI(seg.time);
-
+  document.getElementById('prevLyricBar').textContent=seg.lyricText||'';
   prevSegStart=performance.now();
-  const segDurMs=seg.duration*1000;
-
+  const segMs=seg.duration*1000;
   function tick(now){
     if(!prevPlaying)return;
-    const elapsed=now-prevSegStart;
-    if(elapsed>=segDurMs){prevIdx++;loadPrevSeg();return;}
+    if(now-prevSegStart>=segMs){prevIdx++;loadPrevSeg();return;}
     prevRAF=requestAnimationFrame(tick);
   }
   prevRAF=requestAnimationFrame(tick);
 }
-
-function applyPrevTransition(loadCb){
-  if(S.capVtr==='cut'){loadCb();return;}
-  if(S.capVtr==='fade'||S.capVtr==='blur'){
-    vtrOv.style.transition='none';vtrOv.style.opacity='1';
-    loadCb();
-    requestAnimationFrame(()=>{vtrOv.style.transition='opacity .22s ease';vtrOv.style.opacity='0';});
-  }else if(S.capVtr==='flash'){
-    vtrFlash.style.transition='none';vtrFlash.style.opacity='0.8';
-    loadCb();
-    requestAnimationFrame(()=>{vtrFlash.style.transition='opacity .18s ease';vtrFlash.style.opacity='0';});
-  }else if(S.capVtr==='zoom'){
+function applyPrevVtr(vtr,loadCb){
+  if(vtr==='cut'){loadCb();return;}
+  if(vtr==='fade'){
+    darkOv.style.transition='none';darkOv.style.opacity='1';
+    loadCb();requestAnimationFrame(()=>{darkOv.style.transition='opacity .22s ease';darkOv.style.opacity='0';});
+  }else if(vtr==='blur'){
+    blurOv.style.transition='none';blurOv.style.opacity='1';
+    loadCb();requestAnimationFrame(()=>{blurOv.style.transition='opacity .22s ease';blurOv.style.opacity='0';});
+  }else if(vtr==='zoom'){
     PV.style.transition='none';PV.style.transform=S.veoOn?'scale(1.22)':'scale(1.12)';
-    loadCb();
-    requestAnimationFrame(()=>{PV.style.transition='transform .22s ease-out';PV.style.transform=S.veoOn?'scale(1.1)':'scale(1)';setTimeout(()=>PV.style.transition='',250);});
-  }else if(S.capVtr==='wipe'){
-    vtrOv.style.transition='none';vtrOv.style.opacity='0.6';
-    loadCb();
-    requestAnimationFrame(()=>{vtrOv.style.transition='opacity .22s ease';vtrOv.style.opacity='0';});
+    loadCb();requestAnimationFrame(()=>{PV.style.transition='transform .22s ease-out';PV.style.transform=S.veoOn?'scale(1.1)':'scale(1)';setTimeout(()=>PV.style.transition='',260);});
   }else{loadCb();}
 }
-
 document.getElementById('prevBtn').onclick=()=>{
   if(prevPlaying)stopPreview();else{prevSegs=buildSegments();startPreview();}
 };
-document.getElementById('stopBtn').onclick=()=>stopPreview();
+
+// ═══════════════════════════════════
+// READY CHECK
+// ═══════════════════════════════════
+function checkReady(){
+  const hasContent=S.mode==='nolyrics'||S.lines.some(l=>l.time!==null&&l.text);
+  const ok=S.audioFile&&S.clips.length>0&&hasContent;
+  document.getElementById('exp1Btn').disabled=!ok;
+  document.getElementById('exp3Btn').disabled=!ok;
+  document.getElementById('exp6Btn').disabled=!ok;
+  document.getElementById('prevBtn').disabled=!(S.audioFile&&S.clips.length>0&&(S.mode==='nolyrics'||S.lines.some(l=>l.time!==null)));
+}
 
 // ═══════════════════════════════════
 // SYNC MODAL
@@ -775,17 +865,16 @@ document.getElementById('openSyncBtn').onclick=()=>{
   buildMiniWave();updateMiniMarker();renderSync();
   ['sSaveBtn','sPauseBtn','sUndoBtn'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById('sStartBtn').classList.remove('hidden');
-  document.getElementById('sStatusMsg').textContent='Clicca sulla waveform per scegliere il punto di partenza, poi premi Avvia';
+  document.getElementById('sStatusMsg').textContent='Clicca sulla waveform per scegliere il punto di partenza';
   document.getElementById('syncModal').classList.add('open');
 };
 document.getElementById('closeSyncBtn').onclick=()=>{stopSync();document.getElementById('syncModal').classList.remove('open');};
-
 function buildMiniWave(){
   const c=document.getElementById('miniWC'),ctx=c.getContext('2d'),cont=document.getElementById('miniWave');
   c.width=cont.clientWidth*(window.devicePixelRatio||1);c.height=cont.clientHeight*(window.devicePixelRatio||1);
   ctx.clearRect(0,0,c.width,c.height);if(!waveData)return;
   const W=c.width,H=c.height,step=W/waveData.length;
-  waveData.forEach((v,i)=>{const h=v*H*.8,y=(H-h)/2;ctx.fillStyle='rgba(139,92,246,.42)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.5),h,1);ctx.fill();});
+  waveData.forEach((v,i)=>{const h=v*H*.8,y=(H-h)/2;ctx.fillStyle='rgba(139,92,246,.45)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.5),h,1);ctx.fill();});
 }
 function updateMiniMarker(){
   if(!S.audioDuration)return;
@@ -802,7 +891,6 @@ document.getElementById('miniWave').onclick=e=>{
   SS.startOff=clamp((e.clientX-rect.left)/rect.width*S.audioDuration,S.trimStart,S.trimEnd);
   bgAudio.currentTime=SS.startOff;updateMiniMarker();updateMiniPH();
 };
-
 function renderSync(){
   const lines=SS.lines,cur=SS.cursor,total=lines.length;
   const prev=cur>0?lines[cur-1]:null;
@@ -811,16 +899,12 @@ function renderSync(){
     document.getElementById('sCurTxt').textContent=lines[cur].text||(lines[cur].text===''?'(pausa)':'—');
     document.getElementById('sCursor').textContent=(cur+1)+'/'+total;
     document.getElementById('sCurTime').textContent=lines[cur].time!==null?fmtI(lines[cur].time):'—';
-  }else{
-    document.getElementById('sCurTxt').textContent='✓ Fine!';
-    document.getElementById('sCursor').textContent='';document.getElementById('sCurTime').textContent='';
-  }
+  }else{document.getElementById('sCurTxt').textContent='✓ Fine!';document.getElementById('sCursor').textContent='';document.getElementById('sCurTime').textContent='';}
   const next=cur+1<total?lines[cur+1]:null;
   document.getElementById('sNextRow').innerHTML=next?(next.text||'<em style="color:#444">(pausa)</em>'):'—';
   document.getElementById('sProg').style.width=(total>0?(cur/total)*100:0)+'%';
   if(cur>=total){stopSync();document.getElementById('sSaveBtn').classList.remove('hidden');document.getElementById('sStatusMsg').textContent='✓ Sync completo! Premi Salva.';}
 }
-
 document.getElementById('sStartBtn').onclick=()=>{
   if(!S.audioDuration){toast('Carica prima il brano!','err');return;}
   SS.cursor=0;SS.lines.forEach(l=>l.time=null);
@@ -846,44 +930,36 @@ document.getElementById('sResetBtn').onclick=()=>{
   document.getElementById('sUndoBtn').classList.add('hidden');
   document.getElementById('sSaveBtn').classList.add('hidden');
   document.getElementById('sPauseBtn').textContent='⏸ Pausa';
-  document.getElementById('sStatusMsg').textContent='Clicca sulla waveform per scegliere il punto di partenza, poi premi Avvia';
+  document.getElementById('sStatusMsg').textContent='Clicca sulla waveform per scegliere il punto di partenza';
   renderSync();
 };
 document.getElementById('sSaveBtn').onclick=()=>{
   S.lines=SS.lines.map(l=>({text:l.text,time:l.time}));
   renderLyricsStrip();
   document.getElementById('syncModal').classList.remove('open');
-  stopSync();
-  prevSegs=buildSegments();
-  const ok=prevSegs.length>0;
-  document.getElementById('prevBtn').disabled=!ok;
-  document.getElementById('stopBtn').disabled=true;
-  checkReady();toast('✓ Sync salvato!');
-  if(ok)startPreview();
+  stopSync();prevSegs=buildSegments();checkReady();
+  toast('✓ Sync salvato!');
 };
 function stopSync(){
   SS.running=false;SS.spaceDown=false;bgAudio.pause();
   document.querySelector('#playIcon path').setAttribute('d','M0 0 L10 6 L0 12Z');
   document.getElementById('spaceBar').classList.remove('pressed');
 }
-
-// SPACEBAR
 document.addEventListener('keydown',e=>{
   if(document.activeElement===document.getElementById('lyricsTA'))return;
   if(e.code!=='Space')return;e.preventDefault();
   if(!SS.running||SS.spaceDown)return;
   SS.spaceDown=true;
-  if(SS.cursor<SS.lines.length){SS.lines[SS.cursor].time=bgAudio.currentTime;renderSync();document.getElementById('sCurTime').textContent=fmtI(bgAudio.currentTime);}
+  if(SS.cursor<SS.lines.length){SS.lines[SS.cursor].time=bgAudio.currentTime;renderSync();}
   document.getElementById('spaceBar').classList.add('pressed');
-  // Round-robin clip change during sync
+  // clip change during sync - round robin
   if(S.clips.length){
     if(syncClipRR.length===0)syncClipRR=shuffleArr(S.clips.map((_,i)=>i));
     const ci=syncClipRR[syncClipRRIdx%syncClipRR.length];syncClipRRIdx++;
-    const clip=S.clips[ci];
-    const ms=Math.max(0,clip.duration-3);
+    const clip=S.clips[ci];const ms=Math.max(0,clip.duration-3);
     PV.src=clip.url;PV.muted=true;PV.currentTime=Math.random()*ms;PV.play().catch(()=>{});
   }
-  triggerTextAnim(SS.cursor<SS.lines.length?SS.lines[SS.cursor].text||'':'');
+  triggerAnim(SS.cursor<SS.lines.length?SS.lines[SS.cursor].text||'':'');
 });
 document.addEventListener('keyup',e=>{
   if(e.code!=='Space')return;e.preventDefault();
@@ -894,49 +970,38 @@ document.addEventListener('keyup',e=>{
 });
 
 // ═══════════════════════════════════
-// READY CHECK
+// CANVAS CAPTION
 // ═══════════════════════════════════
-function checkReady(){
-  const ok=S.audioFile&&S.clips.length>0&&(S.mode==='nolyrics'||S.lines.some(l=>l.time!==null&&l.text));
-  document.getElementById('exp1Btn').disabled=!ok;
-  document.getElementById('exp3Btn').disabled=!ok;
-  document.getElementById('exp6Btn').disabled=!ok;
-  document.getElementById('prevBtn').disabled=!(S.clips.length>0&&(S.mode==='nolyrics'||S.lines.some(l=>l.time!==null)));
+function getCanvasFont(fs){
+  if(S.capFont==='fnt-montserrat')return`900 ${fs}px Montserrat,sans-serif`;
+  if(S.capFont==='fnt-bebas')return`400 ${fs}px "Bebas Neue",sans-serif`;
+  if(S.capFont==='fnt-bangers')return`400 ${fs}px Bangers,cursive`;
+  if(S.capFont==='fnt-lilita')return`400 ${fs}px "Lilita One",cursive`;
+  if(S.capFont==='fnt-boogaloo')return`400 ${fs}px Boogaloo,cursive`;
+  if(S.capFont==='fnt-retro')return`700 ${fs}px "Courier Prime",monospace`;
+  if(S.capFont==='fnt-hand')return`700 ${fs}px "Dancing Script",cursive`;
+  if(S.capFont==='fnt-marker')return`400 ${fs}px "Permanent Marker",cursive`;
+  return`900 ${fs}px Montserrat,sans-serif`;
 }
-
-// ═══════════════════════════════════
-// CANVAS CAPTION FOR EXPORT
-// — fontSize scaled from phone to 1280px canvas
-// ═══════════════════════════════════
-function getCanvasFont(scaledFs){
-  if(S.capFont==='fnt-tiktok')return`900 ${scaledFs}px Montserrat,sans-serif`;
-  if(S.capFont==='fnt-bebas')return`400 ${scaledFs}px "Bebas Neue",sans-serif`;
-  if(S.capFont==='fnt-oswald')return`700 ${scaledFs}px Oswald,sans-serif`;
-  if(S.capFont==='fnt-anton')return`400 ${scaledFs}px Anton,sans-serif`;
-  if(S.capFont==='fnt-retro')return`700 ${scaledFs}px "Courier Prime",monospace`;
-  if(S.capFont==='fnt-hand')return`700 ${scaledFs}px "Dancing Script",cursive`;
-  if(S.capFont==='fnt-marker')return`400 ${scaledFs}px "Permanent Marker",cursive`;
-  if(S.capFont==='fnt-right')return`400 ${scaledFs}px Righteous,sans-serif`;
-  return`900 ${scaledFs}px Montserrat,sans-serif`;
-}
-function drawCapCanvas(ctx,text,W,H,textProg){
+function drawCapCanvas(ctx,text,W,H,p,ta){
   if(!text||!text.trim())return;
-  // Scale fontSize from phone screen height to canvas height
   const phoneH=document.getElementById('videoCon').clientHeight||448;
   const scaledFs=Math.round(S.fontSize*(H/phoneH));
   ctx.font=getCanvasFont(scaledFs);ctx.textAlign='center';ctx.textBaseline='middle';
-  const mW=W*.86,lh=scaledFs*1.2,words=text.split(' '),lines=[];let cur='';
+  const mW=W*.88,lh=scaledFs*1.18,words=text.split(' '),lines=[];let cur='';
   words.forEach(w=>{const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>mW&&cur){lines.push(cur);cur=w;}else cur=t;});
   if(cur)lines.push(cur);
   const sy=S.capPos/100*H-(lines.length-1)*lh/2;
-  const p=textProg!=null?Math.min(textProg,1):1;
+  const prog=p!=null?Math.min(p,1):1;
   lines.forEach((line,li)=>{
     const y=sy+li*lh;ctx.save();
-    if(S.capTA==='fade'){ctx.globalAlpha=p;}
-    else if(S.capTA==='up'){ctx.translate(0,(1-p)*20);ctx.globalAlpha=p;}
-    else if(S.capTA==='left'){ctx.translate((1-p)*44,0);ctx.globalAlpha=p;}
-    else if(S.capTA==='zoom'){const sc=.65+p*.35;ctx.translate(W/2,y);ctx.scale(sc,sc);ctx.translate(-W/2,-y);ctx.globalAlpha=p;}
-    else if(S.capTA==='swipe'){ctx.beginPath();ctx.rect(0,y-lh/2,p*W,lh);ctx.clip();}
+    if(ta==='fade'){ctx.globalAlpha=prog;}
+    else if(ta==='up'){ctx.translate(0,(1-prog)*22);ctx.globalAlpha=prog;}
+    else if(ta==='left'){ctx.translate((1-prog)*48,0);ctx.globalAlpha=prog;}
+    else if(ta==='drop'){ctx.translate(0,-(1-prog)*22);ctx.globalAlpha=prog;}
+    else if(ta==='zoom'){const sc=.6+prog*.4;ctx.translate(W/2,y);ctx.scale(sc,sc);ctx.translate(-W/2,-y);ctx.globalAlpha=prog;}
+    else if(ta==='pop'){const sc=1.35-(prog*.35);ctx.translate(W/2,y);ctx.scale(sc,sc);ctx.translate(-W/2,-y);ctx.globalAlpha=prog;}
+    else if(ta==='swipe'){ctx.beginPath();ctx.rect(0,y-lh*.6,prog*W,lh*1.1);ctx.clip();}
     if(S.olOn){ctx.strokeStyle=S.olColor;ctx.lineWidth=Math.max(scaledFs*.1,2);ctx.lineJoin='round';ctx.strokeText(line,W/2,y);}
     ctx.fillStyle=S.txColor;ctx.fillText(line,W/2,y);ctx.restore();
   });
@@ -962,31 +1027,33 @@ async function exportOne(segs,filename,onP){
   }
   const fps=30,spf=Math.floor(48000/fps);
   const total=segs.reduce((a,s)=>a+Math.ceil(s.duration*fps),0);
+  const VTR_F=Math.floor(fps*.22),TA_F=Math.floor(fps*.38);
   let fc=0;
-  const VTR_F=S.capVtr==='cut'?0:Math.floor(fps*.2);
-  const TA_F=Math.floor(fps*.35);
   for(const seg of segs){
     const clip=S.clips[seg.clipIdx];sv.src=clip.url;
     await new Promise(r=>sv.onloadedmetadata=r);
     const sf=Math.ceil(seg.duration*fps);
     for(let f=0;f<sf;f++){
-      sv.currentTime=seg.clipStart+f/fps;
-      await new Promise(r=>sv.onseeked=r);
+      sv.currentTime=seg.clipStart+f/fps;await new Promise(r=>sv.onseeked=r);
       rx.globalAlpha=1;
       const sc=S.veoOn?1.08:1.0;
       rx.drawImage(sv,-(sv.videoWidth*sc-EXPORT_W)/2,-(sv.videoHeight*sc-EXPORT_H)/2,sv.videoWidth*sc,sv.videoHeight*sc);
       // Video transition
-      if(f<VTR_F){
-        const p=f/VTR_F;
-        if(S.capVtr==='fade'){rx.fillStyle='rgba(0,0,0,'+(1-p)+')';rx.fillRect(0,0,EXPORT_W,EXPORT_H);}
-        else if(S.capVtr==='flash'){rx.fillStyle='rgba(255,255,255,'+(1-p)*.7+')';rx.fillRect(0,0,EXPORT_W,EXPORT_H);}
-        else if(S.capVtr==='blur'){rx.globalAlpha=(1-p)*.45;rx.drawImage(sv,-(sv.videoWidth*sc-EXPORT_W)/2-5,-(sv.videoHeight*sc-EXPORT_H)/2,sv.videoWidth*sc,sv.videoHeight*sc);rx.globalAlpha=1;}
-        else if(S.capVtr==='zoom'){const zs=sc+(1-p)*.15;rx.globalAlpha=p;rx.drawImage(sv,-(sv.videoWidth*zs-EXPORT_W)/2,-(sv.videoHeight*zs-EXPORT_H)/2,sv.videoWidth*zs,sv.videoHeight*zs);rx.globalAlpha=1;}
-        else if(S.capVtr==='wipe'){rx.fillStyle='rgba(0,0,0,'+(1-p)*.85+')';rx.fillRect(0,0,EXPORT_W*(1-p),EXPORT_H);}
+      if(f<VTR_F&&seg.vtr!=='cut'){
+        const pp=f/VTR_F;
+        if(seg.vtr==='fade'){rx.fillStyle='rgba(0,0,0,'+(1-pp)+')';rx.fillRect(0,0,EXPORT_W,EXPORT_H);}
+        else if(seg.vtr==='blur'){
+          // Blur sim: draw scaled-up version at low alpha for glow effect
+          rx.globalAlpha=(1-pp)*.7;
+          const bs=sc*1.04;
+          rx.drawImage(sv,-(sv.videoWidth*bs-EXPORT_W)/2,-(sv.videoHeight*bs-EXPORT_H)/2,sv.videoWidth*bs,sv.videoHeight*bs);
+          rx.drawImage(sv,-(sv.videoWidth*bs-EXPORT_W)/2+3,-(sv.videoHeight*bs-EXPORT_H)/2+3,sv.videoWidth*bs,sv.videoHeight*bs);
+          rx.fillStyle='rgba(0,0,0,'+(1-pp)*.3+')';rx.globalAlpha=1;rx.fillRect(0,0,EXPORT_W,EXPORT_H);
+        }
+        else if(seg.vtr==='zoom'){const zs=sc+(1-pp)*.12;rx.globalAlpha=pp;rx.drawImage(sv,-(sv.videoWidth*zs-EXPORT_W)/2,-(sv.videoHeight*zs-EXPORT_H)/2,sv.videoWidth*zs,sv.videoHeight*zs);rx.globalAlpha=1;}
       }
-      drawCapCanvas(rx,seg.lyricText,EXPORT_W,EXPORT_H,Math.min(f/TA_F,1));
-      const vf=new VideoFrame(rc,{timestamp:fc*1_000_000/fps});
-      ve.encode(vf,{keyFrame:fc%30===0});vf.close();
+      drawCapCanvas(rx,seg.lyricText,EXPORT_W,EXPORT_H,Math.min(f/TA_F,1),seg.ta);
+      const vf=new VideoFrame(rc,{timestamp:fc*1_000_000/fps});ve.encode(vf,{keyFrame:fc%30===0});vf.close();
       if(ae&&adec){
         const at=S.trimStart+fc/fps,si=Math.floor(at*adec.sampleRate);
         const lc=adec.getChannelData(0),rc2=adec.numberOfChannels>1?adec.getChannelData(1):lc;
@@ -1003,7 +1070,6 @@ async function exportOne(segs,filename,onP){
   const blob=new Blob([mux.target.buffer],{type:'video/mp4'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);
 }
-
 async function runExports(count){
   const ov=document.getElementById('expOv');ov.classList.add('open');
   document.getElementById('expStatus').classList.remove('hidden');
@@ -1023,45 +1089,16 @@ async function runExports(count){
     }
     document.getElementById('expStatTxt').textContent='✓ Completato!';document.getElementById('expBar').style.width='100%';
     toast('✓ '+count+' video esportati!');
-  }catch(err){console.error(err);document.getElementById('expStatTxt').textContent='Errore';toast('Errore: '+err.message,'err');}
+  }catch(err){console.error(err);document.getElementById('expStatTxt').textContent='Errore: '+err.message;toast('Errore: '+err.message,'err');}
   ov.classList.remove('open');setTimeout(()=>document.getElementById('expStatus').classList.add('hidden'),3000);
 }
 document.getElementById('exp1Btn').onclick=()=>runExports(1);
 document.getElementById('exp3Btn').onclick=()=>runExports(3);
 document.getElementById('exp6Btn').onclick=()=>runExports(6);
 
-// ═══════════════════════════════════
-// HELP
-// ═══════════════════════════════════
-document.getElementById('helpBtn').onclick=()=>alert(`LYRIC VIDEO MAKER
-
-LAYOUT:
-• Sinistra: carica brano, lyrics, clip, esporta
-• Centro: preview iPhone (live), transport preview
-• Destra: stile caption (font, transizione, animazione testo, colori)
-
-FLUSSO:
-1. Carica brano → trascina bordi viola per max 30s
-2. Scrivi lyrics → Avvia Sync
-   → Clicca mini-waveform per punto di partenza
-   → SPAZIO PREMUTO = riga in scena (clip cambia in round-robin)
-   → SPAZIO RILASCIATO = riga successiva
-   → Salva → preview parte automaticamente
-3. Aggiungi clip (round-robin: ordine casuale ma equo, frame sempre diversi)
-4. Stile a destra: font, transizione clip, animazione testo
-   → Le transizioni si vedono subito in preview!
-5. Esporta 1/3/6 video — ogni export = mix casuale diverso
-
-FIX:
-• Audio preview separato dall'audio editing
-• Preview usa RAF loop (no glitch cambio scena)
-• Export dura tutto il range audio selezionato
-• Dimensione testo scalata correttamente: preview = export
-• VEO (zoom 1.08x) attivo di default, togglabile`);
-
 // INIT
 window.addEventListener('resize',resizeWave);
-resizeWave();renderClips();
+resizeWave();
 </script>
 </body>
 </html>
