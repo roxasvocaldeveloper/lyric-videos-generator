@@ -85,14 +85,14 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;display:flex
 .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
 .cth{position:relative;aspect-ratio:9/16;background:#0d0d0d;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:border-color .15s;}
 .cth:hover{border-color:#3a3a3e;}
-.cth.selected{border-color:var(--b);}
-.cth.playing{border-color:var(--p);}
+.cth.playing-inline{border-color:var(--p);}
+/* video inside clip thumb plays on click via JS - pointer-events auto so it DOES NOT block click on the div */
 .cth video{width:100%;height:100%;object-fit:cover;pointer-events:none;}
 .cth .cd{position:absolute;bottom:3px;right:3px;font-family:'Courier Prime',monospace;font-size:7px;background:rgba(0,0,0,.8);color:var(--p);padding:1px 4px;border-radius:2px;}
 .cth .cx{position:absolute;top:3px;right:3px;width:15px;height:15px;background:rgba(0,0,0,.72);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;cursor:pointer;color:#fff;z-index:10;}
 .cth:hover .cx{display:flex;}
 .cth .cov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .15s;}
-.cth:hover .cov{background:rgba(0,0,0,.38);}
+.cth:hover .cov{background:rgba(0,0,0,.32);}
 .cth .cov-icon{font-size:20px;color:#fff;opacity:0;transition:opacity .15s;}
 .cth:hover .cov-icon{opacity:1;}
 .cadd{aspect-ratio:9/16;background:#080808;border:1px dashed var(--bd);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#2a2a2e;transition:all .15s;position:relative;font-size:22px;}
@@ -157,44 +157,60 @@ input[type=range]{accent-color:var(--p);width:100%;}
 
 <!-- ═══════════════ TOP BAR ═══════════════ -->
 <div id="topBar">
-  <!-- Header row -->
+  <!-- Header row: logo | upload/play area | trim info -->
   <div class="hdr-row">
     <!-- Logo -->
-    <div class="shrink-0 mr-2">
+    <div class="shrink-0 mr-3">
       <div class="text-sm font-black italic uppercase tracking-tight">Lyric <span class="text-blue-400">Video</span> Maker</div>
       <div class="text-[7px] font-bold tracking-widest text-zinc-700 uppercase">Soundvertise</div>
     </div>
 
-    <!-- AUDIO UPLOAD — big and centered-looking -->
-    <label id="audioUploadLabel" class="flex-shrink-0 flex items-center gap-3 cursor-pointer group" style="background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.12));border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:7px 18px;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.7)'" onmouseout="this.style.borderColor='rgba(139,92,246,.35)'">
+    <!-- AUDIO UPLOAD label (becomes Change Song after load) -->
+    <label id="audioUploadLabel" class="flex-shrink-0 flex items-center gap-3 cursor-pointer" style="background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(139,92,246,.14));border:1px solid rgba(139,92,246,.4);border-radius:12px;padding:7px 18px;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.8)'" onmouseout="this.style.borderColor='rgba(139,92,246,.4)'">
       <svg class="w-5 h-5 text-violet-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
       <div>
-        <div class="text-[10px] font-black uppercase text-zinc-400 group-hover:text-white transition-colors">Carica Brano</div>
-        <div class="text-[8px] text-zinc-600 font-mono" id="audioLabel">MP3 · WAV · AAC</div>
+        <div class="text-[11px] font-black uppercase text-white" id="audioLabelTitle">Upload Song</div>
+        <div class="text-[8px] text-zinc-500 font-mono" id="audioLabel">MP3 · WAV · AAC</div>
       </div>
       <input type="file" id="audioInput" accept="audio/*" class="hidden">
     </label>
 
-    <!-- Play + time -->
-    <div class="flex items-center gap-2 shrink-0">
-      <button id="playBtn" class="w-8 h-8 rounded-full btn-sv flex items-center justify-center">
-        <svg id="playIcon" width="8" height="10" viewBox="0 0 10 12" fill="white"><path d="M0 0 L10 6 L0 12Z"/></svg>
+    <!-- Play + time (hidden until audio loaded) -->
+    <div id="playArea" class="hidden flex items-center gap-2 shrink-0">
+      <button id="playBtn" class="w-9 h-9 rounded-full btn-sv flex items-center justify-center">
+        <svg id="playIcon" width="9" height="11" viewBox="0 0 10 12" fill="white"><path d="M0 0 L10 6 L0 12Z"/></svg>
       </button>
-      <span id="curTime" class="font-mono text-[10px] text-zinc-500 w-8">0:00</span>
+      <span id="curTime" class="font-mono text-[11px] text-zinc-400 w-10">0:00</span>
     </div>
-    <span id="trimRange" class="text-violet-400 font-mono text-[10px] shrink-0">—</span>
-    <span id="durLabel" class="text-blue-400 font-mono text-[10px] font-bold shrink-0">—</span>
+
+    <div class="flex-1"></div>
+
+    <!-- Trim info (hidden until audio loaded) -->
+    <div id="trimInfo" class="hidden flex items-center gap-3 shrink-0">
+      <span id="trimRange" class="text-violet-400 font-mono text-[10px]">—</span>
+      <span id="durLabel" class="text-blue-400 font-mono text-[10px] font-bold">—</span>
+    </div>
   </div>
 
-  <!-- Waveform row -->
+  <!-- Waveform row — shows big upload CTA if no audio, else waveform -->
   <div class="wave-row">
-    <div class="trimmer-track h-[68px] relative" id="trimTrack">
-      <canvas id="wvC"></canvas>
-      <div id="lyricMk"></div>
-      <div id="aphd"></div>
-      <div id="trimOv" class="trim-ov" style="left:0%;width:100%;">
-        <div class="trim-h trim-hl" id="trimL"></div>
-        <div class="trim-h trim-hr" id="trimR"></div>
+    <!-- No-audio placeholder -->
+    <div id="noAudioPlaceholder" style="height:68px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bd);border-radius:8px;background:#070709;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.5)'" onmouseout="this.style.borderColor='var(--bd)'" onclick="document.getElementById('audioInput').click()">
+      <div class="text-center">
+        <div class="text-zinc-600 text-[11px] font-black uppercase tracking-widest">Carica un brano per vedere la waveform</div>
+        <div class="text-zinc-700 text-[9px] mt-0.5">oppure clicca qui per scegliere un file</div>
+      </div>
+    </div>
+    <!-- Waveform (hidden until audio loaded) -->
+    <div id="waveformArea" class="hidden">
+      <div class="trimmer-track h-[68px] relative" id="trimTrack">
+        <canvas id="wvC"></canvas>
+        <div id="lyricMk"></div>
+        <div id="aphd"></div>
+        <div id="trimOv" class="trim-ov" style="left:0%;width:100%;">
+          <div class="trim-h trim-hl" id="trimL"></div>
+          <div class="trim-h trim-hr" id="trimR"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -210,22 +226,6 @@ input[type=range]{accent-color:var(--p);width:100%;}
     <label class="sb cursor-pointer relative text-[9px]">
       + Add<input type="file" id="clipsInput" accept="video/*" multiple class="absolute inset-0 opacity-0 cursor-pointer">
     </label>
-  </div>
-  <!-- Selected clip info -->
-  <div id="clipInfoBar" class="hidden shrink-0 px-3 py-2 border-b border-[var(--bd)] bg-zinc-950">
-    <div class="flex items-center gap-2">
-      <div class="w-10 h-[58px] rounded overflow-hidden bg-black shrink-0">
-        <video id="clipThumbVid" class="w-full h-full object-cover" muted playsinline></video>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div id="clipInfoName" class="text-[10px] font-bold text-zinc-300 truncate"></div>
-        <div id="clipInfoDur" class="text-[8px] text-zinc-600 font-mono mt-0.5"></div>
-        <div class="flex gap-1.5 mt-1.5">
-          <button id="viewClipBtn" class="smb onp text-[9px] px-2 py-1 flex-1">▶ Guarda</button>
-          <button id="viewEditBtn" class="smb text-[9px] px-2 py-1 flex-1">🎬 Edit</button>
-        </div>
-      </div>
-    </div>
   </div>
   <div id="clipsScroll">
     <div id="clipsGrid" class="cg"></div>
@@ -243,7 +243,6 @@ input[type=range]{accent-color:var(--p);width:100%;}
       <canvas id="blurCanvas"></canvas>
       <div id="vtrDarkOv"></div>
       <div id="capEl" class="fnt-montserrat" style="top:42%;font-size:20px;color:#fff;"></div>
-      <div id="pvBadge" class="edit">Edit</div>
     </div>
   </div>
 
@@ -287,14 +286,9 @@ input[type=range]{accent-color:var(--p);width:100%;}
     </div>
 
     <!-- CON LYRICS PANEL -->
-    <div id="panLyrics" class="flex flex-col gap-2.5">
-      <textarea id="lyricsTA" rows="6" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" class="w-full bg-black border border-[var(--bd)] rounded-xl p-3 outline-none resize-none text-zinc-300 placeholder-zinc-700 text-[11px]" style="font-family:'Courier Prime',monospace;line-height:1.65;" onfocus="this.style.borderColor='#8B5CF6'" onblur="this.style.borderColor='var(--bd)'"></textarea>
+    <div id="panLyrics" class="flex flex-col gap-2">
+      <textarea id="lyricsTA" rows="5" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" class="w-full bg-black border border-[var(--bd)] rounded-xl p-2.5 outline-none resize-none text-zinc-300 placeholder-zinc-700 text-[11px]" style="font-family:'Courier Prime',monospace;line-height:1.65;" onfocus="this.style.borderColor='#8B5CF6'" onblur="this.style.borderColor='var(--bd)'"></textarea>
       <button id="openSyncBtn" class="btn-sv w-full py-2.5 rounded-xl text-[11px] uppercase" disabled>♪ Avvia Sync</button>
-      <!-- Synced strip -->
-      <div id="syncStripWrap" class="hidden space-y-1">
-        <div class="flex justify-between"><span class="slbl">Sincronizzate</span><span id="syncedCount" class="text-[9px] text-zinc-600 font-mono">0/0</span></div>
-        <div id="lyricsStrip" class="flex gap-1.5 overflow-x-auto pb-0.5" style="min-height:34px;"></div>
-      </div>
     </div>
 
     <!-- NO LYRICS PANEL -->
@@ -311,28 +305,64 @@ input[type=range]{accent-color:var(--p);width:100%;}
 
     <div class="sdiv"></div>
 
-    <!-- FONT -->
-    <div>
-      <div class="slbl mb-2">Font</div>
-      <div class="grid grid-cols-2 gap-1.5">
-        <button class="smb on" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;">BOLD</button>
-        <button class="smb" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;">BEBAS</button>
-        <button class="smb" data-font="fnt-bangers" style="font-family:'Bangers',cursive;font-size:13px;">BANG!</button>
-        <button class="smb" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;">Lilita</button>
-        <button class="smb" data-font="fnt-boogaloo" style="font-family:'Boogaloo',cursive;font-size:12px;">Boogaloo</button>
-        <button class="smb" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;font-weight:700;font-size:10px;">RETRO</button>
-        <button class="smb" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;font-size:12px;">Script</button>
-        <button class="smb" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;font-size:10px;">Marker</button>
+    <!-- FONT + SETTINGS: two columns side by side -->
+    <div class="flex gap-2" style="align-items:flex-start;">
+
+      <!-- FONT COLUMN (compact) -->
+      <div class="flex flex-col gap-1" style="width:44%;">
+        <div class="slbl mb-1">Font</div>
+        <button class="smb on text-left" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;padding:5px 7px;">BOLD</button>
+        <button class="smb text-left" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:5px 7px;">BEBAS</button>
+        <button class="smb text-left" data-font="fnt-bangers" style="font-family:'Bangers',cursive;font-size:12px;padding:5px 7px;">BANG!</button>
+        <button class="smb text-left" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;font-size:10px;padding:5px 7px;">Lilita</button>
+        <button class="smb text-left" data-font="fnt-boogaloo" style="font-family:'Boogaloo',cursive;font-size:11px;padding:5px 7px;">Boogaloo</button>
+        <button class="smb text-left" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;font-weight:700;font-size:9px;padding:5px 7px;">RETRO</button>
+        <button class="smb text-left" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;font-size:11px;padding:5px 7px;">Script</button>
+        <button class="smb text-left" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;font-size:9px;padding:5px 7px;">Marker</button>
       </div>
-    </div>
+
+      <!-- SETTINGS COLUMN -->
+      <div class="flex flex-col gap-2.5" style="flex:1;min-width:0;">
+        <div class="slbl mb-0">Impostazioni</div>
+
+        <!-- Dimensione -->
+        <div>
+          <div class="flex justify-between mb-1"><span class="slbl" style="font-size:8px;">Dimensione</span><span id="fsLbl" class="text-[9px] text-blue-400 font-mono">20px</span></div>
+          <input type="range" id="fsSlider" min="12" max="54" value="20">
+        </div>
+
+        <!-- Posizione -->
+        <div>
+          <div class="flex justify-between mb-1"><span class="slbl" style="font-size:8px;">Posizione Y</span><span id="posLbl" class="text-[9px] text-blue-400 font-mono">42%</span></div>
+          <input type="range" id="posSlider" min="8" max="82" value="42">
+        </div>
+
+        <!-- Colori -->
+        <div>
+          <div class="slbl mb-1.5" style="font-size:8px;">Colori</div>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded border border-zinc-700 overflow-hidden relative shrink-0"><input type="color" id="txColor" value="#ffffff" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
+              <span class="text-[8px] text-zinc-600 font-bold uppercase">Testo</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded border border-zinc-700 overflow-hidden relative shrink-0"><input type="color" id="olColor" value="#000000" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
+              <span class="text-[8px] text-zinc-600 font-bold uppercase">Bordo</span>
+            </div>
+            <button id="olToggle" class="tog on text-[8px] py-1.5 justify-center w-full">Bordo ON</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end font+settings flex -->
 
     <div class="sdiv"></div>
 
     <!-- TRANSIZIONE VIDEO -->
     <div>
-      <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center justify-between mb-1.5">
         <span class="slbl">Transizione clip</span>
-        <button class="smb shuf text-[9px] px-2.5 py-1" id="vtrShufBtn">⚡ Auto</button>
+        <button class="smb shuf text-[9px] px-2 py-1" id="vtrShufBtn">⚡ Auto</button>
       </div>
       <div class="grid grid-cols-4 gap-1.5">
         <button class="smb on" data-vtr="cut">CUT</button>
@@ -346,9 +376,9 @@ input[type=range]{accent-color:var(--p);width:100%;}
 
     <!-- ANIMAZIONE TESTO -->
     <div>
-      <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center justify-between mb-1.5">
         <span class="slbl">Entrata testo</span>
-        <button class="smb shuf text-[9px] px-2.5 py-1" id="taShufBtn">⚡ Auto</button>
+        <button class="smb shuf text-[9px] px-2 py-1" id="taShufBtn">⚡ Auto</button>
       </div>
       <div class="grid grid-cols-4 gap-1.5">
         <button class="smb onp" data-ta="none">OFF</button>
@@ -359,42 +389,6 @@ input[type=range]{accent-color:var(--p);width:100%;}
         <button class="smb" data-ta="swipe">SWIPE</button>
         <button class="smb" data-ta="drop">↓ GIÙ</button>
         <button class="smb" data-ta="pop">POP</button>
-      </div>
-    </div>
-
-    <div class="sdiv"></div>
-
-    <!-- SIZE + POS + OUTLINE THICKNESS -->
-    <div class="space-y-2.5">
-      <div>
-        <div class="flex justify-between mb-1"><span class="slbl">Dimensione testo</span><span id="fsLbl" class="text-[10px] text-blue-400 font-mono">20px</span></div>
-        <input type="range" id="fsSlider" min="12" max="54" value="20">
-      </div>
-      <div>
-        <div class="flex justify-between mb-1"><span class="slbl">Posizione Y</span><span id="posLbl" class="text-[10px] text-blue-400 font-mono">42%</span></div>
-        <input type="range" id="posSlider" min="8" max="82" value="42">
-      </div>
-      <div id="olThickRow">
-        <div class="flex justify-between mb-1"><span class="slbl">Spessore bordo</span><span id="olThickLbl" class="text-[10px] text-violet-400 font-mono">2px</span></div>
-        <input type="range" id="olThickSlider" min="0.5" max="8" step="0.5" value="2">
-      </div>
-    </div>
-
-    <div class="sdiv"></div>
-
-    <!-- COLORI -->
-    <div class="space-y-2">
-      <div class="slbl">Colori testo</div>
-      <div class="flex items-center gap-3 flex-wrap">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg border border-zinc-700 overflow-hidden relative"><input type="color" id="txColor" value="#ffffff" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
-          <span class="text-[9px] text-zinc-600 font-bold uppercase">Testo</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg border border-zinc-700 overflow-hidden relative"><input type="color" id="olColor" value="#000000" class="absolute inset-0 w-[200%] h-[200%] -top-1/4 -left-1/4 cursor-pointer border-none"></div>
-          <span class="text-[9px] text-zinc-600 font-bold uppercase">Bordo</span>
-        </div>
-        <button id="olToggle" class="tog on text-[9px] ml-auto py-2">Bordo ON</button>
       </div>
     </div>
 
@@ -610,6 +604,12 @@ document.getElementById('playBtn').onclick=()=>{
 document.getElementById('audioInput').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   S.audioFile=f;const url=URL.createObjectURL(f);bgAudio.src=url;prevAudio.src=url;
+  // Switch from placeholder to waveform
+  document.getElementById('noAudioPlaceholder').style.display='none';
+  document.getElementById('waveformArea').classList.remove('hidden');
+  document.getElementById('playArea').classList.remove('hidden');
+  document.getElementById('trimInfo').classList.remove('hidden');
+  document.getElementById('audioLabelTitle').textContent='Change Song';
   document.getElementById('audioLabel').textContent=f.name;
   await loadWaveform(f);toast('Brano caricato!');
 };
@@ -637,11 +637,26 @@ function renderClips(){
     d.appendChild(v);
     const dur=document.createElement('div');dur.className='cd';dur.textContent=fmtI(c.duration);d.appendChild(dur);
     const del=document.createElement('div');del.className='cx';del.textContent='×';
-    del.onclick=ev=>{ev.stopPropagation();S.clips.splice(i,1);if(selectedClipIdx===i)deselectClip();else if(selectedClipIdx>i)selectedClipIdx--;renderClips();document.getElementById('clipCount').textContent=S.clips.length;checkReady();};
+    del.onclick=ev=>{ev.stopPropagation();S.clips.splice(i,1);renderClips();document.getElementById('clipCount').textContent=S.clips.length;checkReady();};
     d.appendChild(del);
     const cov=document.createElement('div');cov.className='cov';
     const icon=document.createElement('div');icon.className='cov-icon';icon.textContent='▶';cov.appendChild(icon);d.appendChild(cov);
-    d.onclick=()=>selectClip(i);g.appendChild(d);
+    // Click = toggle play/pause in the thumb only — do NOT affect main preview
+    let thumbPlaying=false;
+    d.onclick=(ev)=>{
+      if(ev.target===del||del.contains(ev.target))return;
+      if(thumbPlaying){v.pause();v.currentTime=0;d.classList.remove('playing-inline');thumbPlaying=false;}
+      else{
+        // Stop any other playing thumbs
+        document.querySelectorAll('.cth.playing-inline').forEach(el=>{
+          el.classList.remove('playing-inline');
+          el.querySelector('video').pause();el.querySelector('video').currentTime=0;
+        });
+        v.play().catch(()=>{});d.classList.add('playing-inline');thumbPlaying=true;
+        v.onended=()=>{d.classList.remove('playing-inline');thumbPlaying=false;};
+      }
+    };
+    g.appendChild(d);
   });
   const a=document.createElement('div');a.className='cadd';
   a.innerHTML='<input type="file" accept="video/*" multiple><div style="font-size:22px">+</div><div style="font-size:8px;margin-top:2px;color:inherit">Video</div>';
@@ -650,33 +665,6 @@ function renderClips(){
 }
 document.getElementById('clipsInput').onchange=e=>addClips(e.target.files);
 renderClips();
-
-function selectClip(i){
-  if(prevPlaying)stopPreview();
-  selectedClipIdx=i;const c=S.clips[i];
-  document.getElementById('clipInfoName').textContent=c.file.name;
-  document.getElementById('clipInfoDur').textContent=fmtI(c.duration);
-  document.getElementById('clipInfoBar').classList.remove('hidden');
-  const tv=document.getElementById('clipThumbVid');tv.src=c.url;tv.muted=true;tv.play().catch(()=>{});
-  switchToClipPrev(i);renderClips();
-}
-function deselectClip(){
-  selectedClipIdx=-1;
-  document.getElementById('clipInfoBar').classList.add('hidden');
-  document.getElementById('clipThumbVid').pause();
-  switchToEditPrev();renderClips();
-}
-function switchToClipPrev(i){
-  clipPreviewMode=true;const c=S.clips[i];
-  PV.src=c.url;PV.muted=true;PV.currentTime=0;PV.play().catch(()=>{});
-  capEl.textContent='';badge.textContent='Clip';badge.className='clip';
-}
-function switchToEditPrev(){
-  clipPreviewMode=false;badge.textContent='Edit';badge.className='edit';
-  applyStyle();
-}
-document.getElementById('viewClipBtn').onclick=()=>{if(selectedClipIdx>=0)switchToClipPrev(selectedClipIdx);};
-document.getElementById('viewEditBtn').onclick=()=>switchToEditPrev();
 
 // ═══════════════════════════════════
 // MODE
@@ -716,7 +704,6 @@ document.getElementById('taShufBtn').onclick=()=>{
 };
 document.getElementById('fsSlider').oninput=e=>{S.fontSize=+e.target.value;document.getElementById('fsLbl').textContent=e.target.value+'px';applyStyle();};
 document.getElementById('posSlider').oninput=e=>{S.capPos=+e.target.value;document.getElementById('posLbl').textContent=e.target.value+'%';applyStyle();};
-document.getElementById('olThickSlider').oninput=e=>{S.olThickness=parseFloat(e.target.value);document.getElementById('olThickLbl').textContent=e.target.value+'px';applyStyle();};
 document.getElementById('txColor').oninput=e=>{S.txColor=e.target.value;applyStyle();};
 document.getElementById('olColor').oninput=e=>{S.olColor=e.target.value;applyStyle();};
 document.getElementById('olToggle').onclick=function(){S.olOn=!S.olOn;this.classList.toggle('on',S.olOn);this.textContent=S.olOn?'Bordo ON':'Bordo OFF';applyStyle();};
@@ -725,17 +712,18 @@ function getSegVtr(){if(S.capVtrShuffle){const v=pickRandExcept(VTR_LIST,_lastVt
 function getSegTA(){if(S.capTAShuffle){const t=pickRandExcept(TA_LIST,_lastTA);_lastTA=t;return t;}return S.capTA;}
 
 function applyStyle(text){
-  if(clipPreviewMode)return;
   capEl.className=S.capFont;
   capEl.style.fontSize=S.fontSize+'px';
   capEl.style.color=S.txColor;
   capEl.style.top=S.capPos+'%';
-  if(S.olOn){const o=S.olColor,t=S.olThickness;capEl.style.textShadow=`-${t}px -${t}px 0 ${o},${t}px -${t}px 0 ${o},-${t}px ${t}px 0 ${o},${t}px ${t}px 0 ${o}`;}
-  else capEl.style.textShadow='none';
+  if(S.olOn){
+    const o=S.olColor;
+    // 1px crisp outline + soft glow spread for readability
+    capEl.style.textShadow=`-1px -1px 0 ${o},1px -1px 0 ${o},-1px 1px 0 ${o},1px 1px 0 ${o},0 0 8px ${o},0 0 16px rgba(0,0,0,.5)`;
+  }else capEl.style.textShadow='none';
   if(text!==undefined)capEl.textContent=text;
 }
 function triggerAnim(text,ta){
-  if(clipPreviewMode)return;
   const anim=ta||S.capTA;
   if(text!==undefined){applyStyle(text);}
   const am={fade:'anim-fade',up:'anim-up',left:'anim-left',zoom:'anim-zoom',swipe:'anim-swipe',drop:'anim-drop',pop:'anim-pop'};
@@ -829,7 +817,6 @@ function buildSegments(){
 function startPreview(){
   if(!prevSegs.length)prevSegs=buildSegments();
   if(!prevSegs.length){toast('Aggiungi clip e fai il sync!','err');return;}
-  if(clipPreviewMode)switchToEditPrev();
   prevPlaying=true;prevIdx=0;
   document.getElementById('prevBtn').textContent='■ Stop';
   prevAudio.currentTime=prevSegs[0].time;prevAudio.play().catch(()=>{});
@@ -880,7 +867,8 @@ function openSync(){
   const raw=document.getElementById('lyricsTA').value.trim();
   if(!raw){toast('Scrivi prima le lyrics!','err');return;}
   if(!S.audioFile){toast('Carica prima il brano!','err');return;}
-  // STOP audio playback before sync
+  // STOP preview and audio playback before sync
+  if(prevPlaying)stopPreview();
   bgAudio.pause();cancelAnimationFrame(playRaf);
   document.querySelector('#playIcon path').setAttribute('d','M0 0 L10 6 L0 12Z');
   document.getElementById('aphd').style.display='none';
