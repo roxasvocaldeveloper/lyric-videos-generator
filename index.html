@@ -235,6 +235,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
   <div class="col-hdr">
     <span class="lbl">Clips <span id="clipCount" style="color:var(--p);margin-left:4px;">0</span></span>
     <div style="display:flex;gap:6px;align-items:center;">
+      <button id="clearClipsBtn" class="sb" style="font-size:8px;color:#f87171;" title="Rimuovi tutte le clip">🗑 Clean</button>
       <label class="sb cursor-pointer relative" style="font-size:8px;">+ Add<input type="file" id="clipsInput" accept="video/*" multiple class="absolute inset-0 opacity-0 cursor-pointer"></label>
     </div>
   </div>
@@ -744,6 +745,15 @@ function renderClips(){
 }
 document.getElementById('clipsInput').onchange=e=>addClips(e.target.files);
 renderClips();
+
+// Clear all clips
+document.getElementById('clearClipsBtn').onclick=()=>{
+  if(!S.clips.length){toast('Nessuna clip da rimuovere');return;}
+  S.clips.forEach(c=>URL.revokeObjectURL(c.url));
+  S.clips=[];syncClipRR=[];syncClipRRIdx=0;
+  renderClips();document.getElementById('clipCount').textContent='0';
+  checkReady();toast('✓ Clip rimosse!');
+};
 
 // Clip order mode buttons
 document.getElementById('modeShuffleBtn').onclick=()=>{
