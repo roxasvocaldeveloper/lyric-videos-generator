@@ -97,9 +97,9 @@ body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:f
 @keyframes wordBump{0%{transform:scale(.55);opacity:0}55%{transform:scale(1.24);opacity:1}100%{transform:scale(1)}}
 @keyframes wordGlow{0%{opacity:0;text-shadow:0 0 0 currentColor}45%{opacity:1;text-shadow:0 0 18px currentColor,0 0 40px currentColor}100%{opacity:1;text-shadow:0 0 0 currentColor}}
 @keyframes wordShake{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}22%{transform:translate(-2px,1px)}34%{transform:translate(2px,-1px)}46%{transform:translate(-2px,-1px)}58%{transform:translate(2px,1px)}70%{transform:translate(-1px,1px)}82%{transform:translate(1px,-1px)}100%{opacity:1;transform:translate(0,0)}}
-.brat-line{display:flex;align-items:baseline;width:100%;}
+.brat-line{display:flex;align-items:center;width:100%;}
 .cap-word{display:inline-block;transform-origin:center;opacity:1;}
-.cap-word.upcoming{opacity:.14;animation:none;transform:none;}
+.cap-word.upcoming{opacity:0;animation:none;transform:none;}
 .fx-none  .cap-word.on{animation:wordFade .22s ease both;}
 .fx-bump  .cap-word.on{animation:wordBump .28s cubic-bezier(.34,1.56,.64,1) both;}
 .fx-glow  .cap-word.on{animation:wordGlow .5s ease both;}
@@ -274,7 +274,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
 <!-- ═══ CENTER: PREVIEW ═══ -->
 <div id="centerCol">
 
-  <div class="iphone-frame" id="iphoneFrame">
+  <div class="iphone-frame veo-on" id="iphoneFrame">
     <div class="notch"></div>
     <div class="video-con" id="videoCon">
       <video id="PV" muted playsinline></video>
@@ -285,10 +285,9 @@ input[type=range]{accent-color:var(--p);width:100%;}
     </div>
   </div>
 
-  <!-- Play + VEO -->
+  <!-- Play -->
   <div style="display:flex;gap:8px;align-items:center;width:240px;">
     <button id="prevBtn" class="btn-sv" style="flex:1;padding:10px;border-radius:12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;" disabled>▶ Play</button>
-    <button id="veoBtn" class="tog on" style="padding:10px 14px;font-size:9px;">⊞ VEO</button>
   </div>
 
   <!-- Playlist mode indicator -->
@@ -330,6 +329,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
       <div style="display:flex;gap:6px;">
         <button id="styleClassic" class="mode-tab on">Aa Classico</button>
         <button id="styleBrat" class="mode-tab">✦ Brat</button>
+        <button id="styleBratCaps" class="mode-tab">✦ BRAT CAPS</button>
       </div>
       <div id="fxWrap" style="display:none;margin-top:10px;">
         <div class="lbl" style="margin-bottom:6px;">Effetto parole (Brat)</div>
@@ -585,14 +585,6 @@ function shuffleArr(a){let r=[...a];for(let i=r.length-1;i>0;i--){const j=randIn
 function pickRandExcept(arr,excl){const f=arr.filter(x=>x!==excl);return f.length?f[randInt(0,f.length)]:arr[randInt(0,arr.length)];}
 
 // ═══════════════════════════════════
-// VEO
-// ═══════════════════════════════════
-document.getElementById('veoBtn').onclick=function(){
-  S.veoOn=!S.veoOn;this.classList.toggle('on',S.veoOn);this.textContent=S.veoOn?'⊞ VEO':'□ VEO';
-  document.getElementById('iphoneFrame').classList.toggle('veo-on',S.veoOn);
-};
-
-// ═══════════════════════════════════
 // WAVEFORM
 // ═══════════════════════════════════
 function resizeWave(){
@@ -837,8 +829,9 @@ document.getElementById('posSlider').oninput=e=>{S.capPos=+e.target.value;docume
 document.getElementById('txColor').oninput=e=>{S.txColor=e.target.value;applyStyle();};
 document.getElementById('olColor').oninput=e=>{S.olColor=e.target.value;applyStyle();};
 document.getElementById('olToggle').onclick=function(){S.olOn=!S.olOn;this.classList.toggle('on',S.olOn);this.textContent=S.olOn?'Bordo ON':'Bordo OFF';applyStyle();};
-document.getElementById('styleClassic').onclick=()=>{S.textStyle='classic';document.getElementById('styleClassic').classList.add('on');document.getElementById('styleBrat').classList.remove('on');document.getElementById('fxWrap').style.display='none';applyStyle();};
-document.getElementById('styleBrat').onclick=()=>{S.textStyle='brat';S.capFont='fnt-condensed';document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('on',b.dataset.font==='fnt-condensed'));document.getElementById('styleBrat').classList.add('on');document.getElementById('styleClassic').classList.remove('on');document.getElementById('fxWrap').style.display='block';applyStyle();};
+document.getElementById('styleClassic').onclick=()=>{S.textStyle='classic';document.getElementById('styleClassic').classList.add('on');document.getElementById('styleBrat').classList.remove('on');document.getElementById('styleBratCaps').classList.remove('on');document.getElementById('fxWrap').style.display='none';applyStyle();};
+document.getElementById('styleBrat').onclick=()=>{S.textStyle='brat';S.capFont='fnt-condensed';document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('on',b.dataset.font==='fnt-condensed'));document.getElementById('styleBrat').classList.add('on');document.getElementById('styleBratCaps').classList.remove('on');document.getElementById('styleClassic').classList.remove('on');document.getElementById('fxWrap').style.display='block';applyStyle();};
+document.getElementById('styleBratCaps').onclick=()=>{S.textStyle='bratupper';S.capFont='fnt-condensed';document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('on',b.dataset.font==='fnt-condensed'));document.getElementById('styleBratCaps').classList.add('on');document.getElementById('styleBrat').classList.remove('on');document.getElementById('styleClassic').classList.remove('on');document.getElementById('fxWrap').style.display='block';applyStyle();};
 document.querySelectorAll('[data-wfx]').forEach(btn=>btn.onclick=()=>{
   document.querySelectorAll('[data-wfx]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');S.wordFx=btn.dataset.wfx;applyStyle();
 });
@@ -875,21 +868,36 @@ function karaokeStates(words,kp){
 function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function bratWords(text){
-  return tokenizeWords(text.toLowerCase()).filter(w=>w.t.trim());
+  const t=(S.textStyle==='bratupper')?text.toUpperCase():text.toLowerCase();
+  return tokenizeWords(t).filter(w=>w.t.trim());
 }
+let _mc=null;
+function emWidth(t,big){
+  if(!_mc)_mc=document.createElement('canvas').getContext('2d');
+  _mc.font=getCanvasFont(100);
+  return (_mc.measureText(t).width/100)*(big?1.38:1);
+}
+const BRAT_MW_EM=8.2;
 function bratLayout(text){
   const words=bratWords(text);
-  words.forEach((w,i)=>{w.i=i;});
   const rnd=mulberry32(hashStr(text.toLowerCase()));
-  const modes=['between','around','center','between','center','around'];
+  const upper=(S.textStyle==='bratupper');
+  words.forEach((w,i)=>{w.i=i;w.big=upper&&rnd()<0.22;});
   const lines=[];let i=0;
   while(i<words.length){
-    let n=1+Math.floor(rnd()*3);
-    n=Math.min(n,words.length-i);
-    let line=words.slice(i,i+n);
-    while(line.length>1&&line.reduce((a,w)=>a+w.t.length+1,0)>15)line=line.slice(0,line.length-1);
-    lines.push({words:line,mode:modes[Math.floor(rnd()*modes.length)],gapMul:.5+rnd()*1.1,xShift:(rnd()-.5)*.1,yJit:(rnd()-.5)*.26});
-    i+=line.length;
+    const target=2+Math.floor(rnd()*2); // 2 or 3 words
+    const line=[];let wsum=0;
+    while(i<words.length&&line.length<target){
+      const w=words[i],ew=emWidth(w.t,w.big);
+      if(line.length>0&&wsum+0.35+ew>BRAT_MW_EM)break;
+      line.push(w);wsum+=ew+(line.length>1?0.35:0);i++;
+    }
+    if(!line.length){line.push(words[i]);i++;}
+    let tot=0;line.forEach(w=>tot+=emWidth(w.t,w.big));
+    const desired=0.5*(0.75+rnd()*0.6);
+    const maxGap=line.length>1?(BRAT_MW_EM-tot)/(line.length-1):0;
+    const gap=line.length>1?Math.max(0.12,Math.min(desired,maxGap)):0;
+    lines.push({words:line,gap,yJit:(rnd()-.5)*.08});
   }
   return {words,lines};
 }
@@ -897,11 +905,10 @@ function renderClassicHTML(text){return esc(parseEmphasis(text).map(t=>t.t).join
 function renderBratHTML(text){
   const {lines}=bratLayout(text);
   return lines.map(l=>{
-    const jc=l.mode==='between'?'space-between':l.mode==='around'?'space-around':'center';
-    const gapPx=(l.mode==='center'?l.gapMul*S.fontSize*.45:0).toFixed(1);
-    const tf=`translate(${(l.xShift*100).toFixed(2)}%, ${(l.yJit*S.fontSize).toFixed(1)}px)`;
-    return `<div class="brat-line" style="justify-content:${jc};column-gap:${gapPx}px;transform:${tf}">`+
-      l.words.map(w=>`<span class="cap-word">${esc(w.t)}</span>`).join('')+`</div>`;
+    const gapPx=(l.gap*S.fontSize).toFixed(1);
+    const tf=`translateY(${(l.yJit*S.fontSize).toFixed(1)}px)`;
+    return `<div class="brat-line" style="justify-content:center;column-gap:${gapPx}px;transform:${tf}">`+
+      l.words.map(w=>`<span class="cap-word"${w.big?' style="font-size:1.38em"':''}>${esc(w.t)}</span>`).join('')+`</div>`;
   }).join('');
 }
 let _bratRevealed=-1;
@@ -936,7 +943,7 @@ function applyStyle(text){
   capEl.style.color=S.txColor;
   capEl.style.top=S.capPos+'%';
   capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';
-  if(S.textStyle==='brat'){
+  if(S.textStyle!=='classic'){
     capEl.className=S.capFont+' fx-'+S.wordFx;
     capEl.style.textShadow='none';
     capEl.style.display='flex';capEl.style.flexDirection='column';
@@ -964,7 +971,7 @@ function triggerAnim(text,ta){
   if(text!==undefined)applyStyle(text);else applyStyle();
   const am={fade:'anim-fade',up:'anim-up',left:'anim-left',zoom:'anim-zoom',swipe:'anim-swipe',drop:'anim-drop',pop:'anim-pop',bounce:'anim-bounce',flip:'anim-flip',glitch:'anim-glitch',shake:'anim-shake'};
   ANIM_LIST.forEach(c=>capEl.classList.remove(c));
-  if(S.textStyle!=='brat'&&anim!=='none'&&am[anim]){void capEl.offsetWidth;capEl.classList.add(am[anim]);}
+  if(S.textStyle==='classic'&&anim!=='none'&&am[anim]){void capEl.offsetWidth;capEl.classList.add(am[anim]);}
   capEl.style.opacity='1';
 }
 
@@ -1068,10 +1075,10 @@ function loadPrevSeg(){
   const seg=prevSegs[prevIdx];const clip=S.clips[seg.clipIdx];
   applyPrevVtr(seg.vtr,()=>{PV.src=clip.url;PV.muted=true;PV.currentTime=seg.clipStart;PV.play().catch(()=>{});});
   triggerAnim(seg.lyricText,seg.ta);
-  if(S.textStyle==='brat')resetBratKaraoke();
+  if(S.textStyle!=='classic')resetBratKaraoke();
   prevSegStart=performance.now();const ms=seg.duration*1000;
   function tick(now){if(!prevPlaying)return;if(now-prevSegStart>=ms){prevIdx++;loadPrevSeg();return;}
-    if(S.textStyle==='brat'&&S.karaoke&&seg.lyricText)updateCapKaraoke(seg.lyricText,(now-prevSegStart)/ms,prevAudio.currentTime,seg.wt);
+    if(S.textStyle!=='classic'&&S.karaoke&&seg.lyricText)updateCapKaraoke(seg.lyricText,(now-prevSegStart)/ms,prevAudio.currentTime,seg.wt);
     prevRAF=requestAnimationFrame(tick);}
   prevRAF=requestAnimationFrame(tick);
 }
@@ -1365,10 +1372,10 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
   const pr=p!=null?Math.min(p,1):1;
 
   // ── BRAT STYLE ──
-  if(S.textStyle==='brat'){
+  if(S.textStyle!=='classic'){
     ctx.font=getCanvasFont(sf);
     ctx.letterSpacing=(S.capFont==='fnt-condensed'?(-0.085*sf):0)+'px';
-    const mW=W*.72,lh=sf*1.42;
+    const lh=sf*1.42;
     const {words,lines}=bratLayout(text);
     const useTime=!!(wt&&wt.length===words.length&&tNow!=null);
     const kst=(!useTime&&S.karaoke&&kp!=null)?karaokeStates(words,kp):null;
@@ -1378,27 +1385,27 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
     ctx.textBaseline='middle';ctx.textAlign='left';
     lines.forEach((l,li)=>{
       const y=sy+li*lh+l.yJit*sf;
-      const wsW=l.words.map(w=>ctx.measureText(w.t).width);
-      const tot=wsW.reduce((a,b)=>a+b,0);
       const n=l.words.length;
-      let gap,x;
-      if(n>1&&l.mode==='between'){gap=(mW-tot)/(n-1);x=W/2-mW/2;}
-      else if(n>1&&l.mode==='around'){gap=(mW-tot)/n;x=W/2-mW/2+gap/2;}
-      else{gap=l.gapMul*sf*.5;x=W/2-(tot+(n-1)*gap)/2;}
-      x+=l.xShift*mW;
+      const wsW=l.words.map(w=>{const size=sf*(w.big?1.38:1);ctx.font=getCanvasFont(size);return ctx.measureText(w.t).width;});
+      const tot=wsW.reduce((a,b)=>a+b,0);
+      const gap=n>1?l.gap*sf:0;
+      let x=W/2-(tot+(n-1)*gap)/2;
       for(let wi=0;wi<n;wi++){
         const w=l.words[wi],ww=wsW[wi];
+        const size=sf*(w.big?1.38:1);
+        ctx.font=getCanvasFont(size);
+        ctx.letterSpacing=(S.capFont==='fnt-condensed'?(-0.085*size):0)+'px';
         let alpha=1,scale=1,dx=0,dy=0,blur=0;
         if(useTime){
           const t=wt[w.i];
           if(t==null||tNow>=t){
             const el=t==null?9:(tNow-t);
-            alpha=.14+.86*Math.min(1,el/0.2);
+            alpha=Math.min(1,el/0.2);
             const le=Math.min(1,el/0.4);
             if(S.wordFx==='bump'){scale=1+.3*Math.pow(1-le,2);}
             else if(S.wordFx==='glow'){blur=(1-le)*sf*.85;}
             else if(S.wordFx==='shake'){dx=Math.sin(el*30)*(1-le)*sf*.06;dy=Math.cos(el*34)*(1-le)*sf*.04;}
-          }else alpha=.14;
+          }else alpha=0;
         }else if(kst){
           const s=kst[w.i];
           if(s.sung)alpha=1;
@@ -1407,8 +1414,8 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
             if(S.wordFx==='bump'){alpha=1;scale=1+.3*Math.pow(1-le,2);}
             else if(S.wordFx==='glow'){alpha=1;blur=(1-le)*sf*.85;}
             else if(S.wordFx==='shake'){alpha=1;dx=Math.sin(le*Math.PI*10)*(1-le)*sf*.06;dy=Math.cos(le*Math.PI*12)*(1-le)*sf*.04;}
-            else{alpha=.14+.86*Math.min(1,le*3);}
-          }else alpha=.14;
+            else{alpha=Math.min(1,le*3);}
+          }else alpha=0;
         }
         ctx.save();
         ctx.globalAlpha*=alpha*pr;
