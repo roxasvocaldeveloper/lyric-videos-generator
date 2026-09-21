@@ -87,11 +87,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;display
 .fnt-marker{font-family:'Permanent Marker',cursive;}
 .fnt-brat{font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-weight:800;letter-spacing:-.5px;}
 
-/* ─── KARAOKE WORDS ─── */
-@keyframes wordPop{0%{transform:scale(1)}45%{transform:scale(1.28)}100%{transform:scale(1)}}
-.cap-word{display:inline-block;transform-origin:center;}
-.cap-word.active{animation:wordPop .22s ease;}
-.cap-word.upcoming{opacity:.5;}
+/* ─── KARAOKE WORDS (brat style) ─── */
+@keyframes wordPop{0%{transform:scale(.6);opacity:0}55%{transform:scale(1.22);opacity:1}100%{transform:scale(1)}}
+.cap-word{display:inline-block;transform-origin:center;animation:wordPop .26s ease forwards;}
+.cap-word.upcoming{opacity:.14;animation:none;transform:none;}
 
 /* ─── CLIP GRID ─── */
 .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
@@ -340,8 +339,8 @@ input[type=range]{accent-color:var(--p);width:100%;}
       <!-- FONT COLUMN -->
       <div style="display:flex;flex-direction:column;gap:4px;width:42%;">
         <div class="lbl" style="margin-bottom:4px;">Font</div>
-        <button class="smb on text-left" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;padding:5px 7px;text-align:left;">BOLD</button>
-        <button class="smb text-left" data-font="fnt-brat" style="font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:10px;padding:5px 7px;text-align:left;">BRAT</button>
+        <button class="smb text-left" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;padding:5px 7px;text-align:left;">BOLD</button>
+        <button class="smb on text-left" data-font="fnt-brat" style="font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:10px;padding:5px 7px;text-align:left;">BRAT</button>
         <button class="smb text-left" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:5px 7px;text-align:left;">BEBAS</button>
         <button class="smb text-left" data-font="fnt-bangers" style="font-family:'Bangers',cursive;font-size:12px;padding:5px 7px;text-align:left;">BANG!</button>
         <button class="smb text-left" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;font-size:10px;padding:5px 7px;text-align:left;">Lilita</button>
@@ -373,7 +372,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
               <div style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="olColor" value="#000000" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
               <span style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;">Bordo</span>
             </div>
-            <button id="olToggle" class="tog on" style="width:100%;justify-content:center;padding:6px;font-size:9px;">Bordo ON</button>
+            <button id="olToggle" class="tog" style="width:100%;justify-content:center;padding:6px;font-size:9px;">Bordo OFF</button>
           </div>
         </div>
       </div>
@@ -424,41 +423,6 @@ input[type=range]{accent-color:var(--p);width:100%;}
     </div>
 
     <div class="sdiv"></div>
-
-    <!-- STILE TIKTOK -->
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span class="lbl">Stile TikTok</span>
-      </div>
-      <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
-        <button class="tog on" data-preset="classic">Classic</button>
-        <button class="tog" data-preset="brat">Brat</button>
-        <button class="tog" data-preset="neon">Neon</button>
-        <button class="tog" data-preset="minimal">Minimal</button>
-        <button class="tog" data-preset="tiktok">TikTok</button>
-      </div>
-      <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
-        <button id="karaokeToggle" class="tog on">🎤 Karaoke</button>
-        <button id="upToggle" class="tog">UPPERCASE</button>
-        <button id="glowToggle" class="tog">✨ Glow</button>
-        <button id="boxToggle" class="tog">▣ Box</button>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:9px;color:var(--tx2);font-weight:700;">Colore *parola*</span>
-          <div style="width:24px;height:24px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="emColor" value="#facc15" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:9px;color:var(--tx2);font-weight:700;">Colore box</span>
-          <div style="width:24px;height:24px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="boxColor" value="#000000" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:var(--tx2);">Opacità box</span><span id="boxOpLbl" style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--b);">55%</span></div>
-          <input type="range" id="boxOpSlider" min="0" max="100" value="55">
-        </div>
-      </div>
-      <div style="font-size:8px;color:var(--tx3);margin-top:7px;line-height:1.55;">Scrivi <span style="color:var(--p);">*parola*</span> nel testo per evidenziarla in un colore diverso (stile TikTok virale).</div>
-    </div>
 
   </div><!-- end rightScroll -->
 </div>
@@ -533,12 +497,11 @@ input[type=range]{accent-color:var(--p);width:100%;}
 const S={
   audioFile:null,audioDuration:0,trimStart:0,trimEnd:0,
   clips:[],mode:'lyrics',lines:[],
-  capFont:'fnt-montserrat',capVtr:'cut',capTA:'none',
+  capFont:'fnt-brat',capVtr:'cut',capTA:'none',
   capVtrShuffle:false,capTAShuffle:false,
   fontSize:20,capPos:42,
-  txColor:'#ffffff',olColor:'#000000',olOn:true,
-  uppercase:false,glow:false,bgBox:false,bgBoxColor:'#000000',bgBoxOp:.55,emColor:'#facc15',
-  karaoke:true,
+  txColor:'#ffffff',olColor:'#000000',olOn:false,
+  uppercase:false,glow:true,karaoke:true,emColor:'#ffffff',
   interval:3,veoOn:true,noLyricFixedText:'',
   clipOrder:'shuffle', // 'shuffle' | 'order'
 };
@@ -831,44 +794,6 @@ document.getElementById('posSlider').oninput=e=>{S.capPos=+e.target.value;docume
 document.getElementById('txColor').oninput=e=>{S.txColor=e.target.value;applyStyle();};
 document.getElementById('olColor').oninput=e=>{S.olColor=e.target.value;applyStyle();};
 document.getElementById('olToggle').onclick=function(){S.olOn=!S.olOn;this.classList.toggle('on',S.olOn);this.textContent=S.olOn?'Bordo ON':'Bordo OFF';applyStyle();};
-document.getElementById('upToggle').onclick=function(){S.uppercase=!S.uppercase;this.classList.toggle('on',S.uppercase);applyStyle();};
-document.getElementById('glowToggle').onclick=function(){S.glow=!S.glow;this.classList.toggle('on',S.glow);applyStyle();};
-document.getElementById('boxToggle').onclick=function(){S.bgBox=!S.bgBox;this.classList.toggle('on',S.bgBox);applyStyle();};
-document.getElementById('emColor').oninput=e=>{S.emColor=e.target.value;applyStyle();};
-document.getElementById('boxColor').oninput=e=>{S.bgBoxColor=e.target.value;applyStyle();};
-document.getElementById('boxOpSlider').oninput=e=>{S.bgBoxOp=+e.target.value/100;document.getElementById('boxOpLbl').textContent=e.target.value+'%';applyStyle();};
-document.getElementById('karaokeToggle').onclick=function(){S.karaoke=!S.karaoke;this.classList.toggle('on',S.karaoke);applyStyle();};
-
-const PRESETS={
-  classic:{font:'fnt-montserrat',tx:'#ffffff',ol:'#000000',olOn:true,uppercase:false,glow:false,bgBox:false,em:'#facc15'},
-  brat:{font:'fnt-brat',tx:'#000000',ol:'#000000',olOn:false,uppercase:false,glow:false,bgBox:true,bgBoxColor:'#8ACE00',bgBoxOp:.95,em:'#ffffff'},
-  neon:{font:'fnt-montserrat',tx:'#22d3ee',ol:'#000000',olOn:false,uppercase:false,glow:true,bgBox:false,em:'#f472b6'},
-  minimal:{font:'fnt-montserrat',tx:'#ffffff',ol:'#000000',olOn:false,uppercase:false,glow:false,bgBox:false,em:'#facc15'},
-  tiktok:{font:'fnt-montserrat',tx:'#ffffff',ol:'#000000',olOn:true,uppercase:true,glow:false,bgBox:true,bgBoxColor:'#ef4444',bgBoxOp:.85,em:'#facc15'},
-};
-function applyPreset(p){
-  S.capFont=p.font;S.txColor=p.tx;S.olColor=p.ol;S.olOn=p.olOn;
-  S.uppercase=p.uppercase;S.glow=p.glow;S.bgBox=p.bgBox;
-  if(p.bgBoxColor)S.bgBoxColor=p.bgBoxColor;
-  if(p.bgBoxOp!=null)S.bgBoxOp=p.bgBoxOp;
-  S.emColor=p.em;
-  document.querySelectorAll('[data-font]').forEach(b=>b.classList.toggle('on',b.dataset.font===p.font));
-  document.getElementById('olToggle').classList.toggle('on',S.olOn);document.getElementById('olToggle').textContent=S.olOn?'Bordo ON':'Bordo OFF';
-  document.getElementById('upToggle').classList.toggle('on',S.uppercase);
-  document.getElementById('glowToggle').classList.toggle('on',S.glow);
-  document.getElementById('boxToggle').classList.toggle('on',S.bgBox);
-  document.getElementById('txColor').value=S.txColor;
-  document.getElementById('olColor').value=S.olColor;
-  document.getElementById('emColor').value=S.emColor;
-  document.getElementById('boxColor').value=S.bgBoxColor;
-  document.getElementById('boxOpSlider').value=Math.round(S.bgBoxOp*100);
-  document.getElementById('boxOpLbl').textContent=Math.round(S.bgBoxOp*100)+'%';
-  applyStyle();
-}
-document.querySelectorAll('[data-preset]').forEach(btn=>btn.onclick=()=>{
-  document.querySelectorAll('[data-preset]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
-  applyPreset(PRESETS[btn.dataset.preset]);
-});
 
 function getSegVtr(){if(S.capVtrShuffle){const v=pickRandExcept(VTR_LIST,_lastVtr);_lastVtr=v;return v;}return S.capVtr;}
 function getSegTA(){if(S.capTAShuffle){const t=pickRandExcept(TA_LIST,_lastTA);_lastTA=t;return t;}return S.capTA;}
@@ -893,33 +818,31 @@ function tokenizeWords(text){
 function hexToRgba(hex,a){const h=hex.replace('#','');const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function karaokeStates(words,kp){
-  const ws=words.map(w=>w.t.trim()?Math.max(w.t.length,1):Math.max(w.t.length,.6));
+  const ws=words.map(w=>Math.max(w.t.length,1));
   const total=ws.reduce((a,b)=>a+b,0)||1;
   const pos=Math.min(Math.max(kp,0),1)*total;
   let acc=0;
-  return words.map((w,i)=>{const s=acc,e=acc+ws[i];acc=e;return{sung:e<=pos,active:!!w.t.trim()&&s<=pos&&pos<e};});
+  return words.map((w,i)=>{const s=acc,e=acc+ws[i];acc=e;return{sung:e<=pos,active:s<=pos&&pos<e,start:s,end:e};});
+}
+function bratWords(text){
+  return tokenizeWords(S.uppercase?text.toUpperCase():text).filter(w=>w.t.trim());
 }
 function renderCapKaraoke(text,kp){
-  const up=S.uppercase;
-  const words=tokenizeWords(up?text.toUpperCase():text);
+  const words=bratWords(text);
   const st=(S.karaoke&&kp!=null)?karaokeStates(words,kp):null;
   return words.map((w,i)=>{
     const t=esc(w.t);
-    if(!w.t.trim())return t;
-    let cls='cap-word',color;
+    let cls='cap-word',color=w.em?S.emColor:S.txColor;
     if(st){
       if(st[i].active){cls+=' active';color=S.emColor;}
-      else if(st[i].sung)color=S.emColor;
-      else{cls+=' upcoming';color=w.em?S.emColor:S.txColor;}
-    }else{
-      color=w.em?S.emColor:S.txColor;
+      else if(!st[i].sung){cls+=' upcoming';}
     }
     return `<span class="${cls}" style="color:${color}">${t}</span>`;
   }).join('');
 }
 let _kActiveIdx=-1;
 function updateCapKaraoke(text,kp){
-  const words=tokenizeWords(text);
+  const words=bratWords(text);
   const st=karaokeStates(words,kp);
   const idx=st.findIndex(s=>s.active);
   if(idx===_kActiveIdx)return;
@@ -935,20 +858,17 @@ function applyStyle(text){
   capEl.style.top=S.capPos+'%';
   let sh;
   if(S.glow){
-    sh=`0 0 6px ${S.txColor},0 0 16px ${S.txColor},0 0 30px ${S.txColor}`;
+    sh=`0 0 6px ${S.txColor},0 0 16px ${S.txColor},0 0 34px ${S.txColor}`;
     if(S.olOn){const o=S.olColor;sh+=`,-1px -1px 0 ${o},1px -1px 0 ${o},-1px 1px 0 ${o},1px 1px 0 ${o}`;}
   }else if(S.olOn){
     const o=S.olColor;sh=`-1px -1px 0 ${o},1px -1px 0 ${o},-1px 1px 0 ${o},1px 1px 0 ${o},0 0 10px ${o},0 0 20px rgba(0,0,0,.4)`;
   }else sh='none';
   capEl.style.textShadow=sh;
-  if(S.bgBox){
-    capEl.style.background=hexToRgba(S.bgBoxColor,S.bgBoxOp);
-    capEl.style.padding='.12em .24em';capEl.style.borderRadius='.18em';
-    capEl.style.width='fit-content';capEl.style.maxWidth='88%';
-  }else{
-    capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';
-    capEl.style.width='88%';capEl.style.maxWidth='none';
-  }
+  capEl.style.display='flex';capEl.style.flexWrap='wrap';
+  capEl.style.justifyContent='space-between';capEl.style.alignContent='center';
+  capEl.style.rowGap='.38em';
+  capEl.style.width='88%';
+  capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';
   capEl.innerHTML=renderCapKaraoke(lastCapText,null);
 }
 function triggerAnim(text,ta){
@@ -1237,22 +1157,23 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp){
   const phoneH=document.getElementById('videoCon').clientHeight||428;
   const sf=Math.round(S.fontSize*(H/phoneH));
   ctx.font=getCanvasFont(sf);
-  const mW=W*.88,lh=sf*1.16;
-  const words=tokenizeWords(S.uppercase?text.toUpperCase():text);
+  const mW=W*.88,lh=sf*1.45;
+  const words=bratWords(text);
   words.forEach((w,i)=>{w.i=i;});
   const kst=(S.karaoke&&kp!=null)?karaokeStates(words,kp):null;
-  const measureLine=ws=>{let s='';ws.forEach(w=>s+=w.t);return ctx.measureText(s).width;};
-  const lines=[];let cur=[];
+  // wrap words into justified lines
+  const gap0=sf*.32;
+  const lines=[];let cur=[],curW=0;
   for(const w of words){
-    if(!w.t.trim()){if(cur.length)cur.push(w);continue;}
-    const test=cur.concat([w]);
-    if(measureLine(test)>mW&&cur.some(x=>x.t.trim())){lines.push(cur);cur=[w];}
-    else cur=test;
+    const ww=ctx.measureText(w.t).width;
+    const add=cur.length?gap0+ww:ww;
+    if(curW+add>mW&&cur.length){lines.push(cur);cur=[w];curW=ww;}
+    else{cur.push(w);curW+=add;}
   }
-  if(cur.some(x=>x.t.trim()))lines.push(cur);
+  if(cur.length)lines.push(cur);
   const pr=p!=null?Math.min(p,1):1;
   const sy=S.capPos/100*H-(lines.length-1)*lh/2;
-  ctx.textBaseline='middle';
+  ctx.textBaseline='middle';ctx.textAlign='left';
   lines.forEach((line,li)=>{
     const y=sy+li*lh;ctx.save();
     if(ta==='fade')ctx.globalAlpha=pr;
@@ -1266,40 +1187,28 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp){
     else if(ta==='shake'){ctx.translate(Math.sin((1-pr)*Math.PI*7)*(1-pr)*14,0);ctx.globalAlpha=pr;}
     else if(ta==='swipe'){ctx.beginPath();ctx.rect(0,y-lh*.65,pr*W,lh*1.1);ctx.clip();}
     else if(ta==='glitch')ctx.globalAlpha=pr;
-    const lineTxt=line.map(w=>w.t).join('');
-    const lw=measureLine(line);
-    ctx.textAlign='center';
-    if(S.glow){ctx.shadowColor=S.txColor;ctx.shadowBlur=sf*.35;}
-    if(ta==='glitch'){
-      const off=(1-pr)*16*(li%2?1:-1);
-      ctx.globalAlpha=Math.min(1,(1-pr)*1.1);
-      ctx.fillStyle='#ff2d55';ctx.fillText(lineTxt,W/2+off,y);
-      ctx.fillStyle='#2dd4ff';ctx.fillText(lineTxt,W/2-off,y);
-      ctx.globalAlpha=pr;
-    }
-    if(S.bgBox){
-      const pad=sf*.22,bh=lh*.95;
-      ctx.fillStyle=hexToRgba(S.bgBoxColor,S.bgBoxOp);
-      ctx.beginPath();ctx.roundRect(W/2-lw/2-pad,y-bh/2-pad,lw+pad*2,bh+pad*2,sf*.16);ctx.fill();
-    }
-    if(S.olOn){const o=S.olColor,ol=Math.max(Math.round(sf*.04),1);ctx.strokeStyle=o;ctx.lineWidth=ol;ctx.lineJoin='round';ctx.strokeText(lineTxt,W/2,y);}
-    ctx.textAlign='left';
-    let x=W/2-lw/2;
-    for(const w of line){
-      let col=w.em?S.emColor:S.txColor,pop=false,upcoming=false;
+    // justified x positions
+    const wsW=line.map(w=>ctx.measureText(w.t).width);
+    const tot=wsW.reduce((a,b)=>a+b,0);
+    const gap=line.length>1?(mW-tot)/(line.length-1):0;
+    let x=line.length>1?W/2-mW/2:W/2-tot/2;
+    for(let wi=0;wi<line.length;wi++){
+      const w=line[wi],ww=wsW[wi];
+      let alpha=1,pop=false,col=w.em?S.emColor:S.txColor;
       if(kst){
         const s=kst[w.i];
-        if(s.sung)col=S.emColor;
-        else if(s.active){col=S.emColor;pop=true;}
-        else{col=w.em?S.emColor:S.txColor;upcoming=true;}
+        if(s.sung){alpha=1;}
+        else if(s.active){alpha=1;pop=true;col=S.emColor;}
+        else{alpha=.14;}
       }
-      const ww=ctx.measureText(w.t).width;
       ctx.save();
-      if(upcoming)ctx.globalAlpha=(ctx.globalAlpha||1)*.5;
-      if(pop){ctx.translate(x+ww/2,y);ctx.scale(1.18,1.18);ctx.translate(-(x+ww/2),-y);}
+      ctx.globalAlpha*=alpha;
+      if(pop){ctx.translate(x+ww/2,y);ctx.scale(1.16,1.16);ctx.translate(-(x+ww/2),-y);}
+      if(S.glow){ctx.shadowColor=S.txColor;ctx.shadowBlur=sf*.45;}
+      if(S.olOn){const o=S.olColor,ol=Math.max(Math.round(sf*.04),1);ctx.strokeStyle=o;ctx.lineWidth=ol;ctx.lineJoin='round';ctx.strokeText(w.t,x,y);}
       ctx.fillStyle=col;ctx.fillText(w.t,x,y);
       ctx.restore();
-      x+=ww;
+      x+=ww+gap;
     }
     ctx.restore();
   });
