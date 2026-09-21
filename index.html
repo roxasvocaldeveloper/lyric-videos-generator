@@ -893,7 +893,7 @@ function applyStyle(text){
   capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';
   if(S.textStyle==='brat'){
     capEl.className='fnt-brat';
-    capEl.style.textShadow=`0 0 6px ${S.txColor},0 0 16px ${S.txColor},0 0 34px ${S.txColor}`;
+    capEl.style.textShadow='none';
     capEl.style.display='flex';capEl.style.flexDirection='column';
     capEl.style.flexWrap='nowrap';capEl.style.justifyContent='center';capEl.style.alignContent='';
     capEl.style.rowGap='.05em';capEl.style.width='72%';capEl.style.lineHeight='1.42';
@@ -1226,7 +1226,6 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp){
         ctx.save();
         ctx.globalAlpha*=alpha*pr;
         if(pop){ctx.translate(x+ww/2,y);ctx.scale(1.16,1.16);ctx.translate(-(x+ww/2),-y);}
-        ctx.shadowColor=S.txColor;ctx.shadowBlur=sf*.45;
         ctx.fillStyle=S.txColor;ctx.fillText(w.t,x,y);
         ctx.restore();
         x+=ww+gap;
