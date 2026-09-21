@@ -338,6 +338,14 @@ input[type=range]{accent-color:var(--p);width:100%;}
     <!-- CON LYRICS -->
     <div id="panLyrics" style="display:flex;flex-direction:column;gap:8px;">
       <textarea id="lyricsTA" rows="5" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" style="width:100%;background:#0d0d1a;border:1px solid var(--bd);border-radius:10px;padding:10px;outline:none;resize:none;color:var(--tx);font-family:'Courier Prime',monospace;font-size:11px;line-height:1.65;placeholder-color:var(--tx3);" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--p')" onblur="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--bd')"></textarea>
+      <div style="background:#0d0d1a;border:1px solid var(--bd);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:9px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;">Auto-Timing · Whisper AI</span>
+          <input id="whisperLang" value="en" title="Lingua (en, it, … o auto)" style="width:52px;background:#07070e;border:1px solid var(--bd);border-radius:6px;padding:4px 6px;color:var(--tx);font-size:9px;outline:none;text-align:center;">
+        </div>
+        <button id="whisperBtn" class="btn-sv" style="width:100%;padding:8px;border-radius:8px;font-size:10px;text-transform:uppercase;">🎧 Rileva timing automatico</button>
+        <div id="whisperStatus" style="font-size:9px;color:var(--tx3);line-height:1.45;">Gratis, senza chiavi. Al primo uso scarica il modello (~150MB, poi resta in cache).</div>
+      </div>
       <button id="openSyncBtn" class="btn-sv" style="width:100%;padding:10px;border-radius:10px;font-size:11px;text-transform:uppercase;" disabled>♪ Avvia Sync</button>
     </div>
 
@@ -1101,6 +1109,101 @@ function openSync(){
 }
 document.getElementById('openSyncBtn').onclick=openSync;
 document.getElementById('closeSyncBtn').onclick=()=>{stopSync();document.getElementById('syncModal').classList.remove('open');};
+
+// ═══════════════════════════════════
+// AUTO-TIMING (WHISPER IN BROWSER)
+// ═══════════════════════════════════
+let _whisperPipe=null,_whisperBusy=false;
+function setWhisperStatus(t){const el=document.getElementById('whisperStatus');if(el)el.textContent=t;}
+function normWord(s){return (s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
+async function getWhisperPipe(){
+  if(_whisperPipe)return _whisperPipe;
+  setWhisperStatus('Carico Transformers.js…');
+  const {pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+  env.allowLocalModels=false;env.useBrowserCache=true;
+  setWhisperStatus('Scarico il modello Whisper small (~150MB, solo la prima volta)…');
+  _whisperPipe=await pipeline('automatic-speech-recognition','Xenova/whisper-small',{quantized:true,
+    progress_callback:p=>{if(p.status==='progress'&&p.total)setWhisperStatus('Download modello… '+Math.round((p.loaded/p.total)*100)+'% ('+(p.file||'')+')');}
+  });
+  setWhisperStatus('Modello pronto.');
+  return _whisperPipe;
+}
+async function decodeSegment(file,start,end){
+  const ab=await file.arrayBuffer();
+  const tmp=new (window.AudioContext||window.webkitAudioContext)();
+  const dec=await tmp.decodeAudioData(ab);
+  const sr=16000,len=Math.max(1,Math.ceil((end-start)*sr));
+  const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,len,sr);
+  const src=off.createBufferSource();src.buffer=dec;src.connect(off.destination);
+  try{src.start(0,start,Math.max(.01,end-start));}catch(e){src.start(0);}
+  const rendered=await off.startRendering();
+  if(tmp.close)tmp.close();
+  return rendered.getChannelData(0);
+}
+function alignTokens(U,R){
+  const n=U.length,m=R.length;
+  const dp=[];for(let i=0;i<=n;i++)dp.push(new Float32Array(m+1));
+  for(let i=0;i<=n;i++)dp[i][0]=-0.5*i;
+  for(let j=0;j<=m;j++)dp[0][j]=-0.5*j;
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){
+    const s=(U[i-1]&&U[i-1]===R[j-1])?1:-0.6;
+    dp[i][j]=Math.max(dp[i-1][j-1]+s,dp[i-1][j]-0.5,dp[i][j-1]-0.5);
+  }
+  const map=new Array(n).fill(null);let i=n,j=m;
+  while(i>0&&j>0){
+    const s=(U[i-1]&&U[i-1]===R[j-1])?1:-0.6;
+    if(s>0&&Math.abs(dp[i][j]-(dp[i-1][j-1]+s))<1e-6){map[i-1]=j-1;i--;j--;}
+    else if(Math.abs(dp[i][j]-(dp[i-1][j]-0.5))<1e-6)i--;
+    else j--;
+  }
+  return map;
+}
+async function runWhisperTiming(){
+  if(_whisperBusy)return;
+  if(!S.audioFile){toast('Carica prima il brano!','err');return;}
+  const raw=document.getElementById('lyricsTA').value.trim();
+  if(!raw){toast('Scrivi prima le lyrics!','err');return;}
+  _whisperBusy=true;
+  const btn=document.getElementById('whisperBtn');btn.disabled=true;btn.style.opacity='.5';
+  try{
+    const pipe=await getWhisperPipe();
+    setWhisperStatus('Analizzo l\'audio…');
+    const a0=S.trimStart,a1=S.trimEnd;
+    const audio=await decodeSegment(S.audioFile,a0,a1);
+    const lang=document.getElementById('whisperLang').value.trim();
+    const out=await pipe(audio,{return_timestamps:'word',chunk_length_s:30,stride_length_s:5,task:'transcribe',...(lang&&lang!=='auto'?{language:lang}:{})});
+    const chunks=(out.chunks||[]).filter(c=>c.timestamp&&c.timestamp[0]!=null);
+    if(!chunks.length){toast('Whisper non ha riconosciuto la voce','err');setWhisperStatus('Nessuna voce riconosciuta.');return;}
+    const R=chunks.map(c=>({t:normWord(c.text),time:c.timestamp[0]+a0})).filter(r=>r.t);
+    const userLines=raw.split('\n').map(l=>l.trim());
+    const U=[],lineOf=[];
+    userLines.forEach((ln,li)=>{ln.split(/\s+/).filter(Boolean).forEach(w=>{U.push(normWord(w));lineOf.push(li);});});
+    const map=alignTokens(U,R.map(r=>r.t));
+    const first=new Array(userLines.length).fill(null);
+    for(let k=0;k<U.length;k++){const mi=map[k];if(mi!=null){const li=lineOf[k];if(first[li]==null)first[li]=R[mi].time;}}
+    // interpolate missing line times
+    const isText=userLines.map(t=>!!t);
+    for(let i=0;i<userLines.length;i++){
+      if(first[i]==null&&isText[i]){
+        let p=i-1;while(p>=0&&first[p]==null)p--;
+        let q=i+1;while(q<userLines.length&&first[q]==null)q++;
+        const tp=p>=0?first[p]:null,tq=q<userLines.length?first[q]:null;
+        if(tp!=null&&tq!=null)first[i]=tp+(tq-tp)*((i-p)/(q-p));
+        else if(tp!=null)first[i]=Math.min(tp+0.6*(i-p),a1);
+        else if(tq!=null)first[i]=Math.max(tq-0.6*(q-i),a0);
+      }
+    }
+    // enforce increasing
+    let last=a0;
+    for(let i=0;i<userLines.length;i++){if(first[i]!=null){first[i]=Math.max(first[i],last+0.05);last=first[i];}}
+    S.lines=userLines.map((txt,i)=>({text:txt,time:(txt&&first[i]!=null)?first[i]:null}));
+    updateLyricMk();prevSegs=buildSegments();checkReady();
+    setWhisperStatus('✓ Fatto: '+chunks.length+' parole riconosciute.');
+    toast('✓ Timing automatico completato!');
+  }catch(err){console.error(err);setWhisperStatus('Errore: '+err.message);toast('Errore Whisper: '+err.message,'err');}
+  finally{_whisperBusy=false;btn.disabled=false;btn.style.opacity='1';}
+}
+document.getElementById('whisperBtn').onclick=runWhisperTiming;
 
 function buildMiniWave(){
   const c=document.getElementById('miniWC'),ctx=c.getContext('2d'),cont=document.getElementById('miniWave');
