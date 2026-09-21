@@ -5,44 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lyric Video Maker | Soundvertise</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;800&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Lilita+One&family=Boogaloo&family=Bangers&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Schoolbell&family=Courier+Prime:wght@400;700&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Lilita+One&family=Boogaloo&family=Bangers&family=Permanent+Marker&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<script>window.tailwind=window.tailwind||{};</script>
 <style>
 :root{
-  --p:#a78bfa;--b:#60a5fa;--bg:#09090f;--s1:#0f0f18;--s2:#13131e;
-  --bd:#2a2a40;--bd2:#3d3d5c;
-  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;
-  --green:#34d399;--amber:#fbbf24;
+  --p:#8b4cb7;--p2:#6d3a91;--b:#116dff;--b2:#0053d8;
+  --bg:#0a0a0a;--s1:#171717;--s2:#141414;
+  --bd:rgba(139,76,183,.20);--bd2:rgba(139,76,183,.55);
+  --tx:#ffffff;--tx2:#c4bdd4;--tx3:#8b8598;
+  --green:#4ade80;--amber:#fbbf24;
+  --font-sans:'Montserrat',ui-sans-serif,system-ui,sans-serif;
+  --font-hand:'Schoolbell',cursive;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;display:flex;flex-direction:column;}
+body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:flex;flex-direction:column;}
 
 /* ─── TOP BAR ─── */
 #topBar{flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--bd);}
-.top-hdr{display:flex;align-items:center;gap:12px;padding:8px 20px;border-bottom:1px solid var(--bd);}
+.top-hdr{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--bd);}
 .wave-row{padding:10px 20px 12px;display:flex;gap:12px;align-items:center;}
 
 /* ─── MAIN ─── */
 #main{flex:1;display:grid;grid-template-columns:1fr 268px 1fr;overflow:hidden;min-height:0;}
-#leftCol{border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;background:var(--s2);}
+#leftCol{border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,rgba(139,76,183,.07),rgba(20,20,20,0));}
 #centerCol{display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:14px 8px;gap:10px;background:var(--bg);}
-#rightCol{border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;background:var(--s2);}
-.col-hdr{flex-shrink:0;padding:10px 14px 9px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+#rightCol{border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,rgba(139,76,183,.07),rgba(20,20,20,0));}
+.col-hdr{flex-shrink:0;padding:11px 14px 10px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
 #rightScroll{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px;}
 
 /* ─── WAVEFORM ─── */
-.trimmer-track{position:relative;background:#07070e;border-radius:10px;border:1px solid var(--bd);overflow:hidden;cursor:pointer;user-select:none;}
-.trim-ov{position:absolute;top:0;height:100%;z-index:5;background:rgba(167,139,250,.08);border:2px solid var(--p);box-shadow:0 0 18px rgba(167,139,250,.25);}
-.trim-h{position:absolute;top:50%;transform:translateY(-50%);width:13px;height:32px;background:var(--p);border-radius:4px;cursor:ew-resize;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px rgba(167,139,250,.5);}
+.trimmer-track{position:relative;background:#0a0a0a;border-radius:14px;border:1px solid var(--bd);overflow:hidden;cursor:pointer;user-select:none;}
+.trim-ov{position:absolute;top:0;height:100%;z-index:5;background:rgba(139,76,183,.14);border:2px solid var(--p);box-shadow:0 0 18px rgba(139,76,183,.35);}
+.trim-h{position:absolute;top:50%;transform:translateY(-50%);width:13px;height:32px;background:var(--p);border-radius:6px;cursor:ew-resize;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(139,76,183,.6);}
 .trim-h::after{content:'';width:2px;height:13px;background:rgba(255,255,255,.7);border-radius:2px;}
 .trim-hl{left:-6.5px;}.trim-hr{right:-6.5px;}
 #wvC{position:absolute;inset:0;width:100%;height:100%;}
 #aphd{position:absolute;top:0;width:2px;height:100%;background:#fff;z-index:20;pointer-events:none;box-shadow:0 0 8px rgba(255,255,255,.8);display:none;}
 #lyricMk{position:absolute;inset:0;pointer-events:none;z-index:10;}
-.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:rgba(96,165,250,.8);}
+.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:rgba(17,109,255,.85);}
 
 /* ─── PHONE ─── */
-.iphone-frame{width:240px;height:calc(240px*16/9);border:8px solid #1e1e30;border-radius:36px;position:relative;background:#000;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 24px 64px rgba(0,0,0,.8);flex-shrink:0;}
+.iphone-frame{width:240px;height:calc(240px*16/9);border:8px solid #262626;border-radius:36px;position:relative;background:#000;overflow:hidden;box-shadow:0 0 0 1px rgba(139,76,183,.25),0 24px 64px rgba(0,0,0,.8);flex-shrink:0;}
 .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:60px;height:16px;background:#000;border-radius:20px;z-index:50;}
 .video-con{width:100%;height:100%;position:relative;background:#000;overflow:hidden;}
 #PV{width:100%;height:100%;object-fit:cover;display:block;}
@@ -103,12 +107,12 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;display
 
 /* ─── CLIP GRID ─── */
 .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.cth{position:relative;aspect-ratio:9/16;background:#0d0d18;border-radius:7px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:border-color .15s;}
+.cth{position:relative;aspect-ratio:9/16;background:#171717;border-radius:14px;overflow:hidden;border:1px solid var(--bd);cursor:pointer;transition:border-color .15s;}
 .cth:hover{border-color:var(--bd2);}
 .cth.playing-inline{border-color:var(--p);}
 .cth.order-mode{border-color:var(--bd);}
 .cth video{width:100%;height:100%;object-fit:cover;pointer-events:none;}
-.cth .cd{position:absolute;bottom:3px;right:3px;font-family:'Courier Prime',monospace;font-size:7px;background:rgba(0,0,0,.85);color:var(--p);padding:1px 4px;border-radius:2px;}
+.cth .cd{position:absolute;bottom:3px;right:3px;font-family:'Montserrat',sans-serif;font-size:7px;background:rgba(0,0,0,.85);color:#fff;padding:1px 5px;border-radius:999px;}
 .cth .cx{position:absolute;top:3px;right:3px;width:15px;height:15px;background:rgba(0,0,0,.75);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;cursor:pointer;color:#fff;z-index:10;}
 .cth:hover .cx{display:flex;}
 .cth .cov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .15s;}
@@ -116,54 +120,57 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;display
 .cth .cov-icon{font-size:20px;color:#fff;opacity:0;transition:opacity .15s;}
 .cth:hover .cov-icon{opacity:1;}
 /* order number badge */
-.cth .order-badge{position:absolute;top:4px;left:4px;width:20px;height:20px;background:rgba(96,165,250,.9);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#000;z-index:12;}
+.cth .order-badge{position:absolute;top:4px;left:4px;width:20px;height:20px;background:var(--b);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;z-index:12;}
 .order-enabled .cth .order-badge{display:flex;}
-.cadd{aspect-ratio:9/16;background:#0a0a14;border:1px dashed var(--bd);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--tx3);transition:all .15s;position:relative;font-size:22px;}
+.cadd{aspect-ratio:9/16;background:rgba(139,76,183,.08);border:1.5px dashed var(--bd2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--tx3);transition:all .15s;position:relative;font-size:22px;}
 .cadd:hover{border-color:var(--p);color:var(--p);}
 .cadd input{position:absolute;inset:0;opacity:0;cursor:pointer;}
 
-/* ─── BUTTONS ─── */
-.btn-sv{background:linear-gradient(135deg,var(--b) 0%,var(--p) 100%);transition:all .18s;border:none;cursor:pointer;color:#fff;font-weight:800;}
-.btn-sv:hover:not(:disabled){filter:brightness(1.1);transform:scale(1.02);}
-.btn-sv:disabled{opacity:.3;cursor:not-allowed;transform:none;}
-.smb{background:#16162a;border:1px solid var(--bd);padding:5px 7px;border-radius:6px;font-size:9px;transition:all .12s;color:var(--tx2);cursor:pointer;font-weight:700;text-align:center;white-space:nowrap;}
-.smb:hover:not(.on):not(.onp){border-color:var(--bd2);color:var(--tx);}
-.smb.on{border-color:var(--b);background:rgba(96,165,250,.18);color:#bfdbfe;}
-.smb.onp{border-color:var(--p);background:rgba(167,139,250,.18);color:#e9d5ff;}
+/* ─── BUTTONS (noktis style) ─── */
+.btn-sv{background:linear-gradient(90deg,var(--b) 0%,var(--b2) 100%);transition:all .18s;border:none;cursor:pointer;color:#fff;font-weight:800;letter-spacing:.02em;box-shadow:0 6px 18px rgba(17,109,255,.28);}
+.btn-sv:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px);}
+.btn-sv:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.smb{background:rgba(139,76,183,.12);border:1px solid var(--bd);padding:6px 8px;border-radius:999px;font-size:9px;transition:all .12s;color:var(--tx2);cursor:pointer;font-weight:800;text-align:center;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;}
+.smb:hover:not(.on):not(.onp){border-color:var(--bd2);color:#fff;}
+.smb.on{border-color:transparent;background:linear-gradient(90deg,var(--b),var(--b2));color:#fff;}
+.smb.onp{border-color:transparent;background:linear-gradient(90deg,var(--p),var(--p2));color:#fff;}
 .smb.shuf{border-color:var(--amber);background:rgba(251,191,36,.1);color:var(--amber);}
-.tog{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:8px;background:#16162a;border:1px solid var(--bd);font-size:9px;font-weight:800;text-transform:uppercase;transition:all .15s;color:var(--tx2);cursor:pointer;}
-.tog.on{background:rgba(96,165,250,.18);border-color:var(--b);color:#bfdbfe;}
-.sb{background:#16162a;border:1px solid var(--bd);border-radius:7px;padding:5px 11px;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--tx2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px;}
-.sb:hover{border-color:var(--bd2);color:var(--tx);}
-.mode-tab{flex:1;padding:8px;border-radius:8px;border:1px solid var(--bd);background:#16162a;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--tx3);cursor:pointer;transition:all .15s;text-align:center;}
-.mode-tab.on{background:rgba(167,139,250,.18);border-color:var(--p);color:#e9d5ff;}
+.tog{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;background:rgba(139,76,183,.12);border:1px solid var(--bd);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;transition:all .15s;color:var(--tx2);cursor:pointer;}
+.tog.on{background:linear-gradient(90deg,var(--p),var(--p2));border-color:transparent;color:#fff;}
+.sb{background:rgba(139,76,183,.12);border:1px solid var(--bd);border-radius:999px;padding:6px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px;}
+.sb:hover{border-color:var(--bd2);color:#fff;}
+.mode-tab{flex:1;padding:8px;border-radius:999px;border:1px solid var(--bd);background:rgba(139,76,183,.1);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--tx3);cursor:pointer;transition:all .15s;text-align:center;}
+.mode-tab.on{background:linear-gradient(90deg,var(--p),var(--p2));border-color:transparent;color:#fff;}
+.fbtn{display:block;width:100%;text-align:left;background:rgba(139,76,183,.1);border:1px solid var(--bd);border-radius:999px;padding:7px 14px;font-size:10px;font-weight:800;color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fbtn:hover{border-color:var(--bd2);color:#fff;}
+.fbtn.on{background:linear-gradient(90deg,var(--p),var(--p2));border-color:transparent;color:#fff;}
 
 /* ─── SYNC MODAL ─── */
-.sync-modal{position:fixed;inset:0;background:rgba(5,5,15,.96);z-index:200;display:none;align-items:center;justify-content:center;}
+.sync-modal{position:fixed;inset:0;background:rgba(10,10,10,.96);z-index:200;display:none;align-items:center;justify-content:center;}
 .sync-modal.open{display:flex;}
-#spaceBar{display:flex;align-items:center;justify-content:center;width:100%;height:46px;background:#0d0d1a;border:2px solid var(--bd);border-radius:10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:var(--tx3);transition:all .1s;user-select:none;}
-#spaceBar.pressed{background:rgba(96,165,250,.15);border-color:var(--b);color:var(--b);}
+#spaceBar{display:flex;align-items:center;justify-content:center;width:100%;height:46px;background:rgba(139,76,183,.1);border:2px solid var(--bd);border-radius:14px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:var(--tx3);transition:all .1s;user-select:none;}
+#spaceBar.pressed{background:linear-gradient(90deg,var(--p),var(--p2));border-color:transparent;color:#fff;}
 
 /* ─── EXPORT OV ─── */
-.exp-ov{position:fixed;inset:0;background:rgba(5,5,15,.96);z-index:300;display:none;align-items:center;justify-content:center;}
+.exp-ov{position:fixed;inset:0;background:rgba(10,10,10,.96);z-index:300;display:none;align-items:center;justify-content:center;}
 .exp-ov.open{display:flex;}
 
 /* ─── TOAST ─── */
-.toast-el{position:fixed;top:12px;right:14px;background:#1e1e30;border:1px solid var(--bd2);padding:9px 15px;border-radius:10px;font-size:11px;z-index:999;opacity:0;transform:translateY(-5px);transition:all .22s;pointer-events:none;color:var(--tx);}
+.toast-el{position:fixed;top:12px;right:14px;background:#171717;border:1px solid var(--bd2);padding:9px 15px;border-radius:999px;font-size:11px;z-index:999;opacity:0;transform:translateY(-5px);transition:all .22s;pointer-events:none;color:var(--tx);}
 .toast-el.show{opacity:1;transform:translateY(0);}
-.toast-el.ok{border-color:rgba(52,211,153,.5);color:var(--green);}
+.toast-el.ok{border-color:rgba(74,222,128,.5);color:var(--green);}
 .toast-el.err{border-color:rgba(239,68,68,.4);color:#f87171;}
 
 /* ─── MISC ─── */
-.lbl{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;}
+.lbl{font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.12em;}
 .sdiv{height:1px;background:var(--bd);margin:4px 0;}
 ::-webkit-scrollbar{width:3px;height:3px;}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px;}
 input[type=range]{accent-color:var(--p);width:100%;}
 
 /* Upload CTA */
-.upload-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;cursor:pointer;border:1.5px dashed var(--bd2);border-radius:10px;background:#0d0d1a;transition:all .2s;}
-.upload-cta:hover{border-color:var(--p);background:rgba(167,139,250,.06);}
+.upload-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;cursor:pointer;border:1.5px dashed var(--bd2);border-radius:16px;background:rgba(139,76,183,.06);transition:all .2s;}
+.upload-cta:hover{border-color:var(--p);background:rgba(139,76,183,.12);}
 .upload-cta svg{color:var(--p);}
 
 /* Play button styled */
@@ -182,8 +189,8 @@ input[type=range]{accent-color:var(--p);width:100%;}
   <!-- Header row: logo + upload + play centered -->
   <div class="top-hdr">
     <div class="shrink-0">
-      <div style="font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.02em;">Lyric <span style="color:var(--b);">Video</span> Maker</div>
-      <div style="font-size:7px;font-weight:700;letter-spacing:.2em;color:var(--tx3);text-transform:uppercase;">Soundvertise</div>
+      <div style="font-family:var(--font-hand);font-size:23px;line-height:1;color:#fff;">Lyric <span style="color:var(--p);">Video</span> Maker</div>
+      <div style="font-size:7px;font-weight:700;letter-spacing:.28em;color:var(--tx3);text-transform:uppercase;margin-top:2px;">Soundvertise</div>
     </div>
 
     <div class="flex-1"></div>
@@ -192,7 +199,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
     <div style="display:flex;align-items:center;gap:10px;position:absolute;left:50%;transform:translateX(-50%);">
 
       <!-- Upload Song button -->
-      <label id="audioUploadLabel" style="display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,rgba(96,165,250,.15),rgba(167,139,250,.15));border:1px solid rgba(167,139,250,.45);border-radius:14px;padding:8px 20px;transition:all .2s;" onmouseover="this.style.borderColor='rgba(167,139,250,.9)'" onmouseout="this.style.borderColor='rgba(167,139,250,.45)'">
+      <label id="audioUploadLabel" style="display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,rgba(17,109,255,.15),rgba(139,76,183,.15));border:1px solid rgba(139,76,183,.45);border-radius:14px;padding:8px 20px;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,76,183,.9)'" onmouseout="this.style.borderColor='rgba(139,76,183,.45)'">
         <svg width="18" height="18" fill="none" stroke="var(--p)" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-3c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zM9 10l12-3"/></svg>
         <div>
           <div id="audioLabelTitle" style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--tx);">Upload Song</div>
@@ -223,7 +230,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
   <!-- Waveform row — narrower, centered, professional -->
   <div class="wave-row">
     <!-- No audio placeholder -->
-    <div id="noAudioPlaceholder" style="flex:1;max-width:900px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bd);border-radius:8px;background:#0a0a14;cursor:pointer;" onclick="document.getElementById('audioInput').click()">
+    <div id="noAudioPlaceholder" style="flex:1;max-width:900px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bd);border-radius:8px;background:#141414;cursor:pointer;" onclick="document.getElementById('audioInput').click()">
       <span style="font-size:11px;color:var(--tx3);">Carica un brano per vedere la waveform — click qui o usa il pulsante sopra</span>
     </div>
     <!-- Waveform -->
@@ -296,7 +303,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
   <!-- Export status -->
   <div id="expStatus" class="hidden" style="width:240px;display:flex;flex-direction:column;gap:4px;">
     <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--b);"><span id="expStatTxt">…</span><span id="expPct">0%</span></div>
-    <div style="height:3px;background:#1e1e30;border-radius:2px;overflow:hidden;"><div id="expBar" style="height:100%;background:linear-gradient(90deg,var(--b),var(--p));width:0;transition:width .3s;"></div></div>
+    <div style="height:3px;background:#262626;border-radius:2px;overflow:hidden;"><div id="expBar" style="height:100%;background:linear-gradient(90deg,var(--b),var(--p));width:0;transition:width .3s;"></div></div>
   </div>
 
 </div>
@@ -337,11 +344,11 @@ input[type=range]{accent-color:var(--p);width:100%;}
 
     <!-- CON LYRICS -->
     <div id="panLyrics" style="display:flex;flex-direction:column;gap:8px;">
-      <textarea id="lyricsTA" rows="5" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" style="width:100%;background:#0d0d1a;border:1px solid var(--bd);border-radius:10px;padding:10px;outline:none;resize:none;color:var(--tx);font-family:'Courier Prime',monospace;font-size:11px;line-height:1.65;placeholder-color:var(--tx3);" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--p')" onblur="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--bd')"></textarea>
-      <div style="background:#0d0d1a;border:1px solid var(--bd);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:7px;">
+      <textarea id="lyricsTA" rows="5" placeholder="Scrivi le lyrics...&#10;Una riga = una scritta&#10;Riga vuota = pausa" style="width:100%;background:#141414;border:1px solid var(--bd);border-radius:10px;padding:10px;outline:none;resize:none;color:var(--tx);font-family:'Courier Prime',monospace;font-size:11px;line-height:1.65;placeholder-color:var(--tx3);" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--p')" onblur="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--bd')"></textarea>
+      <div style="background:#141414;border:1px solid var(--bd);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:7px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:9px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;">Auto-Timing · Whisper AI</span>
-          <input id="whisperLang" value="en" title="Lingua (en, it, … o auto)" style="width:52px;background:#07070e;border:1px solid var(--bd);border-radius:6px;padding:4px 6px;color:var(--tx);font-size:9px;outline:none;text-align:center;">
+          <input id="whisperLang" value="en" title="Lingua (en, it, … o auto)" style="width:52px;background:#0a0a0a;border:1px solid var(--bd);border-radius:6px;padding:4px 6px;color:var(--tx);font-size:9px;outline:none;text-align:center;">
         </div>
         <button id="whisperBtn" class="btn-sv" style="width:100%;padding:8px;border-radius:8px;font-size:10px;text-transform:uppercase;">🎧 Rileva timing automatico</button>
         <div id="whisperStatus" style="font-size:9px;color:var(--tx3);line-height:1.45;">Gratis, senza chiavi. Al primo uso scarica il modello (~150MB, poi resta in cache).</div>
@@ -351,7 +358,7 @@ input[type=range]{accent-color:var(--p);width:100%;}
 
     <!-- NO LYRICS -->
     <div id="panNoLyrics" style="display:none;flex-direction:column;gap:8px;">
-      <div style="background:#0d0d1a;border:1px solid var(--bd);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="background:#141414;border:1px solid var(--bd);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:11px;font-weight:700;color:var(--tx);">Cambio video ogni</span>
           <span id="intVal" style="color:var(--p);font-family:'Courier Prime',monospace;font-weight:700;">3.0s</span>
@@ -362,54 +369,54 @@ input[type=range]{accent-color:var(--p);width:100%;}
       <!-- Optional fixed text for No Lyrics -->
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Testo fisso (opzionale)</div>
-        <input id="noLyricText" type="text" placeholder="Testo che rimane su tutto il video…" style="width:100%;background:#0d0d1a;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:11px;outline:none;" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--p')" onblur="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--bd')" oninput="applyStyle(this.value)">
+        <input id="noLyricText" type="text" placeholder="Testo che rimane su tutto il video…" style="width:100%;background:#141414;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:11px;outline:none;" onfocus="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--p')" onblur="this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--bd')" oninput="applyStyle(this.value)">
       </div>
     </div>
 
     <div class="sdiv"></div>
 
-    <!-- FONT + SETTINGS SIDE BY SIDE -->
-    <div style="display:flex;gap:8px;align-items:flex-start;">
-
-      <!-- FONT COLUMN -->
-      <div style="display:flex;flex-direction:column;gap:4px;width:42%;">
-        <div class="lbl" style="margin-bottom:4px;">Font</div>
-        <button class="smb on text-left" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;padding:5px 7px;text-align:left;">BOLD</button>
-        <button class="smb text-left" data-font="fnt-brat" style="font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:10px;padding:5px 7px;text-align:left;">BRAT</button>
-        <button class="smb text-left" data-font="fnt-condensed" style="font-family:'Arial Narrow',Arial,sans-serif;font-weight:700;font-size:11px;letter-spacing:-1px;padding:5px 7px;text-align:left;">COND</button>
-        <button class="smb text-left" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:5px 7px;text-align:left;">BEBAS</button>
-        <button class="smb text-left" data-font="fnt-bangers" style="font-family:'Bangers',cursive;font-size:12px;padding:5px 7px;text-align:left;">BANG!</button>
-        <button class="smb text-left" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;font-size:10px;padding:5px 7px;text-align:left;">Lilita</button>
-        <button class="smb text-left" data-font="fnt-boogaloo" style="font-family:'Boogaloo',cursive;font-size:11px;padding:5px 7px;text-align:left;">Boogaloo</button>
-        <button class="smb text-left" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;font-weight:700;font-size:9px;padding:5px 7px;text-align:left;">RETRO</button>
-        <button class="smb text-left" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;font-size:11px;padding:5px 7px;text-align:left;">Script</button>
-        <button class="smb text-left" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;font-size:9px;padding:5px 7px;text-align:left;">Marker</button>
+    <!-- FONT -->
+    <div>
+      <div class="lbl" style="margin-bottom:8px;">Font</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <button class="fbtn on" data-font="fnt-montserrat" style="font-family:'Montserrat',sans-serif;font-weight:900;width:auto;">BOLD</button>
+        <button class="fbtn" data-font="fnt-brat" style="font-family:Arial,Helvetica,sans-serif;font-weight:800;width:auto;">BRAT</button>
+        <button class="fbtn" data-font="fnt-condensed" style="font-family:'Arial Narrow',Arial,sans-serif;font-weight:700;letter-spacing:-.5px;width:auto;">COND</button>
+        <button class="fbtn" data-font="fnt-bebas" style="font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;width:auto;">BEBAS</button>
+        <button class="fbtn" data-font="fnt-bangers" style="font-family:'Bangers',cursive;letter-spacing:1px;width:auto;">BANG!</button>
+        <button class="fbtn" data-font="fnt-lilita" style="font-family:'Lilita One',cursive;width:auto;">Lilita</button>
+        <button class="fbtn" data-font="fnt-boogaloo" style="font-family:'Boogaloo',cursive;width:auto;">Boogaloo</button>
+        <button class="fbtn" data-font="fnt-retro" style="font-family:'Courier Prime',monospace;width:auto;">RETRO</button>
+        <button class="fbtn" data-font="fnt-hand" style="font-family:'Dancing Script',cursive;font-size:12px;width:auto;">Script</button>
+        <button class="fbtn" data-font="fnt-marker" style="font-family:'Permanent Marker',cursive;width:auto;">Marker</button>
       </div>
+    </div>
 
-      <!-- SETTINGS COLUMN -->
-      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;">
-        <div class="lbl" style="margin-bottom:0;">Impostazioni</div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:var(--tx2);">Dimensione</span><span id="fsLbl" style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--b);">20px</span></div>
-          <input type="range" id="fsSlider" min="8" max="54" value="20">
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:var(--tx2);">Posizione Y</span><span id="posLbl" style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--b);">42%</span></div>
-          <input type="range" id="posSlider" min="8" max="82" value="42">
-        </div>
-        <div>
-          <div style="font-size:9px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Colori</div>
-          <div style="display:flex;flex-direction:column;gap:5px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <div style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="txColor" value="#ffffff" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
-              <span style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;">Testo</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <div style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="olColor" value="#000000" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
-              <span style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;">Bordo</span>
-            </div>
-            <button id="olToggle" class="tog on" style="width:100%;justify-content:center;padding:6px;font-size:9px;">Bordo ON</button>
+    <div class="sdiv"></div>
+
+    <!-- SETTINGS -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="lbl">Impostazioni</div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:var(--tx2);">Dimensione</span><span id="fsLbl" style="font-size:9px;font-family:'Courier Prime',monospace;color:#8bb8ff;">20px</span></div>
+        <input type="range" id="fsSlider" min="8" max="54" value="20">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:var(--tx2);">Posizione Y</span><span id="posLbl" style="font-size:9px;font-family:'Courier Prime',monospace;color:#8bb8ff;">42%</span></div>
+        <input type="range" id="posSlider" min="8" max="82" value="42">
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px;">Colori</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:28px;height:28px;border-radius:999px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="txColor" value="#ffffff" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
+            <span style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Testo</span>
           </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:28px;height:28px;border-radius:999px;border:1px solid var(--bd2);overflow:hidden;position:relative;flex-shrink:0;"><input type="color" id="olColor" value="#000000" style="position:absolute;inset:0;width:200%;height:200%;top:-25%;left:-25%;cursor:pointer;border:none;"></div>
+            <span style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Bordo</span>
+          </div>
+          <button id="olToggle" class="tog on" style="flex:1;justify-content:center;min-width:90px;">Bordo ON</button>
         </div>
       </div>
     </div>
@@ -478,16 +485,16 @@ input[type=range]{accent-color:var(--p);width:100%;}
     <!-- Mini waveform -->
     <div style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span class="lbl">Punto di partenza</span><span id="syncStartLbl" style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--p);">0:00</span></div>
-      <div id="miniWave" style="position:relative;height:36px;background:#07070e;border-radius:8px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
+      <div id="miniWave" style="position:relative;height:36px;background:#0a0a0a;border-radius:8px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
         <canvas id="miniWC" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
         <div id="miniPH" style="position:absolute;top:0;width:2px;height:100%;background:rgba(255,255,255,.4);pointer-events:none;left:0;"></div>
         <div id="miniSM" style="position:absolute;top:0;width:2px;height:100%;background:var(--p);pointer-events:none;left:0;box-shadow:0 0 6px var(--p);"></div>
       </div>
     </div>
     <!-- Rows -->
-    <div style="background:#07070e;border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:12px;">
-      <div id="sPrevRow" style="padding:7px 14px;border-bottom:1px solid #0f0f1a;opacity:.28;font-size:11px;color:var(--tx2);">—</div>
-      <div style="padding:12px 14px;border-bottom:1px solid #0f0f1a;background:rgba(96,165,250,.04);position:relative;">
+    <div style="background:#0a0a0a;border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:12px;">
+      <div id="sPrevRow" style="padding:7px 14px;border-bottom:1px solid #1f1f1f;opacity:.28;font-size:11px;color:var(--tx2);">—</div>
+      <div style="padding:12px 14px;border-bottom:1px solid #1f1f1f;background:rgba(17,109,255,.04);position:relative;">
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--b),var(--p));border-radius:0 2px 2px 0;"></div>
         <div style="display:flex;align-items:center;gap:10px;">
           <span id="sCursor" style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--tx3);width:32px;flex-shrink:0;text-align:right;">—</span>
@@ -617,7 +624,7 @@ function drawWave(){
   waveData.forEach((v,i)=>{
     const x=i*step,h=v*H*.84,y=(H-h)/2,fr=i/waveData.length;
     const inT=fr>=S.trimStart/S.audioDuration&&fr<=S.trimEnd/S.audioDuration;
-    wctx.fillStyle=inT?(fr<pf?'rgba(167,139,250,1)':'rgba(167,139,250,.55)'):(fr<pf?'rgba(255,255,255,.2)':'rgba(255,255,255,.08)');
+    wctx.fillStyle=inT?(fr<pf?'rgba(139,76,183,1)':'rgba(139,76,183,.55)'):(fr<pf?'rgba(255,255,255,.2)':'rgba(255,255,255,.08)');
     wctx.beginPath();wctx.roundRect(x,y,Math.max(1,step-.4),h,1);wctx.fill();
   });
 }
@@ -743,7 +750,7 @@ function renderClips(){
       d.draggable=true;
       d.addEventListener('dragstart',ev=>{dragSrcIdx=i;ev.dataTransfer.effectAllowed='move';d.style.opacity='.4';});
       d.addEventListener('dragend',()=>{d.style.opacity='1';});
-      d.addEventListener('dragover',ev=>{ev.preventDefault();ev.dataTransfer.dropEffect='move';d.style.borderColor='rgba(167,139,250,.8)';});
+      d.addEventListener('dragover',ev=>{ev.preventDefault();ev.dataTransfer.dropEffect='move';d.style.borderColor='rgba(139,76,183,.8)';});
       d.addEventListener('dragleave',()=>{d.style.borderColor='';});
       d.addEventListener('drop',ev=>{
         ev.preventDefault();d.style.borderColor='';
@@ -1243,7 +1250,7 @@ function buildMiniWave(){
   c.width=cont.clientWidth*(window.devicePixelRatio||1);c.height=cont.clientHeight*(window.devicePixelRatio||1);
   ctx.clearRect(0,0,c.width,c.height);if(!waveData)return;
   const W=c.width,H=c.height,step=W/waveData.length;
-  waveData.forEach((v,i)=>{const h=v*H*.8,y=(H-h)/2;ctx.fillStyle='rgba(167,139,250,.48)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.4),h,1);ctx.fill();});
+  waveData.forEach((v,i)=>{const h=v*H*.8,y=(H-h)/2;ctx.fillStyle='rgba(139,76,183,.48)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.4),h,1);ctx.fill();});
 }
 function updateMiniMarker(){
   if(!S.audioDuration)return;
