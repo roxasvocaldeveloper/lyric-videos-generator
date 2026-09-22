@@ -121,6 +121,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:f
 .neon .cap-word.cyan.on{color:#5ef0ff;text-shadow:-4px 0 12px rgba(58,230,255,.75),4px 0 12px rgba(58,230,255,.75),0 0 22px #3ae6ff,0 0 46px rgba(58,230,255,.6);}
 .neon .cap-word.big{font-size:1.35em;}
 .neon .cap-word.small{font-size:.72em;opacity:.9;}
+@keyframes neonBlink{0%,100%{opacity:1;filter:blur(0)}50%{opacity:.10;filter:blur(5px)}}
+.neon .cap-word.blink{animation:neonBlink 1s steps(1,end) infinite;}
 
 /* ─── CLIP GRID ─── */
 .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
@@ -956,14 +958,16 @@ function renderClassicHTML(text){return esc(parseEmphasis(text).map(t=>t.t).join
 function neonWords(text){
   const words=bratWords(text);
   const rnd=mulberry32(hashStr(text));
-  words.forEach((w,i)=>{w.i=i;const r=rnd();w.big=r<0.22;w.small=r>0.72;w.cyan=rnd()<0.35;w.dy=(rnd()-.5)*0.06;});
+  words.forEach((w,i)=>{w.i=i;const r=rnd();w.big=r<0.22;w.small=r>0.72;w.cyan=rnd()<0.35;w.dy=(rnd()-.5)*0.06;w.blink=rnd()<0.45;w.freq=1.2+rnd()*2.6;w.phase=rnd()*Math.PI*2;w.period=2/w.freq;});
   return words;
 }
 function renderNeonHTML(text){
   return neonWords(text).map(w=>{
     let cls='cap-word';
     if(w.big)cls+=' big';if(w.small)cls+=' small';if(w.cyan)cls+=' cyan';
-    return `<span class="${cls}">${esc(w.t)}</span>`;
+    let extra='';
+    if(w.blink)extra=` data-blink="1" style="animation-duration:${w.period.toFixed(2)}s;animation-delay:-${(w.phase/(Math.PI*2)*w.period).toFixed(2)}s"`;
+    return `<span class="${cls}"${extra}>${esc(w.t)}</span>`;
   }).join(' ');
 }
 function renderBratHTML(text){
@@ -980,7 +984,7 @@ function resetKaraoke(){
   _bratRevealed=-1;_singleIdx=-1;
   const spans=capEl.querySelectorAll('.cap-word');
   if(activeFamily()==='single'){spans.forEach(s=>s.classList.remove('on','upcoming'));}
-  else spans.forEach(s=>{s.classList.remove('on');s.classList.add('upcoming');});
+  else spans.forEach(s=>{s.classList.remove('on','blink');s.classList.add('upcoming');});
 }
 function updateCapKaraoke(text,kp,tNow,wt){
   if(activeFamily()==='single'){
@@ -998,14 +1002,15 @@ function updateCapKaraoke(text,kp,tNow,wt){
   if(activeFamily()==='neon'){
     const words=neonWords(text);
     const spans=capEl.querySelectorAll('.cap-word');
+    const reveal=sp=>{if(sp){sp.classList.remove('upcoming');void sp.offsetWidth;sp.classList.add('on');if(sp.dataset&&sp.dataset.blink)sp.classList.add('blink');}};
     if(wt&&wt.length===words.length&&tNow!=null){
       for(let i=0;i<words.length;i++){const t=wt[i],sp=spans[i];if(!sp)continue;
-        if(t!=null&&tNow>=t&&!sp.classList.contains('on')){sp.classList.remove('upcoming');void sp.offsetWidth;sp.classList.add('on');}}
+        if(t!=null&&tNow>=t&&!sp.classList.contains('on'))reveal(sp);}
     }else{
       const st=karaokeStates(words,kp);
       let rev=-1;for(let i=0;i<st.length;i++){if(st[i].sung||st[i].active)rev=i;else break;}
       if(rev===_bratRevealed)return;
-      for(let i=Math.max(0,_bratRevealed+1);i<=rev;i++){const sp=spans[i];if(sp){sp.classList.remove('upcoming');void sp.offsetWidth;sp.classList.add('on');}}
+      for(let i=Math.max(0,_bratRevealed+1);i<=rev;i++)reveal(spans[i]);
       _bratRevealed=rev;
     }
     return;
@@ -1536,9 +1541,13 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
           ctx.font=getCanvasFont(size);ctx.letterSpacing=lsPx(size);
           let alpha=0,el=9;
           if(useTime){const t=wt[w.i];if(t==null){el=9;}else if(tNow>=t){el=tNow-t;alpha=Math.min(1,el/0.18);}else alpha=0;}
-          else if(kp!=null){const st=karaokeStates(words,kp);alpha=st[wi].sung?1:(st[wi].active?Math.min(1,el/0.18):0);}
+          else if(kp!=null){const st=karaokeStates(words,kp);alpha=st[wi].sung?1:(st[wi].active?1:0);}
           else alpha=1;
           if(alpha<=0){x+=ww+gapW;return;}
+          if(w.blink){
+            const bt=useTime?tNow:((kp!=null)?kp*10:0);
+            if(Math.sin(bt*w.freq*Math.PI*2+w.phase)>0)alpha*=.12;else alpha*=1;
+          }
           ctx.save();ctx.globalAlpha*=alpha*pr;
           const blurPx=(useTime&&wt[w.i]!=null)?Math.max(0,(1-Math.min(1,el/0.35))*size*0.5):0;
           if(w.big){ctx.translate(x+ww/2,y);ctx.scale(1.05,1.05);ctx.translate(-(x+ww/2),-y);}
