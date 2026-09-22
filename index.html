@@ -929,7 +929,8 @@ function bratLayout(text){
     }
     if(!line.length){line.push(words[i]);i++;}
     let tot=0;line.forEach(w=>tot+=emWidth(w.t,w.big));
-    const desired=0.5*(0.75+rnd()*0.6);
+    // spaziatura diversa in base al numero di parole per riga (più casualità)
+    const desired=line.length===2?(0.8+rnd()*0.5):line.length===3?(0.3+rnd()*0.4):(0.45+rnd()*0.2);
     const maxGap=line.length>1?(BRAT_MW_EM-tot)/(line.length-1):0;
     const gap=line.length>1?Math.max(0.12,Math.min(desired,maxGap)):0;
     lines.push({words:line,gap,yJit:(rnd()-.5)*.08});
