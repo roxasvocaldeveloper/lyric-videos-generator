@@ -594,24 +594,24 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
       <div>
         <div style="font-size:14px;font-weight:900;text-transform:uppercase;color:var(--tx);">Scegli il range</div>
-        <div style="font-size:9px;color:var(--tx3);margin-top:3px;">Trascina gli estremi per scegliere la parte da usare · max 30s</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:3px;">Trascina gli estremi e <b style="color:var(--tx2);">ascolti il punto in tempo reale</b> · max 30s</div>
       </div>
       <button id="rangeCloseX" style="color:var(--tx3);font-size:20px;line-height:1;padding:2px 4px;background:none;border:none;cursor:pointer;">✕</button>
     </div>
-    <div id="rangeWave" style="position:relative;height:104px;background:#0a0a0a;border-radius:12px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
+    <div id="rangeWave" style="position:relative;height:130px;background:#0a0a0a;border-radius:12px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
       <canvas id="rangeWC" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
-      <div id="rangeSel" style="position:absolute;top:0;height:100%;z-index:5;background:rgba(139,76,183,.16);border-top:2px solid var(--p);border-bottom:2px solid var(--p);">
+      <div id="rangePH" style="position:absolute;top:0;width:2px;height:100%;background:#fff;left:0;pointer-events:none;z-index:6;box-shadow:0 0 8px rgba(255,255,255,.9);"></div>
+      <div id="rangeSel" style="position:absolute;top:0;height:100%;z-index:5;background:rgba(139,76,183,.18);border-top:2px solid var(--p);border-bottom:2px solid var(--p);box-shadow:0 0 18px rgba(139,76,183,.25);">
         <div class="trim-h" id="rangeL" style="left:-6.5px;"></div>
         <div class="trim-h" id="rangeR" style="right:-6.5px;"></div>
-        <div id="rangePH" style="position:absolute;top:0;width:2px;height:100%;background:#fff;left:0;pointer-events:none;box-shadow:0 0 6px rgba(255,255,255,.8);"></div>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-family:'Courier Prime',monospace;font-size:10px;color:#8bb8ff;margin-top:8px;">
-      <span id="rangeStartLbl">0:00</span><span id="rangeDurLbl" style="color:var(--tx2);">0.0s</span><span id="rangeEndLbl">0:15</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:'Courier Prime',monospace;font-size:11px;color:#8bb8ff;margin-top:8px;">
+      <span id="rangeStartLbl">0:00</span><span id="rangeDurLbl" style="color:var(--tx2);font-weight:800;">0.0s</span><span id="rangeEndLbl">0:15</span>
     </div>
     <div style="display:flex;gap:8px;margin-top:16px;">
-      <button id="rangePrevBtn" class="sb" style="flex:1;justify-content:center;padding:11px;">▶ Anteprima</button>
-      <button id="rangeOkBtn" class="btn-sv" style="flex:1;padding:11px;border-radius:10px;font-size:11px;text-transform:uppercase;">Usa questo range</button>
+      <button id="rangePrevBtn" class="sb" style="flex:1;justify-content:center;padding:12px;">▶ Ascolta selezione</button>
+      <button id="rangeOkBtn" class="btn-sv" style="flex:1.4;padding:12px;border-radius:10px;font-size:11px;text-transform:uppercase;">Usa questo range</button>
     </div>
   </div>
 </div>
@@ -806,7 +806,7 @@ document.getElementById('audioInput').onchange=async e=>{
 // ═══════════════════════════════════
 // RANGE MODAL (scegli il range prima di lavorare)
 // ═══════════════════════════════════
-let rangeState={start:0,end:15},rangeDrag=null,rangeAnim=null;
+let rangeState={start:0,end:15},rangeDrag=null,rangeAnim=null,scrubbing=false;
 function drawRangeWave(){
   const c=document.getElementById('rangeWC'),cont=document.getElementById('rangeWave');
   if(!c||!cont||!waveData)return;
@@ -814,7 +814,7 @@ function drawRangeWave(){
   c.width=Math.max(1,cont.clientWidth*dpr);c.height=Math.max(1,cont.clientHeight*dpr);
   const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
   const N=waveData.length,step=W/N;
-  for(let i=0;i<N;i++){const v=waveData[i],h=v*H*.86,y=(H-h)/2;ctx.fillStyle='rgba(139,76,183,.5)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.4),h,1);ctx.fill();}
+  for(let i=0;i<N;i++){const v=waveData[i],h=v*H*.88,y=(H-h)/2;ctx.fillStyle='rgba(139,76,183,.5)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.4),h,1);ctx.fill();}
 }
 function updateRangeSel(){
   const sel=document.getElementById('rangeSel');if(!sel)return;const d=S.audioDuration||1;
@@ -823,16 +823,22 @@ function updateRangeSel(){
   document.getElementById('rangeEndLbl').textContent=fmt(rangeState.end);
   document.getElementById('rangeDurLbl').textContent=(rangeState.end-rangeState.start).toFixed(1)+'s';
 }
-function updateRangePH(){(function(){const d=S.audioDuration||1;const el=document.getElementById('rangePH');if(el)el.style.left=(bgAudio.currentTime/d*100)+'%';})();}
+function updateRangePH(){const d=S.audioDuration||1;const el=document.getElementById('rangePH');if(el)el.style.left=(bgAudio.currentTime/d*100)+'%';}
+function scrubTo(t){
+  bgAudio.currentTime=t;updateRangePH();
+  if(bgAudio.paused){bgAudio.play().catch(()=>{});scrubbing=true;}
+}
+function stopScrub(){if(scrubbing){bgAudio.pause();scrubbing=false;}}
 function openRangeModal(){
   const d=S.audioDuration||0;if(!d)return;
   rangeState.start=clamp(S.trimStart,0,d);rangeState.end=clamp(S.trimEnd,0,d);
   if(rangeState.end-rangeState.start<1){rangeState.start=0;rangeState.end=Math.min(d,15);}
+  bgAudio.pause();
   document.getElementById('rangeModal').classList.add('open');
   setTimeout(()=>{drawRangeWave();updateRangeSel();},40);
 }
-document.getElementById('rangeL').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='L';});
-document.getElementById('rangeR').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='R';});
+document.getElementById('rangeL').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='L';scrubTo(rangeState.start);});
+document.getElementById('rangeR').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='R';scrubTo(rangeState.end);});
 document.getElementById('rangeWave').addEventListener('mousedown',e=>{
   const rect=e.currentTarget.getBoundingClientRect(),x=e.clientX-rect.left,w=rect.width;
   const lPx=rangeState.start/S.audioDuration*w,rPx=rangeState.end/S.audioDuration*w;
@@ -848,24 +854,25 @@ window.addEventListener('mousemove',e=>{
   else rangeState.end=clamp(t,rangeState.start+0.5,S.audioDuration);
   if(rangeState.end-rangeState.start>MAX_TRIM){if(rangeDrag==='L')rangeState.start=rangeState.end-MAX_TRIM;else rangeState.end=rangeState.start+MAX_TRIM;}
   updateRangeSel();
+  scrubTo(rangeDrag==='L'?rangeState.start:rangeState.end);
 });
-window.addEventListener('mouseup',()=>{rangeDrag=null;});
+window.addEventListener('mouseup',()=>{rangeDrag=null;stopScrub();});
 document.getElementById('rangePrevBtn').onclick=()=>{
   const btn=document.getElementById('rangePrevBtn');
   if(bgAudio.paused){
     if(bgAudio.currentTime<rangeState.start||bgAudio.currentTime>=rangeState.end)bgAudio.currentTime=rangeState.start;
     bgAudio.play().catch(()=>{});btn.textContent='■ Stop';
     cancelAnimationFrame(rangeAnim);
-    (function raf(){if(bgAudio.paused)return;if(bgAudio.currentTime>=rangeState.end){bgAudio.pause();bgAudio.currentTime=rangeState.start;btn.textContent='▶ Anteprima';updateRangePH();return;}updateRangePH();rangeAnim=requestAnimationFrame(raf);})();
-  }else{bgAudio.pause();btn.textContent='▶ Anteprima';}
+    (function raf(){if(bgAudio.paused)return;if(bgAudio.currentTime>=rangeState.end){bgAudio.pause();bgAudio.currentTime=rangeState.start;btn.textContent='▶ Ascolta selezione';updateRangePH();return;}updateRangePH();rangeAnim=requestAnimationFrame(raf);})();
+  }else{bgAudio.pause();btn.textContent='▶ Ascolta selezione';}
 };
 document.getElementById('rangeOkBtn').onclick=()=>{
   S.trimStart=rangeState.start;S.trimEnd=rangeState.end;S.zoomTrim=true;
-  bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Anteprima';
+  bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Ascolta selezione';
   document.getElementById('rangeModal').classList.remove('open');
   updateTrimUI();resizeWave();toast('✓ Range impostato — waveform zoomata');
 };
-document.getElementById('rangeCloseX').onclick=()=>{bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Anteprima';document.getElementById('rangeModal').classList.remove('open');};
+document.getElementById('rangeCloseX').onclick=()=>{bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Ascolta selezione';document.getElementById('rangeModal').classList.remove('open');};
 document.getElementById('changeRangeBtn').onclick=openRangeModal;
 
 // ═══════════════════════════════════
