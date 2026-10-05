@@ -278,6 +278,10 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
     </div>
     <!-- Waveform -->
     <div id="waveformArea" style="flex:1;max-width:900px;margin:0 auto;display:none;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:9px;color:var(--tx3);">Click sulla waveform = play da quel punto col video · trascina i marker blu per il sync</span>
+        <button id="changeRangeBtn" class="smb" style="font-size:8px;">⛶ Cambia range</button>
+      </div>
       <div class="trimmer-track h-[56px] relative" id="trimTrack">
         <canvas id="wvC"></canvas>
         <div id="lyricMk"></div>
@@ -584,6 +588,34 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
   </div>
 </div>
 
+<!-- RANGE MODAL -->
+<div class="sync-modal" id="rangeModal">
+  <div style="background:#171717;border:1px solid var(--bd2);border-radius:20px;padding:24px;width:640px;max-width:96vw;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div>
+        <div style="font-size:14px;font-weight:900;text-transform:uppercase;color:var(--tx);">Scegli il range</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:3px;">Trascina gli estremi per scegliere la parte da usare · max 30s</div>
+      </div>
+      <button id="rangeCloseX" style="color:var(--tx3);font-size:20px;line-height:1;padding:2px 4px;background:none;border:none;cursor:pointer;">✕</button>
+    </div>
+    <div id="rangeWave" style="position:relative;height:104px;background:#0a0a0a;border-radius:12px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
+      <canvas id="rangeWC" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+      <div id="rangeSel" style="position:absolute;top:0;height:100%;z-index:5;background:rgba(139,76,183,.16);border-top:2px solid var(--p);border-bottom:2px solid var(--p);">
+        <div class="trim-h" id="rangeL" style="left:-6.5px;"></div>
+        <div class="trim-h" id="rangeR" style="right:-6.5px;"></div>
+        <div id="rangePH" style="position:absolute;top:0;width:2px;height:100%;background:#fff;left:0;pointer-events:none;box-shadow:0 0 6px rgba(255,255,255,.8);"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-family:'Courier Prime',monospace;font-size:10px;color:#8bb8ff;margin-top:8px;">
+      <span id="rangeStartLbl">0:00</span><span id="rangeDurLbl" style="color:var(--tx2);">0.0s</span><span id="rangeEndLbl">0:15</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button id="rangePrevBtn" class="sb" style="flex:1;justify-content:center;padding:11px;">▶ Anteprima</button>
+      <button id="rangeOkBtn" class="btn-sv" style="flex:1;padding:11px;border-radius:10px;font-size:11px;text-transform:uppercase;">Usa questo range</button>
+    </div>
+  </div>
+</div>
+
 <!-- EXPORT OV -->
 <div class="exp-ov" id="expOv">
   <div style="background:#0f0f18;border:1px solid var(--bd2);border-radius:18px;padding:32px;width:300px;text-align:center;">
@@ -605,7 +637,7 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
 // STATE
 // ═══════════════════════════════════
 const S={
-  audioFile:null,audioDuration:0,trimStart:0,trimEnd:0,
+  audioFile:null,audioDuration:0,trimStart:0,trimEnd:0,zoomTrim:false,
   clips:[],mode:'lyrics',lines:[],
   capFont:'fnt-montserrat',capVtr:'cut',capTA:'none',
   capVtrShuffle:false,capTAShuffle:false,
@@ -650,6 +682,11 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function randInt(a,b){return Math.floor(Math.random()*(b-a))+a;}
 function shuffleArr(a){let r=[...a];for(let i=r.length-1;i>0;i--){const j=randInt(0,i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
 function pickRandExcept(arr,excl){const f=arr.filter(x=>x!==excl);return f.length?f[randInt(0,f.length)]:arr[randInt(0,arr.length)];}
+// waveform range mapping (zoom on selected range)
+function wfT0(){return S.zoomTrim?S.trimStart:0;}
+function wfT1(){return S.zoomTrim?S.trimEnd:S.audioDuration;}
+function timeToPct(t){const a=wfT0(),b=wfT1();return b>a?clamp((t-a)/(b-a),0,1)*100:0;}
+function pctToTime(p){const a=wfT0(),b=wfT1();return a+(b-a)*clamp(p,0,1);}
 
 // ═══════════════════════════════════
 // WAVEFORM
@@ -678,14 +715,21 @@ async function loadWaveform(file){
 function drawWave(){
   if(!wvC.width)return;
   const W=wvC.width,H=wvC.height;wctx.clearRect(0,0,W,H);
-  if(!waveData){return;}
-  const pf=S.audioDuration>0?bgAudio.currentTime/S.audioDuration:0,step=W/waveData.length;
-  waveData.forEach((v,i)=>{
-    const x=i*step,h=v*H*.84,y=(H-h)/2,fr=i/waveData.length;
-    const inT=fr>=S.trimStart/S.audioDuration&&fr<=S.trimEnd/S.audioDuration;
-    wctx.fillStyle=inT?(fr<pf?'rgba(139,76,183,1)':'rgba(139,76,183,.55)'):(fr<pf?'rgba(255,255,255,.2)':'rgba(255,255,255,.08)');
-    wctx.beginPath();wctx.roundRect(x,y,Math.max(1,step-.4),h,1);wctx.fill();
-  });
+  if(!waveData)return;
+  const N=waveData.length,dur=S.audioDuration||1,pf=bgAudio.currentTime;
+  const a=S.zoomTrim?S.trimStart:0,b=S.zoomTrim?S.trimEnd:dur,span=b-a||1;
+  for(let i=0;i<N;i++){
+    const t=(i/N)*dur;
+    if(t<a-1e-6||t>b+1e-6)continue;
+    const x=S.zoomTrim?((t-a)/span)*W:(t/dur)*W;
+    const barW=(S.zoomTrim?((dur/N)/span)*W:W/N);
+    const v=waveData[i],h=v*H*.86,y=(H-h)/2;
+    let col;
+    if(S.zoomTrim)col=(t<pf?'rgba(139,76,183,1)':'rgba(139,76,183,.5)');
+    else{const inT=t>=S.trimStart&&t<=S.trimEnd;col=inT?(t<pf?'rgba(139,76,183,1)':'rgba(139,76,183,.55)'):(t<pf?'rgba(255,255,255,.2)':'rgba(255,255,255,.08)');}
+    wctx.fillStyle=col;
+    wctx.beginPath();wctx.roundRect(x,y,Math.max(1,barW-.4),h,1);wctx.fill();
+  }
 }
 
 // ═══════════════════════════════════
@@ -693,16 +737,24 @@ function drawWave(){
 // ═══════════════════════════════════
 function updateTrimUI(){
   if(!S.audioDuration)return;
-  const lP=S.trimStart/S.audioDuration*100,wP=(S.trimEnd-S.trimStart)/S.audioDuration*100;
-  trimOvEl.style.left=lP+'%';trimOvEl.style.width=wP+'%';
+  if(S.zoomTrim){trimOvEl.style.display='none';}
+  else{
+    trimOvEl.style.display='block';
+    const lP=S.trimStart/S.audioDuration*100,wP=(S.trimEnd-S.trimStart)/S.audioDuration*100;
+    trimOvEl.style.left=lP+'%';trimOvEl.style.width=wP+'%';
+  }
   document.getElementById('trimRange').textContent=fmt(S.trimStart)+' — '+fmt(S.trimEnd);
   document.getElementById('durLabel').textContent=(S.trimEnd-S.trimStart).toFixed(1)+'s';
   drawWave();updateLyricMk();
 }
-function seekBg(t){bgAudio.currentTime=t;document.getElementById('curTime').textContent=fmtI(t);drawWave();document.getElementById('aphd').style.left=(t/S.audioDuration*100)+'%';}
+function seekBg(t){bgAudio.currentTime=t;document.getElementById('curTime').textContent=fmtI(t);drawWave();document.getElementById('aphd').style.left=timeToPct(t)+'%';}
 trimTrack.addEventListener('mousedown',e=>{
   if(!S.audioDuration)return;
   const rect=trimTrack.getBoundingClientRect(),x=e.clientX-rect.left,w=rect.width;
+  if(S.zoomTrim){
+    const t=clamp(pctToTime(x/w),S.trimStart,S.trimEnd);
+    seekBg(t);playFromPoint(t);e.preventDefault();return;
+  }
   const t=x/w*S.audioDuration,lPx=S.trimStart/S.audioDuration*w,rPx=S.trimEnd/S.audioDuration*w;
   if(Math.abs(x-lPx)<14){isDrag='left';dragOff=x-lPx;}
   else if(Math.abs(x-rPx)<14){isDrag='right';dragOff=x-rPx;}
@@ -730,7 +782,7 @@ document.getElementById('playBtn').onclick=()=>{
     function raf(){
       if(bgAudio.currentTime>=S.trimEnd-.04)bgAudio.currentTime=S.trimStart;
       const ph=document.getElementById('aphd');
-      ph.style.left=(bgAudio.currentTime/S.audioDuration*100)+'%';ph.style.display='block';
+      ph.style.left=timeToPct(bgAudio.currentTime)+'%';ph.style.display='block';
       document.getElementById('curTime').textContent=fmtI(bgAudio.currentTime);
       drawWave();if(!bgAudio.paused)playRaf=requestAnimationFrame(raf);else ph.style.display='none';
     }
@@ -748,7 +800,73 @@ document.getElementById('audioInput').onchange=async e=>{
   document.getElementById('audioLabelTitle').textContent='Change Song';
   document.getElementById('audioLabel').textContent=f.name;
   await loadWaveform(f);toast('Brano caricato!');
+  openRangeModal();
 };
+
+// ═══════════════════════════════════
+// RANGE MODAL (scegli il range prima di lavorare)
+// ═══════════════════════════════════
+let rangeState={start:0,end:15},rangeDrag=null,rangeAnim=null;
+function drawRangeWave(){
+  const c=document.getElementById('rangeWC'),cont=document.getElementById('rangeWave');
+  if(!c||!cont||!waveData)return;
+  const dpr=window.devicePixelRatio||1;
+  c.width=Math.max(1,cont.clientWidth*dpr);c.height=Math.max(1,cont.clientHeight*dpr);
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+  const N=waveData.length,step=W/N;
+  for(let i=0;i<N;i++){const v=waveData[i],h=v*H*.86,y=(H-h)/2;ctx.fillStyle='rgba(139,76,183,.5)';ctx.beginPath();ctx.roundRect(i*step,y,Math.max(1,step-.4),h,1);ctx.fill();}
+}
+function updateRangeSel(){
+  const sel=document.getElementById('rangeSel');if(!sel)return;const d=S.audioDuration||1;
+  sel.style.left=(rangeState.start/d*100)+'%';sel.style.width=((rangeState.end-rangeState.start)/d*100)+'%';
+  document.getElementById('rangeStartLbl').textContent=fmt(rangeState.start);
+  document.getElementById('rangeEndLbl').textContent=fmt(rangeState.end);
+  document.getElementById('rangeDurLbl').textContent=(rangeState.end-rangeState.start).toFixed(1)+'s';
+}
+function updateRangePH(){(function(){const d=S.audioDuration||1;const el=document.getElementById('rangePH');if(el)el.style.left=(bgAudio.currentTime/d*100)+'%';})();}
+function openRangeModal(){
+  const d=S.audioDuration||0;if(!d)return;
+  rangeState.start=clamp(S.trimStart,0,d);rangeState.end=clamp(S.trimEnd,0,d);
+  if(rangeState.end-rangeState.start<1){rangeState.start=0;rangeState.end=Math.min(d,15);}
+  document.getElementById('rangeModal').classList.add('open');
+  setTimeout(()=>{drawRangeWave();updateRangeSel();},40);
+}
+document.getElementById('rangeL').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='L';});
+document.getElementById('rangeR').addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();rangeDrag='R';});
+document.getElementById('rangeWave').addEventListener('mousedown',e=>{
+  const rect=e.currentTarget.getBoundingClientRect(),x=e.clientX-rect.left,w=rect.width;
+  const lPx=rangeState.start/S.audioDuration*w,rPx=rangeState.end/S.audioDuration*w;
+  if(Math.abs(x-lPx)<14)rangeDrag='L';else if(Math.abs(x-rPx)<14)rangeDrag='R';
+  else{bgAudio.currentTime=clamp(x/w*S.audioDuration,rangeState.start,rangeState.end);updateRangePH();}
+  e.preventDefault();
+});
+window.addEventListener('mousemove',e=>{
+  if(!rangeDrag)return;
+  const rect=document.getElementById('rangeWave').getBoundingClientRect();
+  const t=clamp((e.clientX-rect.left)/rect.width*S.audioDuration,0,S.audioDuration);
+  if(rangeDrag==='L')rangeState.start=clamp(t,0,rangeState.end-0.5);
+  else rangeState.end=clamp(t,rangeState.start+0.5,S.audioDuration);
+  if(rangeState.end-rangeState.start>MAX_TRIM){if(rangeDrag==='L')rangeState.start=rangeState.end-MAX_TRIM;else rangeState.end=rangeState.start+MAX_TRIM;}
+  updateRangeSel();
+});
+window.addEventListener('mouseup',()=>{rangeDrag=null;});
+document.getElementById('rangePrevBtn').onclick=()=>{
+  const btn=document.getElementById('rangePrevBtn');
+  if(bgAudio.paused){
+    if(bgAudio.currentTime<rangeState.start||bgAudio.currentTime>=rangeState.end)bgAudio.currentTime=rangeState.start;
+    bgAudio.play().catch(()=>{});btn.textContent='■ Stop';
+    cancelAnimationFrame(rangeAnim);
+    (function raf(){if(bgAudio.paused)return;if(bgAudio.currentTime>=rangeState.end){bgAudio.pause();bgAudio.currentTime=rangeState.start;btn.textContent='▶ Anteprima';updateRangePH();return;}updateRangePH();rangeAnim=requestAnimationFrame(raf);})();
+  }else{bgAudio.pause();btn.textContent='▶ Anteprima';}
+};
+document.getElementById('rangeOkBtn').onclick=()=>{
+  S.trimStart=rangeState.start;S.trimEnd=rangeState.end;S.zoomTrim=true;
+  bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Anteprima';
+  document.getElementById('rangeModal').classList.remove('open');
+  updateTrimUI();resizeWave();toast('✓ Range impostato — waveform zoomata');
+};
+document.getElementById('rangeCloseX').onclick=()=>{bgAudio.pause();document.getElementById('rangePrevBtn').textContent='▶ Anteprima';document.getElementById('rangeModal').classList.remove('open');};
+document.getElementById('changeRangeBtn').onclick=openRangeModal;
 
 // ═══════════════════════════════════
 // CLIPS + ORDER MODE
@@ -1183,15 +1301,15 @@ function updateLyricMk(){
   S.lines.forEach((l,i)=>{
     if(l.time===null||!l.text)return;
     const m=document.createElement('div');m.className='lyric-mk'+(l.wt?' wt':'');
-    m.style.left=(l.time/S.audioDuration*100)+'%';
+    m.style.left=timeToPct(l.time)+'%';
     m.title=l.text+'  ·  '+fmt(l.time);
     m.addEventListener('mousedown',e=>{
       e.preventDefault();e.stopPropagation();
       const rect=trimTrack.getBoundingClientRect();let moved=false;
       const move=ev=>{
         moved=true;
-        let t=clamp((ev.clientX-rect.left)/rect.width*S.audioDuration,S.trimStart,S.trimEnd);
-        setLineTime(i,t);m.style.left=(t/S.audioDuration*100)+'%';m.title=l.text+'  ·  '+fmt(t);
+        let t=clamp(pctToTime((ev.clientX-rect.left)/rect.width),S.trimStart,S.trimEnd);
+        setLineTime(i,t);m.style.left=timeToPct(t)+'%';m.title=l.text+'  ·  '+fmt(t);
       };
       const up=()=>{
         window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);
@@ -1288,6 +1406,28 @@ function startPreview(){
   document.getElementById('prevBtn').textContent='■ Stop';
   prevAudio.currentTime=prevSegs[0].time;prevAudio.play().catch(()=>{});
   loadPrevSeg();
+}
+function startPreviewAt(t){
+  prevSegs=buildSegments();
+  if(!prevSegs.length)return false;
+  let idx=0;for(let i=0;i<prevSegs.length;i++){if(prevSegs[i].time<=t+0.02)idx=i;else break;}
+  cancelAnimationFrame(prevRAF);prevRAF=null;
+  prevPlaying=true;prevIdx=idx;
+  document.getElementById('prevBtn').textContent='■ Stop';
+  prevAudio.currentTime=t;prevAudio.play().catch(()=>{});
+  loadPrevSeg();return true;
+}
+function playFromPoint(t){
+  const synced=S.mode==='lyrics'&&S.lines.some(l=>l.time!==null);
+  if(S.clips.length&&synced){
+    if(startPreviewAt(t))return;
+  }
+  // fallback: just play the song from this point
+  cancelAnimationFrame(playRaf);
+  bgAudio.currentTime=t;bgAudio.play().catch(()=>{});
+  document.querySelector('#playIcon path').setAttribute('d','M0 0 H4 V12 H0Z M6 0 H10 V12 H6Z');
+  const ph=document.getElementById('aphd');ph.style.display='block';
+  playRaf=requestAnimationFrame(function raf(){if(bgAudio.paused)return;ph.style.left=timeToPct(bgAudio.currentTime)+'%';document.getElementById('curTime').textContent=fmtI(bgAudio.currentTime);drawWave();playRaf=requestAnimationFrame(raf);});
 }
 function stopPreview(){
   prevPlaying=false;cancelAnimationFrame(prevRAF);prevRAF=null;
