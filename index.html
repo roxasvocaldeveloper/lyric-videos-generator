@@ -43,7 +43,18 @@ body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:f
 #wvC{position:absolute;inset:0;width:100%;height:100%;}
 #aphd{position:absolute;top:0;width:2px;height:100%;background:#fff;z-index:20;pointer-events:none;box-shadow:0 0 8px rgba(255,255,255,.8);display:none;}
 #lyricMk{position:absolute;inset:0;pointer-events:none;z-index:10;}
-.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:rgba(17,109,255,.85);}
+.lyric-mk{position:absolute;top:0;width:2px;height:100%;background:#116dff;pointer-events:auto;cursor:ew-resize;box-shadow:0 0 6px rgba(17,109,255,.85);}
+.lyric-mk::before{content:'';position:absolute;left:-6px;top:0;width:14px;height:100%;}
+.lyric-mk.wt{background:var(--p);box-shadow:0 0 6px rgba(139,76,183,.9);}
+.lyric-mk:hover{width:3px;}
+/* sync editor rows */
+#syncList::-webkit-scrollbar{width:3px;}
+.srow{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:8px;background:rgba(139,76,183,.07);border:1px solid transparent;cursor:pointer;transition:border-color .12s,background .12s;}
+.srow:hover{border-color:var(--bd2);background:rgba(139,76,183,.13);}
+.srow .stime{font-family:'Courier Prime',monospace;font-size:9px;color:#8bb8ff;width:42px;flex-shrink:0;}
+.srow .stxt{flex:1;min-width:0;font-size:10px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srow .snb{flex-shrink:0;width:24px;height:22px;border-radius:999px;border:1px solid var(--bd);background:rgba(139,76,183,.12);color:var(--tx2);font-size:12px;font-weight:800;cursor:pointer;line-height:1;transition:all .12s;}
+.srow .snb:hover{border-color:var(--p);color:#fff;background:linear-gradient(90deg,var(--p),var(--p2));}
 
 /* ─── PHONE ─── */
 .iphone-frame{width:240px;height:calc(240px*16/9);border:8px solid #262626;border-radius:36px;position:relative;background:#000;overflow:hidden;box-shadow:0 0 0 1px rgba(139,76,183,.25),0 24px 64px rgba(0,0,0,.8);flex-shrink:0;}
@@ -392,6 +403,18 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
         <div id="whisperStatus" style="font-size:9px;color:var(--tx3);line-height:1.45;">Gratis, senza chiavi. Al primo uso scarica il modello (~150MB, poi resta in cache).</div>
       </div>
       <button id="openSyncBtn" class="btn-sv" style="width:100%;padding:10px;border-radius:10px;font-size:11px;text-transform:uppercase;" disabled>♪ Avvia Sync</button>
+      <!-- SYNC EDITOR -->
+      <div id="syncEditor" style="display:none;background:#141414;border:1px solid var(--bd);border-radius:10px;padding:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+          <span class="lbl">Regola Sync</span>
+          <div style="display:flex;gap:5px;">
+            <button id="shiftAllMinus" class="smb" title="Sposta tutte le righe indietro">◀ 0.1s</button>
+            <button id="shiftAllPlus" class="smb" title="Sposta tutte le righe avanti">0.1s ▶</button>
+          </div>
+        </div>
+        <div style="font-size:8px;color:var(--tx3);line-height:1.45;margin-bottom:7px;">Trascina i <span style="color:#116dff;">marker blu</span> sulla waveform, oppure usa <b>−</b>/<b>+</b> per ogni riga. Clicca una riga per ascoltarla.</div>
+        <div id="syncList" style="max-height:190px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
     </div>
 
     <!-- NO LYRICS -->
@@ -1155,9 +1178,72 @@ applyStyle('Testo preview');
 // ═══════════════════════════════════
 function updateLyricMk(){
   const c=document.getElementById('lyricMk');c.innerHTML='';
+  renderSyncList();
   if(!S.audioDuration)return;
-  S.lines.forEach(l=>{if(l.time===null||!l.text)return;const m=document.createElement('div');m.className='lyric-mk';m.style.left=(l.time/S.audioDuration*100)+'%';c.appendChild(m);});
+  S.lines.forEach((l,i)=>{
+    if(l.time===null||!l.text)return;
+    const m=document.createElement('div');m.className='lyric-mk'+(l.wt?' wt':'');
+    m.style.left=(l.time/S.audioDuration*100)+'%';
+    m.title=l.text+'  ·  '+fmt(l.time);
+    m.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      const rect=trimTrack.getBoundingClientRect();let moved=false;
+      const move=ev=>{
+        moved=true;
+        let t=clamp((ev.clientX-rect.left)/rect.width*S.audioDuration,S.trimStart,S.trimEnd);
+        setLineTime(i,t);m.style.left=(t/S.audioDuration*100)+'%';m.title=l.text+'  ·  '+fmt(t);
+      };
+      const up=()=>{
+        window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);
+        if(!moved&&S.lines[i].time!=null)seekBg(S.lines[i].time);
+        prevSegs=buildSegments();checkReady();
+      };
+      window.addEventListener('mousemove',move);window.addEventListener('mouseup',up);
+    });
+    c.appendChild(m);
+  });
 }
+function setLineTime(i,t){
+  const l=S.lines[i];if(!l)return;
+  t=clamp(t,S.trimStart,S.trimEnd);
+  const d=l.time==null?0:(t-l.time);
+  l.time=t;
+  if(l.wt)l.wt=l.wt.map(x=>x==null?null:clamp(x+d,S.trimStart,S.trimEnd));
+  renderSyncList();
+}
+function nudgeLine(i,d){
+  if(!S.lines[i])return;
+  setLineTime(i,(S.lines[i].time==null?S.trimStart:S.lines[i].time)+d);
+  updateLyricMk();prevSegs=buildSegments();checkReady();
+}
+function shiftAllLines(d){
+  S.lines.forEach(l=>{
+    if(l.time==null)return;
+    l.time=clamp(l.time+d,S.trimStart,S.trimEnd);
+    if(l.wt)l.wt=l.wt.map(x=>x==null?null:clamp(x+d,S.trimStart,S.trimEnd));
+  });
+  updateLyricMk();prevSegs=buildSegments();checkReady();
+}
+function renderSyncList(){
+  const list=document.getElementById('syncList'),ed=document.getElementById('syncEditor');
+  if(!list||!ed)return;
+  const rows=S.lines.filter(l=>l.text);
+  ed.style.display=rows.length?'block':'none';
+  list.innerHTML='';
+  rows.forEach(l=>{
+    const i=S.lines.indexOf(l);
+    const row=document.createElement('div');row.className='srow';
+    row.innerHTML=`<span class="stime">${l.time==null?'—':fmt(l.time)}</span>`+
+      `<span class="stxt">${esc(l.text)}</span>`+
+      `<button class="snb" data-n="-0.1" title="-0.1s">−</button>`+
+      `<button class="snb" data-n="0.1" title="+0.1s">+</button>`;
+    row.querySelectorAll('.snb').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation();nudgeLine(i,parseFloat(b.dataset.n));}));
+    row.addEventListener('click',()=>{if(l.time!=null)seekBg(l.time);});
+    list.appendChild(row);
+  });
+}
+document.getElementById('shiftAllMinus').onclick=()=>shiftAllLines(-0.1);
+document.getElementById('shiftAllPlus').onclick=()=>shiftAllLines(0.1);
 
 // ═══════════════════════════════════
 // BUILD SEGMENTS
