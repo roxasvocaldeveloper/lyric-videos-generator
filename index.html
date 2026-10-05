@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lyric Video Maker | Soundvertise</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Schoolbell&family=Anton&family=Press+Start+2P&family=Playfair+Display:ital,wght@1,700;1,900&family=Shadows+Into+Light&family=Architects+Daughter&family=Courier+Prime:wght@400;700&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Lilita+One&family=Boogaloo&family=Bangers&family=Permanent+Marker&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Schoolbell&family=Anton&family=Press+Start+2P&family=Share+Tech+Mono&family=Orbitron:wght@500;700;900&family=Playfair+Display:ital,wght@1,700;1,900&family=Shadows+Into+Light&family=Architects+Daughter&family=Courier+Prime:wght@400;700&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Lilita+One&family=Boogaloo&family=Bangers&family=Permanent+Marker&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
 <script>window.tailwind=window.tailwind||{};</script>
 <style>
 :root{
@@ -94,6 +94,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:f
 .fnt-anton{font-family:'Anton',sans-serif;letter-spacing:.01em;}
 .fnt-pixel{font-family:'Press Start 2P',monospace;line-height:1.6;}
 .fnt-handneon{font-family:'Shadows Into Light',cursive;font-weight:400;}
+.fnt-tech{font-family:'Share Tech Mono',monospace;letter-spacing:.02em;}
+.fnt-orbit{font-family:'Orbitron',sans-serif;font-weight:700;}
 .fnt-playfair{font-family:'Playfair Display',serif;font-weight:700;font-style:italic;letter-spacing:.01em;}
 
 /* ─── KARAOKE WORDS (brat style) ─── */
@@ -123,6 +125,13 @@ body{background:var(--bg);color:var(--tx);font-family:var(--font-sans);display:f
 .neon .cap-word.small{font-size:.72em;opacity:.9;}
 @keyframes neonBlink{0%,100%{opacity:1;filter:blur(0)}50%{opacity:.10;filter:blur(5px)}}
 .neon .cap-word.blink{animation:neonBlink 1s steps(1,end) infinite;}
+
+/* ─── DARK (futuristic / dystopian) ─── */
+.dark{letter-spacing:.08em;background:linear-gradient(180deg,rgba(3,12,14,.72),rgba(2,7,9,.82));border:1px solid rgba(95,251,241,.35);border-radius:8px;padding:.55em .85em;box-shadow:0 0 26px rgba(95,251,241,.12),inset 0 0 30px rgba(95,251,241,.06);}
+.dark::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:8px;background:repeating-linear-gradient(0deg,rgba(95,251,241,.045) 0 1px,transparent 1px 3px);}
+.dark .cap-word{display:inline-block;color:#6ffcf2;opacity:0;text-shadow:0 0 8px rgba(111,252,242,.6);}
+.dark .cap-word.on{animation:darkIn .5s steps(7,end) both;}
+@keyframes darkIn{0%{opacity:0;transform:translateX(-4px);text-shadow:-4px 0 #ff2b4e,4px 0 #00fff0}25%{opacity:1;transform:translateX(4px);text-shadow:4px 0 #ff2b4e,-4px 0 #00fff0}50%{transform:translateX(-3px);text-shadow:-3px 0 #ff2b4e,3px 0 #00fff0}75%{transform:translateX(2px)}100%{opacity:1;transform:translateX(0);text-shadow:0 0 8px rgba(111,252,242,.75),0 0 18px rgba(111,252,242,.35)}}
 
 /* ─── CLIP GRID ─── */
 .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
@@ -357,6 +366,7 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(139,76,183,.30);b
         <button class="mode-tab" data-style="single" style="flex:0 0 auto;padding:7px 12px;">A Caps</button>
         <button class="mode-tab" data-style="hype" style="flex:0 0 auto;padding:7px 12px;">Hype</button>
         <button class="mode-tab" data-style="neon" style="flex:0 0 auto;padding:7px 12px;">Neon</button>
+        <button class="mode-tab" data-style="dark" style="flex:0 0 auto;padding:7px 12px;">Dark</button>
         <button class="mode-tab" data-style="aesthetic" style="flex:0 0 auto;padding:7px 12px;">Aesthetic</button>
       </div>
       <div id="fxWrap" style="display:none;margin-top:10px;">
@@ -915,6 +925,7 @@ const STYLES={
   hype:{family:'brat',font:'fnt-anton',upper:true,box:'#facc15'},
   single:{family:'single',font:'fnt-anton',upper:true},
   neon:{family:'neon',font:'fnt-handneon',upper:true},
+  dark:{family:'dark',font:'fnt-tech',upper:true},
 };
 function styleCfg(){return STYLES[S.textStyle]||STYLES.classic;}
 function activeFamily(){return styleCfg().family;}
@@ -970,6 +981,10 @@ function renderNeonHTML(text){
     return `<span class="${cls}"${extra}>${esc(w.t)}</span>`;
   }).join(' ');
 }
+function darkWords(text){return bratWords(text);}
+function renderDarkHTML(text){
+  return darkWords(text).map(w=>`<span class="cap-word">${esc(w.t)}</span>`).join(' ');
+}
 function renderBratHTML(text){
   const {lines}=bratLayout(text);
   return lines.map(l=>{
@@ -999,8 +1014,8 @@ function updateCapKaraoke(text,kp,tNow,wt){
     if(sp){sp.classList.remove('upcoming');sp.classList.add('on');}
     return;
   }
-  if(activeFamily()==='neon'){
-    const words=neonWords(text);
+  if(activeFamily()==='neon'||activeFamily()==='dark'){
+    const words=activeFamily()==='neon'?neonWords(text):darkWords(text);
     const spans=capEl.querySelectorAll('.cap-word');
     const reveal=sp=>{if(sp){sp.classList.remove('upcoming');void sp.offsetWidth;sp.classList.add('on');if(sp.dataset&&sp.dataset.blink)sp.classList.add('blink');}};
     if(wt&&wt.length===words.length&&tNow!=null){
@@ -1041,7 +1056,7 @@ function applyStyle(text){
   capEl.style.fontSize=S.fontSize+'px';
   capEl.style.color=S.txColor;
   capEl.style.top=S.capPos+'%';
-  capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';
+  capEl.style.background='transparent';capEl.style.padding='0';capEl.style.borderRadius='0';capEl.style.border='none';capEl.style.maxWidth='';
   if(cfg.family==='brat'){
     capEl.className=S.capFont+' fx-'+S.wordFx+(cfg.echo?' echo':'')+(cfg.box?' hype':'')+(cfg.upper?' caps':'');
     capEl.style.textShadow='none';
@@ -1064,6 +1079,16 @@ function applyStyle(text){
     capEl.style.justifyContent='center';capEl.style.alignContent='center';capEl.style.alignItems='baseline';
     capEl.style.rowGap='0';capEl.style.columnGap='0';capEl.style.width='88%';capEl.style.lineHeight='1.5';
     capEl.innerHTML=renderNeonHTML(lastCapText);
+  }else if(cfg.family==='dark'){
+    capEl.className=S.capFont+' dark'+(cfg.upper?' caps':'');
+    capEl.style.textShadow='none';
+    capEl.style.display='flex';capEl.style.flexDirection='row';capEl.style.flexWrap='wrap';
+    capEl.style.justifyContent='center';capEl.style.alignContent='center';capEl.style.alignItems='baseline';
+    capEl.style.rowGap='.1em';capEl.style.columnGap='0';capEl.style.width='fit-content';capEl.style.maxWidth='88%';capEl.style.lineHeight='1.5';
+    capEl.style.background='linear-gradient(180deg,rgba(3,12,14,.72),rgba(2,7,9,.82))';
+    capEl.style.border='1px solid rgba(95,251,241,.35)';capEl.style.borderRadius='8px';
+    capEl.style.padding='.55em .85em';
+    capEl.innerHTML=renderDarkHTML(lastCapText);
   }else{
     capEl.className=S.capFont;
     let sh;
@@ -1477,7 +1502,7 @@ document.addEventListener('keyup',e=>{
 // CANVAS CAPTION
 // ═══════════════════════════════════
 function getCanvasFont(fs){
-  const m={'fnt-montserrat':`900 ${fs}px Montserrat,sans-serif`,'fnt-brat':`800 ${fs}px Arial,"Helvetica Neue",Helvetica,sans-serif`,'fnt-condensed':`700 ${fs}px "Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif`,'fnt-anton':`400 ${fs}px Anton,sans-serif`,'fnt-pixel':`400 ${fs}px "Press Start 2P",monospace`,'fnt-handneon':`400 ${fs}px "Shadows Into Light",cursive`,'fnt-playfair':`italic 700 ${fs}px "Playfair Display",serif`,'fnt-bebas':`400 ${fs}px "Bebas Neue",sans-serif`,'fnt-bangers':`400 ${fs}px Bangers,cursive`,'fnt-lilita':`400 ${fs}px "Lilita One",cursive`,'fnt-boogaloo':`400 ${fs}px Boogaloo,cursive`,'fnt-retro':`700 ${fs}px "Courier Prime",monospace`,'fnt-hand':`700 ${fs}px "Dancing Script",cursive`,'fnt-marker':`400 ${fs}px "Permanent Marker",cursive`};
+  const m={'fnt-montserrat':`900 ${fs}px Montserrat,sans-serif`,'fnt-brat':`800 ${fs}px Arial,"Helvetica Neue",Helvetica,sans-serif`,'fnt-condensed':`700 ${fs}px "Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif`,'fnt-anton':`400 ${fs}px Anton,sans-serif`,'fnt-pixel':`400 ${fs}px "Press Start 2P",monospace`,'fnt-handneon':`400 ${fs}px "Shadows Into Light",cursive`,'fnt-tech':`400 ${fs}px "Share Tech Mono",monospace`,'fnt-orbit':`700 ${fs}px "Orbitron",sans-serif`,'fnt-playfair':`italic 700 ${fs}px "Playfair Display",serif`,'fnt-bebas':`400 ${fs}px "Bebas Neue",sans-serif`,'fnt-bangers':`400 ${fs}px Bangers,cursive`,'fnt-lilita':`400 ${fs}px "Lilita One",cursive`,'fnt-boogaloo':`400 ${fs}px Boogaloo,cursive`,'fnt-retro':`700 ${fs}px "Courier Prime",monospace`,'fnt-hand':`700 ${fs}px "Dancing Script",cursive`,'fnt-marker':`400 ${fs}px "Permanent Marker",cursive`};
   return m[S.capFont]||`900 ${fs}px Montserrat,sans-serif`;
 }
 function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
@@ -1562,6 +1587,53 @@ function drawCapCanvas(ctx,text,W,H,p,ta,kp,wt,tNow){
         });
       });
       ctx.filter='none';ctx.shadowBlur=0;ctx.letterSpacing='0px';return;
+    }
+
+    // DARK family (futuristic / dystopian HUD)
+    if(cfg.family==='dark'){
+      const words=darkWords(text);
+      const useTime=!!(wt&&wt.length===words.length&&tNow!=null);
+      const mW=W*.88,gapW=sf*.42;
+      ctx.font=getCanvasFont(sf);ctx.letterSpacing=lsPx(sf);
+      const wsW=words.map(w=>ctx.measureText(w.t).width);
+      const lines=[];let cur=[],curW=0;
+      for(let i=0;i<words.length;i++){const add=cur.length?gapW+wsW[i]:wsW[i];if(curW+add>mW&&cur.length){lines.push(cur);cur=[i];curW=wsW[i];}else{cur.push(i);curW+=add;}}
+      if(cur.length)lines.push(cur);
+      const lh=sf*1.5,sy0=S.capPos/100*H-(lines.length-1)*lh/2;
+      // HUD panel
+      let maxW=0;lines.forEach(line=>{let tw=line.reduce((a,b)=>a+wsW[b],0)+(line.length-1)*gapW;if(tw>maxW)maxW=tw;});
+      const padX=sf*.5,padY=sf*.55,top=sy0-lh*.62-padY,bot=sy0+(lines.length-1)*lh+lh*.55+padY;
+      ctx.save();
+      ctx.fillStyle='rgba(3,12,14,.62)';ctx.strokeStyle='rgba(95,251,241,.35)';ctx.lineWidth=Math.max(1,sf*.02);
+      ctx.beginPath();ctx.roundRect(W/2-maxW/2-padX,top,maxW+padX*2,bot-top,sf*.22);ctx.fill();ctx.stroke();
+      ctx.clip();
+      ctx.strokeStyle='rgba(95,251,241,.05)';ctx.lineWidth=1;
+      for(let sy=top;sy<bot;sy+=sf*.14){ctx.beginPath();ctx.moveTo(W/2-maxW/2-padX,sy);ctx.lineTo(W/2+maxW/2+padX,sy);ctx.stroke();}
+      ctx.restore();
+      ctx.textAlign='left';
+      lines.forEach((line,li)=>{
+        const tot=line.reduce((a,b)=>a+wsW[b],0)+(line.length-1)*gapW;
+        let x=W/2-tot/2;const y=sy0+li*lh;
+        line.forEach(wi=>{
+          const w=words[wi],ww=wsW[wi];
+          let alpha=0,el=9;
+          if(useTime){const t=wt[w.i];if(t==null){el=9;}else if(tNow>=t){el=tNow-t;alpha=Math.min(1,el/0.16);}else alpha=0;}
+          else if(kp!=null){const st=karaokeStates(words,kp);alpha=(st[wi].sung||st[wi].active)?1:0;}
+          else alpha=1;
+          if(alpha<=0){x+=ww+gapW;return;}
+          const gOff=(useTime&&wt[w.i]!=null)?Math.max(0,(1-Math.min(1,el/0.28)))*sf*.14:0;
+          ctx.save();ctx.globalAlpha*=alpha*pr;
+          if(gOff>0){
+            ctx.fillStyle='#ff2b4e';ctx.fillText(w.t,x-gOff,y);
+            ctx.fillStyle='#00fff0';ctx.fillText(w.t,x+gOff,y);
+          }
+          ctx.shadowColor='rgba(111,252,242,.8)';ctx.shadowBlur=sf*.35;
+          ctx.fillStyle='#6ffcf2';ctx.fillText(w.t,x,y);
+          ctx.restore();
+          x+=ww+gapW;
+        });
+      });
+      ctx.shadowBlur=0;ctx.letterSpacing='0px';return;
     }
 
     // BRAT family (brat, bratbig, echo, hype)
