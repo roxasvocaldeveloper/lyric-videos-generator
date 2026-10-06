@@ -523,14 +523,14 @@ input[type=range]::-moz-range-track{height:3px;background:rgba(255,255,255,.18);
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
       <div>
         <div style="font-size:14px;font-weight:900;text-transform:uppercase;color:var(--tx);">Scegli il range</div>
-        <div style="font-size:9px;color:var(--tx3);margin-top:3px;">Trascina gli estremi e <b style="color:var(--tx2);">ascolti il punto in tempo reale</b> · max 30s</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:3px;">Trascina gli estremi o l'<b style="color:var(--tx2);">intero blocco</b> e <b style="color:var(--tx2);">ascolti il punto in tempo reale</b> · max 30s</div>
       </div>
       <button id="rangeCloseX" style="color:var(--tx3);font-size:20px;line-height:1;padding:2px 4px;background:none;border:none;cursor:pointer;">✕</button>
     </div>
     <div id="rangeWave" style="position:relative;height:130px;background:#0a0a0a;border-radius:12px;border:1px solid var(--bd2);overflow:hidden;cursor:pointer;">
       <canvas id="rangeWC" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
       <div id="rangePH" style="position:absolute;top:0;width:2px;height:100%;background:#fff;left:0;pointer-events:none;z-index:6;box-shadow:0 0 8px rgba(255,255,255,.9);"></div>
-      <div id="rangeSel" style="position:absolute;top:0;height:100%;z-index:5;background:rgba(255,255,255,.18);border-top:2px solid var(--p);border-bottom:2px solid var(--p);box-shadow:0 0 18px rgba(255,255,255,.25);">
+      <div id="rangeSel" style="cursor:grab;position:absolute;top:0;height:100%;z-index:5;background:rgba(255,255,255,.18);border-top:2px solid var(--p);border-bottom:2px solid var(--p);box-shadow:0 0 18px rgba(255,255,255,.25);">
         <div class="trim-h" id="rangeL" style="left:-6.5px;"></div>
         <div class="trim-h" id="rangeR" style="right:-6.5px;"></div>
       </div>
@@ -775,7 +775,7 @@ document.getElementById('audioInput').onchange=async e=>{
 // ═══════════════════════════════════
 // RANGE MODAL (scegli il range prima di lavorare)
 // ═══════════════════════════════════
-let rangeState={start:0,end:15},rangeDrag=null,rangeAnim=null,scrubbing=false;
+let rangeState={start:0,end:15},rangeDrag=null,rangeOff=0,rangeAnim=null,scrubbing=false;
 function drawRangeWave(){
   const c=document.getElementById('rangeWC'),cont=document.getElementById('rangeWave');
   if(!c||!cont||!waveData)return;
@@ -812,6 +812,7 @@ document.getElementById('rangeWave').addEventListener('mousedown',e=>{
   const rect=e.currentTarget.getBoundingClientRect(),x=e.clientX-rect.left,w=rect.width;
   const lPx=rangeState.start/S.audioDuration*w,rPx=rangeState.end/S.audioDuration*w;
   if(Math.abs(x-lPx)<14)rangeDrag='L';else if(Math.abs(x-rPx)<14)rangeDrag='R';
+  else if(x>lPx&&x<rPx){rangeDrag='M';rangeOff=x/w*S.audioDuration-rangeState.start;scrubTo(clamp(x/w*S.audioDuration,rangeState.start,rangeState.end));}
   else{bgAudio.currentTime=clamp(x/w*S.audioDuration,rangeState.start,rangeState.end);updateRangePH();}
   e.preventDefault();
 });
@@ -819,6 +820,10 @@ window.addEventListener('mousemove',e=>{
   if(!rangeDrag)return;
   const rect=document.getElementById('rangeWave').getBoundingClientRect();
   const t=clamp((e.clientX-rect.left)/rect.width*S.audioDuration,0,S.audioDuration);
+  if(rangeDrag==='M'){
+    const len=rangeState.end-rangeState.start,ns=clamp(t-rangeOff,0,S.audioDuration-len);
+    rangeState.start=ns;rangeState.end=ns+len;updateRangeSel();scrubTo(ns);return;
+  }
   if(rangeDrag==='L')rangeState.start=clamp(t,0,rangeState.end-0.5);
   else rangeState.end=clamp(t,rangeState.start+0.5,S.audioDuration);
   if(rangeState.end-rangeState.start>MAX_TRIM){if(rangeDrag==='L')rangeState.start=rangeState.end-MAX_TRIM;else rangeState.end=rangeState.start+MAX_TRIM;}
