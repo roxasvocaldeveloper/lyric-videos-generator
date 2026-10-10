@@ -8,6 +8,7 @@ Prototipo dell'editor "Submit to Virality" di Soundvertise con l'aggiunta dei ly
 |---|---|
 | `index.html` | L'editor completo: UI, stato, anteprima, più video, modal di submit. |
 | `lyrics-engine.js` | Motore che disegna i lyrics su un `<canvas>` (tutti gli stili). Va usato sia in anteprima sia nel render del video finale. |
+| `beat-detect.js` | BPM e posizione dei battiti della canzone, per i cambi video a tempo. |
 | `lyrics-sync.js` | Sync automatico: allinea le righe scritte alla voce della canzone con Whisper, direttamente nel browser. |
 
 Per provarlo serve un server locale (i moduli e l'audio non funzionano da `file://`):
@@ -30,7 +31,7 @@ Poi apri `http://localhost:8765`.
 - **Barre a destra del telefono**:
   - posizione della caption (alto/centro/basso);
   - barre nere cinematic;
-  - cambio video automatico (OFF → 4s → 2s → 1s → 0.5s);
+  - cambio video a tempo: OFF → ogni 1, 2, 4, 8 battiti (×1…×8). Il BPM è rilevato al caricamento della canzone; se il ritmo non è chiaro, o senza canzone, usa un passo fisso di N × 0,5 s;
   - cambio video a ogni riga dei lyrics: si attiva da solo con le lyrics ed è alternativo al cambio automatico.
 - **Pulsante blu attaccato alla caption**: cicla 3 caption preimpostate. Sta sotto la caption, o sopra se la caption è in basso.
 - **Clip**: il quadrato in alto a destra nella preview apre "Video Templates" per vedere e caricare le clip; il pulsante shuffle fuori dalla preview rimescola le clip del video.
@@ -43,7 +44,7 @@ Poi apri `http://localhost:8765`.
 ## Parti da collegare nel sito (segnate `PROTOTIPO` nel codice)
 
 1. **Clip**: il quadratino in alto a destra della preview apre la finestra "Video Templates", come quella già online.
-   - I pianeti dei generi non sono cliccabili. Ognuno mostra un video di esempio preso a caso dalla libreria gratuita Mixkit (`sampleUrl()`), e la griglia sotto mostra quegli stessi video: cliccandone uno diventa la prima clip del video aperto. **Nel sito vanno sostituiti con i template reali di ogni genere.**
+   - I pianeti dei generi non sono cliccabili. Ognuno mostra un video di esempio preso a caso dalla libreria gratuita Mixkit (`sampleUrl()`), e la griglia sotto mostra quegli stessi video: cliccandone uno diventa la prima clip del video aperto; con *Select all* / *Manual select* se ne usano più insieme. **Nel sito vanno sostituiti con i template reali di ogni genere.**
    - "My videos": i pianeti diventano le **collezioni** dell'utente (`COLLS`). Si rinominano cliccando sul nome e si creano con "+"; ognuna contiene i suoi video caricati. Clic su un video = il video aperto usa solo quello. *Select all* / *Manual select* + *Usa N video* = il video aperto usa i video scelti, e le altre varianti li usano partendo da una clip diversa (`useClips()`).
    - Le clip usate sono in `CLIPS` come `{name,url,el,mine}`, con `el` un `<video>` muto in loop, e sono disegnate su `#bgCanvas` da `drawClip()` in modalità "cover". `addClips()` le aggiunge e le distribuisce nei video.
 2. **Clip per video**: ogni video ha il suo ordine di clip (`clips`) con una prima clip diversa; lo shuffle lo rimescola. La clip visibile al tempo `t` è `clipAt(video, t)`.
@@ -60,7 +61,7 @@ Oggetto restituito da `liveV()`:
   clips:[...],            // ordine delle clip (indici)
   capSize:'s'|'m'|'l', capPos:'top'|'center'|'bottom', caption:'…', capI:-1,
   bars:false,             // barre cinematic
-  cutEvery:0|4|2|1|0.5,   // cambio video automatico (secondi, 0 = off)
+  cutBeats:0|1|2|4|8,     // cambio video a tempo: ogni N battiti (0 = off)
   cutLyrics:true,         // cambio video a ogni riga
   on:true,                // lyrics attive
   show:'lyrics'|'both',   // solo lyrics / lyrics + caption

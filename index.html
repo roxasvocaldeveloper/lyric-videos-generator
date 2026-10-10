@@ -142,7 +142,7 @@ textarea:focus{border-color:var(--p);}
 .tplModal.open{display:block;}
 .tplIn{max-width:1180px;margin:0 auto;padding:64px 24px 80px;display:flex;flex-direction:column;align-items:center;}
 .tplIn h2{font:300 44px Montserrat;letter-spacing:.01em;}
-.planets{display:flex;gap:14px;margin-top:52px;}
+.planets{display:flex;gap:14px;margin-top:52px;height:112px;align-items:flex-start;}   /* stessa altezza in entrambe le viste: niente slittamenti */
 .planet{width:84px;height:84px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:default;}   /* non cliccabili */
 .planet.on{background:var(--b);}
 .planet i{position:relative;width:64px;height:64px;border-radius:50%;overflow:hidden;display:block;box-shadow:0 0 18px rgba(0,0,0,.5);}
@@ -152,15 +152,14 @@ textarea:focus{border-color:var(--p);}
 .tpl em{position:absolute;left:8px;bottom:8px;font:700 11px Montserrat;font-style:normal;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:999px;}
 .tplEmpty{grid-column:2/-1;align-self:center;color:var(--tx3);font-size:13px;}
 /* My videos: collezioni + selezione */
-.coll{display:flex;flex-direction:column;align-items:center;gap:8px;width:96px;}
+.coll{display:flex;flex-direction:column;align-items:center;gap:6px;width:96px;}
 .coll .planet{cursor:pointer;}
 .coll .planet i.empty{border:2px dashed #444;box-shadow:none;}
 .coll.add .planet i{border:2px dashed #444;box-shadow:none;display:flex;align-items:center;justify-content:center;font:300 28px Montserrat;color:#888;}
 .coll.add .planet:hover i{border-color:var(--p2);color:#fff;}
 .cname{font:600 11px Montserrat;color:#ddd;text-align:center;max-width:96px;outline:none;border-radius:4px;padding:2px 4px;cursor:text;word-break:break-word;}
 .cname:hover{background:#1e1e1e;}.cname:focus{background:#222;color:#fff;}
-.selBar{margin-top:18px;display:none;}
-.selBar.on{display:flex;}
+.selBar{margin-top:18px;}
 .tpl.picked{border-color:var(--b);}
 .tpl .ck{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font:700 13px Montserrat;color:#fff;}
 .tpl.picked .ck{background:var(--b);border-color:var(--b);}
@@ -369,6 +368,7 @@ wanna be happy</textarea>
 <audio id="aud" preload="auto"></audio>
 <script src="lyrics-engine.js"></script>
 <script src="lyrics-sync.js"></script>
+<script src="beat-detect.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
    Editor "Submit to Virality" con lyrics — prototipo.
@@ -387,7 +387,7 @@ const MAX_VIDEOS=7;                          // video principale + 6
 const SEL_LEN=8,SEL_MIN=2,SEL_MAX=15;        // parte selezionata: 8 s all'inizio, ridimensionabile da 2 a 15 s
 const CAP_PX={s:10,m:12,l:14};               // dimensioni caption (pulsanti TT)
 const CAP_Y={top:.21,center:.48,bottom:.70}; // posizione caption (frazione dell'altezza)
-const CUTS=[0,4,2,1,.5];                     // cambio video automatico: OFF → 4s → 2s → 1s → 0.5s
+const CUTS=[0,1,2,4,8];                      // cambio video a tempo: OFF → ogni 1, 2, 4, 8 battiti
 const CAPTIONS=['this remix in the club >>>',"POV: it's 2AM and this song comes on",'my type of song for late drives'];
 const CLIPS=[];   // clip usate: {name,url,el,mine} (el = <video> muto in loop; mine = caricata dall'utente)
 // disegna la clip i in modalità "cover" (nero se non ci sono clip o non è ancora pronta)
@@ -401,15 +401,15 @@ function drawClip(x,i,W,H){
 const UI={
   on:false,show:'both',mix:false,set:['brat'],      // lyrics: attive, solo lyrics / + caption, Mix, stili scelti
   times:null,wts:null,sync:null,off:0,               // tempi righe/parole (secondi dall'inizio della selezione), 'auto'|'man', correzione (s)
-  capSize:'l',capI:-1,bars:false,cutEvery:0,cutLyrics:false,clips:[],shownClip:null,
+  capSize:'l',capI:-1,bars:false,cutBeats:0,cutLyrics:false,clips:[],shownClip:null,
   playing:true,t0:performance.now(),range:SEL_LEN,tap:{on:false,i:0},
 };
-const AUD={file:null,dur:0,rs:0,re:SEL_LEN,peaks:null},aud=$('aud');   // canzone caricata e parte selezionata
+const AUD={file:null,dur:0,rs:0,re:SEL_LEN,peaks:null,beat:null,grid:[]},aud=$('aud');   // canzone caricata e parte selezionata
 
 // ─────────────────────────── modello di un video ───────────────────────────
 // Ogni video (anche le varianti) è un oggetto con queste impostazioni; l'editor lavora sempre su quello aperto.
 function liveV(){
-  return{clips:[...UI.clips],capSize:UI.capSize,bars:UI.bars,cutEvery:UI.cutEvery,cutLyrics:UI.cutLyrics,
+  return{clips:[...UI.clips],capSize:UI.capSize,bars:UI.bars,cutBeats:UI.cutBeats,cutLyrics:UI.cutLyrics,
     caption:$('cap').textContent,capPos:$('cap').dataset.pos,capI:UI.capI,
     on:UI.on,show:UI.show,mix:UI.mix,set:[...UI.set],text:$('lyrTA').value,
     times:UI.times&&[...UI.times],wts:UI.wts&&UI.wts.map(a=>[...a]),sync:UI.sync,off:UI.off};
@@ -419,7 +419,7 @@ function cloneV(v,firstClip){   // stesse impostazioni e stesse clip, ma con una
   return{...v,set:[...v.set],times:v.times&&[...v.times],wts:v.wts&&v.wts.map(a=>[...a]),clips:firstClip==null?[...v.clips]:[firstClip,...shuffle(rest)]};
 }
 function applyV(v){
-  UI.clips=[...v.clips];UI.shownClip=null;UI.cutEvery=v.cutEvery;UI.cutLyrics=v.cutLyrics;UI.capI=v.capI;
+  UI.clips=[...v.clips];UI.shownClip=null;UI.cutBeats=v.cutBeats;UI.cutLyrics=v.cutLyrics;UI.capI=v.capI;
   setCapSize(v.capSize);setBars(v.bars);
   $('cap').textContent=v.caption;setCapPos(v.capPos);
   UI.on=v.on;UI.show=v.show;UI.mix=v.mix;UI.set=[...v.set];
@@ -447,10 +447,16 @@ function lyricsY(v){
   if(v.show==='lyrics')return 46;
   return{top:50,center:68,bottom:38}[v.capPos];
 }
-// clip visibile al tempo t (cambio video a intervalli o a ogni riga dei lyrics)
+// istanti dei cambi video "a tempo" (secondi dalla selezione): ogni N battiti della canzone;
+// senza canzone, o se il ritmo non è chiaro, si usa un passo fisso equivalente a 120 BPM (N × 0,5 s)
+function beatCuts(N){
+  if(AUD.beat&&AUD.beat.confident&&AUD.grid.length)return AUD.grid.filter((_,i)=>i%N===0).map(x=>x-AUD.rs);
+  const out=[];for(let x=N*.5;x<UI.range;x+=N*.5)out.push(x);return out;
+}
+// clip visibile al tempo t (cambio video a tempo o a ogni riga dei lyrics)
 function clipAt(v,t){
   let n=0;
-  if(v.cutEvery)n=Math.floor(t/v.cutEvery);
+  if(v.cutBeats)n=beatCuts(v.cutBeats).filter(x=>x>.01&&t>=x).length;
   else if(v.on&&v.cutLyrics)n=segmentsOf(v).filter(s=>s.time>.01&&t>=s.time).length;
   return v.clips.length?v.clips[n%v.clips.length]:-1;
 }
@@ -525,6 +531,7 @@ function setRange(rs,len=AUD.re-AUD.rs){
   AUD.rs=clamp(rs,0,Math.max(0,AUD.dur-len));AUD.re=AUD.rs+len;UI.range=len;
   $('sel').style.left=(AUD.rs/AUD.dur*100)+'%';$('sel').style.width=(len/AUD.dur*100)+'%';
   $('rngLbl').textContent='['+fmtS(AUD.rs)+'-'+fmtS(AUD.re)+'] · '+len.toFixed(1)+'s';drawWave();
+  AUD.grid=AUD.beat?BeatDetect.grid(AUD.beat,AUD.rs,AUD.re):[];
 }
 function rangeChanged(){   // i tempi del sync valgono per la parte selezionata: se cambia vanno rifatti
   if(UI.tap.on)endTap(false);
@@ -536,11 +543,11 @@ $('audIn').onchange=async e=>{
   AUD.file=f;aud.src=URL.createObjectURL(f);
   $('songT').textContent=f.name.replace(/\.[^.]+$/,'');$('songA').textContent='Canzone caricata';
   const ac=new AudioContext(),buf=await ac.decodeAudioData(await f.arrayBuffer());ac.close();
-  AUD.dur=buf.duration;
+  AUD.dur=buf.duration;AUD.beat=BeatDetect.analyze(buf);
   const ch=buf.getChannelData(0),n=150,blk=Math.max(1,Math.floor(ch.length/n)),pk=[];
   for(let i=0;i<n;i++){let m=0;for(let j=0;j<blk;j+=64){const v=Math.abs(ch[i*blk+j]||0);if(v>m)m=v;}pk.push(m);}
   const mx=Math.max(...pk)||1;AUD.peaks=pk.map(v=>v/mx);
-  measureLatency();$('wave').classList.add('has-audio');setRange(0,SEL_LEN);UI.times=null;UI.wts=null;UI.sync=null;syncUI();UI.playing=true;restart();
+  measureLatency();$('wave').classList.add('has-audio');setRange(0,SEL_LEN);cutUI();UI.times=null;UI.wts=null;UI.sync=null;syncUI();UI.playing=true;restart();
 };
 $('sel').addEventListener('pointerdown',e=>{   // trascina la selezione; dai cursori laterali la allarga/restringe (2–15 s)
   if(!AUD.file)return;e.preventDefault();e.stopPropagation();
@@ -570,7 +577,7 @@ function lyricsUI(){
 function showUI(){document.querySelectorAll('[data-show]').forEach(b=>{const s=b.dataset.show===UI.show;b.classList.toggle('is-sel',s);b.classList.toggle('is-unsel',!s);});updateCapVis();}
 $('lyrTog').onclick=()=>{
   UI.on=!UI.on;
-  if(UI.on){UI.cutLyrics=true;UI.cutEvery=0;}   // con le lyrics il video cambia a ogni riga (disattivabile)
+  if(UI.on){UI.cutLyrics=true;UI.cutBeats=0;}   // con le lyrics il video cambia a ogni riga (disattivabile)
   lyricsUI();restart();
 };
 document.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>{UI.show=b.dataset.show;showUI();});
@@ -664,17 +671,20 @@ $('barsBtn').onclick=()=>setBars(!UI.bars);
 const SCISSORS='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.1 15.9M14.5 14.5L20 20M8.1 8.1L12 12"/></svg>';
 function cutUI(){   // i due cambi video si escludono; quello sui lyrics è attivo solo con le lyrics
   const c=$('cutBtn'),l=$('lcutBtn');
-  c.classList.toggle('on',!!UI.cutEvery);c.innerHTML=UI.cutEvery?UI.cutEvery+'s':SCISSORS;
-  c.dataset.tip='Cambio video automatico: '+(UI.cutEvery?'ogni '+UI.cutEvery+'s':'OFF')+' · clicca per cambiare';
+  const N=UI.cutBeats,b=AUD.beat,onBeat=b&&b.confident;
+  c.classList.toggle('on',!!N);c.innerHTML=N?'×'+N:SCISSORS;
+  c.dataset.tip=!N?'Cambio video a tempo: OFF · clicca per attivarlo'
+    :onBeat?Math.round(b.bpm)+' BPM · cambio video ogni '+N+(N>1?' battiti':' battito')
+    :'Cambio video ogni '+(N*.5)+'s · '+(b?'ritmo non chiaro in questa canzone':'carica la canzone per andare a tempo');
   l.classList.toggle('dis',!UI.on);l.classList.toggle('on',UI.on&&UI.cutLyrics);
   l.dataset.tip=UI.on?'Cambio video a ogni riga dei lyrics: '+(UI.cutLyrics?'ON':'OFF'):'Attiva le lyrics per cambiare video a ogni riga';
 }
-$('cutBtn').onclick=()=>{UI.cutEvery=CUTS[(CUTS.indexOf(UI.cutEvery)+1)%CUTS.length];if(UI.cutEvery)UI.cutLyrics=false;cutUI();restart();};
-$('lcutBtn').onclick=()=>{if(!UI.on)return;UI.cutLyrics=!UI.cutLyrics;if(UI.cutLyrics)UI.cutEvery=0;cutUI();};
+$('cutBtn').onclick=()=>{UI.cutBeats=CUTS[(CUTS.indexOf(UI.cutBeats)+1)%CUTS.length];if(UI.cutBeats)UI.cutLyrics=false;cutUI();restart();};
+$('lcutBtn').onclick=()=>{if(!UI.on)return;UI.cutLyrics=!UI.cutLyrics;if(UI.cutLyrics)UI.cutBeats=0;cutUI();};
 // ── modal clip ("Video Templates") ──
-// Vista "templates": ogni pianeta (genere, non cliccabile) ha un video di esempio scelto a caso; cliccando il video lo si usa.
+// Vista "templates": ogni pianeta (genere, non cliccabile) ha un video di esempio scelto a caso; clic su un video = diventa la prima clip.
 // Vista "My videos": i pianeti diventano le collezioni dell'utente (rinominabili, ognuna con i suoi video caricati).
-//   Clic su un video = il video aperto usa solo quello. SELECT ALL / MANUAL SELECT = scegli più video e conferma.
+//   Clic su un video = il video aperto usa solo quello. In entrambe le viste: SELECT ALL / MANUAL SELECT = scegli più video e conferma.
 // PROTOTIPO: i video di esempio arrivano a caso dalla libreria gratuita Mixkit; nel sito vanno sostituiti con i template reali.
 const PLANETS=['COZY','WYLD','LOVELY','ROCKY','PARTY','HYPE','MOODY','FANCY'];
 const sampleUrl=()=>{const id=Math.random()<.5?1000+Math.floor(Math.random()*4000):22000+Math.floor(Math.random()*26000);return`https://assets.mixkit.co/videos/${id}/${id}-720.mp4`;};
@@ -713,26 +723,30 @@ function renderClipPop(){
   renderPlanets();
   const g=$('tplGrid'),mine=MV.view==='mine';g.innerHTML='';
   $('myvBtn').classList.toggle('active',mine);
-  $('selBar').classList.toggle('on',mine);
+  const sel=MV.sel;   // selezione multipla: indici dei template (vista pianeti) o delle clip (My videos)
+  $('selOk').style.display=$('selNo').style.display=sel?'':'none';
+  $('selAll').style.display=$('selMan').style.display=sel?'none':'';
+  $('selOk').textContent='Usa '+(sel?sel.size:0)+' video';$('selOk').disabled=!(sel&&sel.size);
+  const tick=on=>sel?'<span class="ck">'+(on?'✓':'')+'</span>':'';
   if(!mine){
     TPL.forEach((s,i)=>{
       const ci=CLIPS.findIndex(c=>c.url===s.url),d=document.createElement('div');
-      d.className='tpl'+(ci>=0&&UI.clips[0]===ci?' on':'');d.title=s.name;
-      d.innerHTML=`<video src="${s.url}" muted autoplay loop playsinline onerror="tplVideoError(${i})"></video><em>${s.name}</em>`;
-      d.onclick=()=>{const k=ci>=0?ci:addClips([{name:s.name,url:s.url}])[0];useClip(k);};
+      d.className='tpl'+(sel&&sel.has(i)?' picked':(!sel&&ci>=0&&UI.clips[0]===ci?' on':''));d.title=s.name;
+      d.innerHTML=`<video src="${s.url}" muted autoplay loop playsinline onerror="tplVideoError(${i})"></video><em>${s.name}</em>`+tick(sel&&sel.has(i));
+      d.onclick=()=>{
+        if(sel){sel.has(i)?sel.delete(i):sel.add(i);renderClipPop();}
+        else{const k=ci>=0?ci:addClips([{name:s.name,url:s.url}])[0];useClip(k);}
+      };
       g.appendChild(d);
     });
     return;
   }
-  const coll=COLLS[MV.coll],sel=MV.sel;
-  $('selOk').style.display=$('selNo').style.display=sel?'':'none';
-  $('selAll').style.display=$('selMan').style.display=sel?'none':'';
-  $('selOk').textContent='Usa '+(sel?sel.size:0)+' video';$('selOk').disabled=!(sel&&sel.size);
+  const coll=COLLS[MV.coll];
   g.innerHTML='<label class="tpl up"><b>+</b>Carica clip<input type="file" id="clipIn" accept="video/*" multiple></label>';
   if(!coll.clips.length)g.insertAdjacentHTML('beforeend','<div class="tplEmpty">Questa collezione è vuota: carica i tuoi video.</div>');
   coll.clips.forEach(ci=>{
     const d=document.createElement('div');d.className='tpl'+(sel&&sel.has(ci)?' picked':(!sel&&UI.clips[0]===ci?' on':''));d.title=CLIPS[ci].name;
-    d.innerHTML='<video src="'+CLIPS[ci].url+'" muted autoplay loop playsinline></video>'+(sel?'<span class="ck">'+(sel.has(ci)?'✓':'')+'</span>':'');
+    d.innerHTML='<video src="'+CLIPS[ci].url+'" muted autoplay loop playsinline></video>'+tick(sel&&sel.has(ci));
     d.onclick=()=>{
       if(sel){sel.has(ci)?sel.delete(ci):sel.add(ci);renderClipPop();}   // selezione manuale
       else useClips([ci]);                                                // apre solo questo video
@@ -745,10 +759,15 @@ function renderClipPop(){
   };
 }
 $('myvBtn').onclick=()=>{MV.view=MV.view==='mine'?'templates':'mine';MV.sel=null;renderClipPop();};
-$('selAll').onclick=()=>{MV.sel=new Set(COLLS[MV.coll].clips);renderClipPop();};
+$('selAll').onclick=()=>{MV.sel=new Set(MV.view==='mine'?COLLS[MV.coll].clips:TPL.map((_,i)=>i));renderClipPop();};
 $('selMan').onclick=()=>{MV.sel=new Set();renderClipPop();};
 $('selNo').onclick=()=>{MV.sel=null;renderClipPop();};
-$('selOk').onclick=()=>{if(MV.sel&&MV.sel.size)useClips([...MV.sel]);};
+$('selOk').onclick=()=>{
+  if(!(MV.sel&&MV.sel.size))return;
+  let list=[...MV.sel];
+  if(MV.view!=='mine')list=list.map(i=>{const s=TPL[i],ci=CLIPS.findIndex(c=>c.url===s.url);return ci>=0?ci:registerClips([{name:s.name,url:s.url}])[0];});
+  useClips(list);
+};
 $('clipBtn').onclick=()=>{renderClipPop();$('tplModal').classList.add('open');};
 $('tplClose').onclick=closeClips;
 addEventListener('keydown',e=>{if(e.code==='Escape'&&!(e.target.isContentEditable))closeClips();});
