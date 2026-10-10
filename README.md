@@ -42,7 +42,10 @@ Poi apri `http://localhost:8765`.
 
 ## Parti da collegare nel sito (segnate `PROTOTIPO` nel codice)
 
-1. **Clip**: non ci sono clip di esempio. Il quadratino in alto a destra della preview apre la finestra "Video Templates", come quella già online, dove l'utente vede e carica le clip; cliccandone una diventa la prima clip del video aperto. I pianeti dei generi e la tendina "Pop / Commercial" sono solo grafica: nel sito vanno sostituiti con le immagini e i template reali. Le clip sono in `CLIPS` come `{name,url,el}`, con `el` un `<video>` muto in loop, e sono disegnate su `#bgCanvas` da `drawClip()` in modalità "cover".
+1. **Clip**: il quadratino in alto a destra della preview apre la finestra "Video Templates", come quella già online.
+   - I pianeti dei generi non sono cliccabili. Ognuno mostra un video di esempio preso a caso dalla libreria gratuita Mixkit (`sampleUrl()`), e la griglia sotto mostra quegli stessi video: cliccandone uno diventa la prima clip del video aperto. **Nel sito vanno sostituiti con i template reali di ogni genere.**
+   - "My videos": i pianeti diventano le **collezioni** dell'utente (`COLLS`). Si rinominano cliccando sul nome e si creano con "+"; ognuna contiene i suoi video caricati. Clic su un video = il video aperto usa solo quello. *Select all* / *Manual select* + *Usa N video* = il video aperto usa i video scelti, e le altre varianti li usano partendo da una clip diversa (`useClips()`).
+   - Le clip usate sono in `CLIPS` come `{name,url,el,mine}`, con `el` un `<video>` muto in loop, e sono disegnate su `#bgCanvas` da `drawClip()` in modalità "cover". `addClips()` le aggiunge e le distribuisce nei video.
 2. **Clip per video**: ogni video ha il suo ordine di clip (`clips`) con una prima clip diversa; lo shuffle lo rimescola. La clip visibile al tempo `t` è `clipAt(video, t)`.
 3. **Pagine TikTok** nel modal: oggi sono 3 esempi fissi.
 4. **Programma** (`#mConfirm`): oggi mostra solo la conferma. I dati da inviare sono `allVideos()` (impostazioni di ogni video), `SUB.slot` e `SUB.page`, più la canzone e la selezione (`AUD.file`, `AUD.rs`, `AUD.re`).
