@@ -20,7 +20,7 @@ Poi apri `http://localhost:8765`.
 
 ## Cosa fa l'editor
 
-- **Canzone**: l'icona ↑ nell'editor audio carica il file. La selezione è di 8 s, si trascina o si sposta cliccando sulla waveform. L'anteprima va in loop sulla selezione.
+- **Canzone**: l'icona ↑ nell'editor audio carica il file. La selezione parte da 8 s: si trascina, si sposta cliccando sulla waveform e si allarga/restringe dai cursori laterali (da 2 a 15 s). L'anteprima va in loop sulla selezione.
 - **Add lyrics**: apre il blocco lyrics.
   - *Solo lyrics / Lyrics + caption*: la caption esistente fa da hook.
   - *Sync automatico*: Whisper sulla parte selezionata (al primo uso scarica ~150 MB, poi resta in cache).

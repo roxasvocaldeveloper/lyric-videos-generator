@@ -94,6 +94,10 @@ h1{font-family:'Schoolbell',cursive;font-weight:400;font-size:40px;}
 .wave{position:relative;height:150px;}
 .wave canvas{position:absolute;inset:0;width:100%;height:100%;}
 .sel{cursor:grab;position:absolute;top:6px;bottom:6px;left:0;width:7%;border:2px solid var(--p2);border-radius:6px;background:rgba(255,255,255,.07);}
+.hdl{position:absolute;top:50%;width:12px;height:34px;margin-top:-17px;border-radius:5px;background:var(--p2);cursor:ew-resize;display:none;align-items:center;justify-content:center;z-index:2;}
+.hdl::after{content:'';width:2px;height:14px;border-radius:1px;background:rgba(255,255,255,.8);}
+.hdl.l{left:-7px;}.hdl.r{right:-7px;}
+.has-audio .hdl{display:flex;}
 .ph{position:absolute;top:6px;bottom:6px;width:2px;background:#fff;left:0;border-radius:1px;opacity:.9;}
 .up{position:absolute;top:0;right:0;cursor:pointer;}
 .wrow{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:#ddd;}
@@ -236,7 +240,7 @@ textarea:focus{border-color:var(--p);}
       <div class="card">
         <div class="wave" id="wave">
           <canvas id="waveC"></canvas>
-          <div class="sel" id="sel"><div class="ph" id="ph"></div></div>
+          <div class="sel" id="sel"><div class="ph" id="ph"></div><div class="hdl l" data-edge="l" title="Trascina per allargare o restringere"></div><div class="hdl r" data-edge="r" title="Trascina per allargare o restringere"></div></div>
           <label class="up" title="Carica la canzone (MP3, WAV…)"><span class="circ" style="margin:0;width:22px;height:22px;"><svg viewBox="0 0 10 10"><path d="M5 0l4 4H6v4H4V4H1z"/></svg></span><input type="file" id="audIn" accept="audio/*" hidden></label>
         </div>
         <div class="wrow">
@@ -330,7 +334,7 @@ const fmtS=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 // ─────────────────────────── costanti ───────────────────────────
 const STYLES=LyricsEngine.STYLES;
 const MAX_VIDEOS=7;                          // video principale + 6
-const SEL_LEN=8;                             // secondi della parte selezionata
+const SEL_LEN=8,SEL_MIN=2,SEL_MAX=15;        // parte selezionata: 8 s all'inizio, ridimensionabile da 2 a 15 s
 const CAP_PX={s:10,m:12,l:14};               // dimensioni caption (pulsanti TT)
 const CAP_Y={top:.21,center:.48,bottom:.70}; // posizione caption (frazione dell'altezza)
 const CUTS=[0,4,2,1,.5];                     // cambio video automatico: OFF → 4s → 2s → 1s → 0.5s
@@ -455,10 +459,11 @@ function drawWave(){
     x.fillStyle=(f>=s0&&f<s1)?'#3f7bff':`rgba(${110+i*.6|0},70,${190+i*.3|0},.55)`;x.fillRect(f*W,(H-h)/2,Math.max(1,W/n*.45),h);
   }
 }
-function setRange(rs){
-  const len=Math.min(SEL_LEN,AUD.dur);AUD.rs=clamp(rs,0,Math.max(0,AUD.dur-len));AUD.re=AUD.rs+len;UI.range=len;
+function setRange(rs,len=AUD.re-AUD.rs){
+  len=clamp(len,Math.min(SEL_MIN,AUD.dur),Math.min(SEL_MAX,AUD.dur));
+  AUD.rs=clamp(rs,0,Math.max(0,AUD.dur-len));AUD.re=AUD.rs+len;UI.range=len;
   $('sel').style.left=(AUD.rs/AUD.dur*100)+'%';$('sel').style.width=(len/AUD.dur*100)+'%';
-  $('rngLbl').textContent='['+fmtS(AUD.rs)+'-'+fmtS(AUD.re)+']';drawWave();
+  $('rngLbl').textContent='['+fmtS(AUD.rs)+'-'+fmtS(AUD.re)+'] · '+len.toFixed(1)+'s';drawWave();
 }
 function rangeChanged(){   // i tempi del sync valgono per la parte selezionata: se cambia vanno rifatti
   if(UI.tap.on)endTap(false);
@@ -474,12 +479,17 @@ $('audIn').onchange=async e=>{
   const ch=buf.getChannelData(0),n=150,blk=Math.max(1,Math.floor(ch.length/n)),pk=[];
   for(let i=0;i<n;i++){let m=0;for(let j=0;j<blk;j+=64){const v=Math.abs(ch[i*blk+j]||0);if(v>m)m=v;}pk.push(m);}
   const mx=Math.max(...pk)||1;AUD.peaks=pk.map(v=>v/mx);
-  setRange(0);UI.times=null;UI.wts=null;UI.sync=null;syncUI();UI.playing=true;restart();
+  $('wave').classList.add('has-audio');setRange(0,SEL_LEN);UI.times=null;UI.wts=null;UI.sync=null;syncUI();UI.playing=true;restart();
 };
-$('sel').addEventListener('pointerdown',e=>{   // trascina la selezione
+$('sel').addEventListener('pointerdown',e=>{   // trascina la selezione; dai cursori laterali la allarga/restringe (2–15 s)
   if(!AUD.file)return;e.preventDefault();e.stopPropagation();
-  const w=$('wave').getBoundingClientRect().width,x0=e.clientX,r0=AUD.rs;
-  const mv=ev=>setRange(r0+(ev.clientX-x0)/w*AUD.dur);
+  const w=$('wave').getBoundingClientRect().width,x0=e.clientX,rs0=AUD.rs,re0=AUD.re,edge=e.target.dataset.edge;
+  const mv=ev=>{
+    const d=(ev.clientX-x0)/w*AUD.dur;
+    if(edge==='l'){const rs=clamp(rs0+d,Math.max(0,re0-SEL_MAX),re0-SEL_MIN);setRange(rs,re0-rs);}
+    else if(edge==='r'){const re=clamp(re0+d,rs0+SEL_MIN,Math.min(AUD.dur,rs0+SEL_MAX));setRange(rs0,re-rs0);}
+    else setRange(rs0+d);
+  };
   const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);rangeChanged();};
   addEventListener('pointermove',mv);addEventListener('pointerup',up);
 });
