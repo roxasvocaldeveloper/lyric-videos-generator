@@ -38,7 +38,7 @@ Poi apri `http://localhost:8765`.
 - **+ 6 video**: crea fino a 7 varianti con le stesse impostazioni e clip diverse.
   - Clic su una miniatura = la apre nell'editor (salvataggio automatico).
   - Il cestino elimina una variante; "+" ne aggiunge una.
-- **SUBMIT**: modal con il riepilogo dei video, la fascia oraria (Mattina / Pomeriggio / Sera) e la pagina TikTok.
+- **SUBMIT**: modal con il riepilogo dei video, i post al giorno (1 / 2 / 3), le fasce orarie (Mattina / Pomeriggio / Sera: fino a una per ogni post del giorno; anche una sola per tutti i post) e la pagina TikTok.
 - **Template**: nel modal di submit, *Save as template* salva le impostazioni di tutti i video (lyrics, sync, stili, caption, barre, cambi video… senza le clip).
   - I template si scelgono nella finestra clip, sopra a *My videos* (se non ce ne sono si legge "No template").
   - Con un template scelto, i video selezionati vengono applicati al template: il progetto diventa i video del template con quelle clip (`applyTemplate()`).
@@ -53,7 +53,7 @@ Poi apri `http://localhost:8765`.
    - Le clip usate sono in `CLIPS` come `{name,url,el,mine}`, con `el` un `<video>` muto in loop, e sono disegnate su `#bgCanvas` da `drawClip()` in modalità "cover". `addClips()` le aggiunge e le distribuisce nei video.
 2. **Clip per video**: ogni video ha il suo ordine di clip (`clips`) con una prima clip diversa; lo shuffle lo rimescola. La clip visibile al tempo `t` è `clipAt(video, t)`.
 3. **Pagine TikTok** nel modal: oggi sono 3 esempi fissi.
-4. **Programma** (`#mConfirm`): oggi mostra solo la conferma. I dati da inviare sono `allVideos()` (impostazioni di ogni video), `SUB.slot` e `SUB.page`, più la canzone e la selezione (`AUD.file`, `AUD.rs`, `AUD.re`).
+4. **Programma** (`#mConfirm`): oggi mostra solo la conferma. I dati da inviare sono `allVideos()` (impostazioni di ogni video), `SUB.perDay`, `SUB.slots` e `SUB.page`, più la canzone e la selezione (`AUD.file`, `AUD.rs`, `AUD.re`).
 5. **Render del video finale**: per ogni frame si disegna la clip, poi si chiama `LyricsEngine.drawLine(...)` con lo stesso stile e gli stessi tempi dell'anteprima. Il `refHeight` resta l'altezza della preview (502 px), così le proporzioni sono identiche.
 
 ## Dati di un video

@@ -365,7 +365,13 @@ wanna be happy</textarea>
       <div class="msub" id="mSub"></div>
       <div class="rcp" id="rcp"></div>
       <div class="saveTpl" id="saveTpl"></div>
-      <div class="mlbl">Fascia oraria di pubblicazione</div>
+      <div class="mlbl">Post al giorno</div>
+      <div class="pills">
+        <button class="pill ghost freq" data-freq="1">1 post/day</button>
+        <button class="pill ghost freq" data-freq="2">2 post/day</button>
+        <button class="pill ghost freq" data-freq="3">3 post/day</button>
+      </div>
+      <div class="mlbl" id="slotLbl">Fascia oraria di pubblicazione</div>
       <div class="pills">
         <button class="pill ghost slot" data-slot="Mattina">Mattina<small>8:00 – 12:00</small></button>
         <button class="pill ghost slot" data-slot="Pomeriggio">Pomeriggio<small>12:00 – 18:00</small></button>
@@ -878,7 +884,7 @@ $('multiBtn').onclick=()=>{   // le varianti copiano le impostazioni del video a
 const allVideos=()=>{if(!VIDS.list.length)return[liveV()];VIDS.list[VIDS.cur]=liveV();return VIDS.list;};
 
 // ─────────────────────────── SUBMIT: riepilogo, fascia oraria, pagina TikTok ───────────────────────────
-const SUB={open:false,slot:null,page:null};
+const SUB={open:false,slots:[],page:null,perDay:1};   // fasce orarie (al massimo una per post del giorno), pagina TikTok, post al giorno
 // ─────────────────────────── template: salvano le impostazioni di tutti i video (senza le clip) ───────────────────────────
 // Si salvano dal modal di submit ("Save as template"); si scelgono nella finestra clip, sopra a "My videos":
 // scegliendo poi i video, il progetto diventa i video del template con quelle clip.
@@ -927,19 +933,29 @@ function openSubmit(){
 }
 function closeSubmit(){SUB.open=false;$('subModal').classList.remove('open');}
 function subUI(){
-  document.querySelectorAll('.slot').forEach(b=>b.classList.toggle('active',b.dataset.slot===SUB.slot));
+  document.querySelectorAll('.freq').forEach(b=>b.classList.toggle('active',+b.dataset.freq===SUB.perDay));
+  document.querySelectorAll('.slot').forEach(b=>b.classList.toggle('active',SUB.slots.includes(b.dataset.slot)));
+  $('slotLbl').textContent=SUB.perDay===1?'Fascia oraria di pubblicazione':'Scegli fino a '+SUB.perDay+' fasce orarie';
   document.querySelectorAll('.page').forEach(b=>b.classList.toggle('on',b.dataset.page===SUB.page));
-  const n=allVideos().length;$('mConfirm').disabled=!(SUB.slot&&SUB.page);$('mConfirm').textContent='Programma '+(n===1?'1 video':n+' video');
+  const n=allVideos().length;$('mConfirm').disabled=!(SUB.slots.length&&SUB.page);$('mConfirm').textContent='Programma '+(n===1?'1 video':n+' video');
 }
-document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{SUB.slot=b.dataset.slot;subUI();});
+document.querySelectorAll('.freq').forEach(b=>b.onclick=()=>{SUB.perDay=+b.dataset.freq;SUB.slots=SUB.slots.slice(-SUB.perDay);subUI();});
+// fasce orarie: con 1 post se ne sceglie una; con 2 o 3 post fino a 2 o 3 (anche una sola: tutti i post in quella fascia)
+document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{
+  const s=b.dataset.slot,i=SUB.slots.indexOf(s);
+  if(i>=0){if(SUB.slots.length>1)SUB.slots.splice(i,1);}   // almeno una fascia resta scelta
+  else{SUB.slots.push(s);if(SUB.slots.length>SUB.perDay)SUB.slots.shift();}   // oltre il limite: sostituisce la più vecchia
+  subUI();
+});
 document.querySelectorAll('.page').forEach(b=>b.onclick=()=>{SUB.page=b.dataset.page;subUI();});
 $('submitBtn').onclick=openSubmit;
 $('mClose').onclick=$('mCancel').onclick=$('mOk').onclick=closeSubmit;
 $('subModal').addEventListener('pointerdown',e=>{if(e.target===$('subModal'))closeSubmit();});
 addEventListener('keydown',e=>{if(SUB.open&&e.code==='Escape')closeSubmit();});
-$('mConfirm').onclick=()=>{   // PROTOTIPO: qui il sito invia i video da programmare (allVideos(), SUB.slot, SUB.page)
+$('mConfirm').onclick=()=>{   // PROTOTIPO: qui il sito invia i video da programmare (allVideos(), SUB.perDay, SUB.slots, SUB.page)
   const n=allVideos().length;
-  $('doneTitle').textContent=n===1?'1 video programmato':n+' video programmati';$('doneSub').textContent=SUB.slot+' · '+SUB.page;
+  $('doneTitle').textContent=n===1?'1 video programmato':n+' video programmati';const days=Math.ceil(n/SUB.perDay);
+  $('doneSub').textContent=SUB.perDay+' post/day · '+['Mattina','Pomeriggio','Sera'].filter(x=>SUB.slots.includes(x)).join(' + ')+' · '+SUB.page+' · '+(days===1?'1 giorno':days+' giorni');
   $('mForm').style.display='none';$('mDone').classList.add('open');
 };
 
