@@ -33,7 +33,7 @@ Poi apri `http://localhost:8765`.
   - cambio video automatico (OFF → 4s → 2s → 1s → 0.5s);
   - cambio video a ogni riga dei lyrics: si attiva da solo con le lyrics ed è alternativo al cambio automatico.
 - **Pulsante blu attaccato alla caption**: cicla 3 caption preimpostate. Sta sotto la caption, o sopra se la caption è in basso.
-- **Clip**: il quadrato in alto a destra nella preview mostra/carica le clip del video; il pulsante shuffle fuori dalla preview rimescola le clip.
+- **Clip**: il quadrato in alto a destra nella preview apre "Video Templates" per vedere e caricare le clip; il pulsante shuffle fuori dalla preview rimescola le clip del video.
 - **+ 6 video**: crea fino a 7 varianti con le stesse impostazioni e clip diverse.
   - Clic su una miniatura = la apre nell'editor (salvataggio automatico).
   - Il cestino elimina una variante; "+" ne aggiunge una.
@@ -42,8 +42,8 @@ Poi apri `http://localhost:8765`.
 
 ## Parti da collegare nel sito (segnate `PROTOTIPO` nel codice)
 
-1. **Clip**: `CLIPS` in `index.html` sono gradienti colorati al posto dei video veri. Va sostituito con le clip del template: nell'anteprima un `<video>` al posto di `.bgv`, e la clip da mostrare al tempo `t` resta `clipAt(video, t)`.
-2. **Caricamento clip** (`#clipIn`): oggi aggiunge una clip colorata finta.
+1. **Clip**: non ci sono clip di esempio. Il quadratino in alto a destra della preview apre la finestra "Video Templates", come quella già online, dove l'utente vede e carica le clip; cliccandone una diventa la prima clip del video aperto. I pianeti dei generi e la tendina "Pop / Commercial" sono solo grafica: nel sito vanno sostituiti con le immagini e i template reali. Le clip sono in `CLIPS` come `{name,url,el}`, con `el` un `<video>` muto in loop, e sono disegnate su `#bgCanvas` da `drawClip()` in modalità "cover".
+2. **Clip per video**: ogni video ha il suo ordine di clip (`clips`) con una prima clip diversa; lo shuffle lo rimescola. La clip visibile al tempo `t` è `clipAt(video, t)`.
 3. **Pagine TikTok** nel modal: oggi sono 3 esempi fissi.
 4. **Programma** (`#mConfirm`): oggi mostra solo la conferma. I dati da inviare sono `allVideos()` (impostazioni di ogni video), `SUB.slot` e `SUB.page`, più la canzone e la selezione (`AUD.file`, `AUD.rs`, `AUD.re`).
 5. **Render del video finale**: per ogni frame si disegna la clip, poi si chiama `LyricsEngine.drawLine(...)` con lo stesso stile e gli stessi tempi dell'anteprima. Il `refHeight` resta l'altezza della preview (502 px), così le proporzioni sono identiche.
@@ -65,7 +65,8 @@ Oggetto restituito da `liveV()`:
   text:'riga 1\nriga 2',  // lyrics
   times:[s,…],            // inizio di ogni riga (secondi dall'inizio della selezione) o null
   wts:[[s,…],…],          // inizio di ogni parola (solo con sync automatico) o null
-  sync:'auto'|'man'|null
+  sync:'auto'|'man'|null,
+  off:0                   // correzione anticipo/ritardo dei lyrics (secondi), sommata a times e wts
 }
 ```
 
@@ -87,6 +88,9 @@ const r = await whisperAlign(file, start, end, ['riga 1','riga 2'], {onStatus: s
 ```
 
 ## Note
+
+- **Sincronia audio/testo nell'anteprima**: casse e cuffie (soprattutto Bluetooth) fanno sentire il suono con un ritardo rispetto ad `audio.currentTime`. L'anteprima lo compensa con `OUT_LAT`, misurato da `AudioContext.outputLatency`. Nel render del video finale questa compensazione **non** va applicata: lì valgono i tempi puri più la correzione `off` del video.
+- Dopo il sync l'utente può spostare tutti i lyrics di ±0,05 s alla volta ("Lyrics in anticipo o in ritardo?"). Il valore è salvato in `off`.
 
 - I font degli stili sono Google Fonts, caricati in `index.html`.
 - Gli effetti INKED (inchiostro) e alcuni bagliori usano `ctx.filter` del canvas. Sui browser che non lo supportano il testo resta visibile ma senza quegli effetti. È provato su Chrome.
