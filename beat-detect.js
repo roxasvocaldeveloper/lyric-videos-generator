@@ -11,7 +11,7 @@
  * ogni battito agganciato all'attacco più vicino.
  */
 const BeatDetect=(()=>{
-  const HOP=512,CLARITY_MIN=5;   // sotto questa soglia il ritmo è considerato poco chiaro
+  const HOP=512,CLARITY_MIN=2.5;   // sotto questa soglia il ritmo è considerato poco chiaro (tarata su canzoni reali: brani ritmati ~3–7)
 
   function analyze(buf){
     const sr=buf.sampleRate,a=buf.getChannelData(0),b=buf.numberOfChannels>1?buf.getChannelData(1):null;

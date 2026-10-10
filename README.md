@@ -31,7 +31,7 @@ Poi apri `http://localhost:8765`.
 - **Barre a destra del telefono**:
   - posizione della caption (alto/centro/basso);
   - barre nere cinematic;
-  - cambio video a tempo: OFF → ogni 1, 2, 4, 8 battiti (×1…×8). Il BPM è rilevato al caricamento della canzone; se il ritmo non è chiaro, o senza canzone, usa un passo fisso di N × 0,5 s;
+  - cambio video a tempo: OFF → ogni 1, 2, 4, 8 battiti (×1…×8). Il BPM è rilevato al caricamento della canzone e mostrato accanto alla selezione (es. "129 BPM"; con "?" se il ritmo è poco chiaro). Cliccandolo si corregge a mano (numero, ½, ×2). Se il ritmo è poco chiaro, o senza canzone, usa un passo fisso di N × 0,5 s;
   - cambio video a ogni riga dei lyrics: si attiva da solo con le lyrics ed è alternativo al cambio automatico.
 - **Pulsante blu attaccato alla caption**: cicla 3 caption preimpostate. Sta sotto la caption, o sopra se la caption è in basso.
 - **Clip**: il quadrato in alto a destra nella preview apre "Video Templates" per vedere e caricare le clip; il pulsante shuffle fuori dalla preview rimescola le clip del video.
@@ -39,6 +39,10 @@ Poi apri `http://localhost:8765`.
   - Clic su una miniatura = la apre nell'editor (salvataggio automatico).
   - Il cestino elimina una variante; "+" ne aggiunge una.
 - **SUBMIT**: modal con il riepilogo dei video, la fascia oraria (Mattina / Pomeriggio / Sera) e la pagina TikTok.
+- **Template**: nel modal di submit, *Save as template* salva le impostazioni di tutti i video (lyrics, sync, stili, caption, barre, cambi video… senza le clip).
+  - I template si scelgono nella finestra clip, sopra a *My videos* (se non ce ne sono si legge "No template").
+  - Con un template scelto, i video selezionati vengono applicati al template: il progetto diventa i video del template con quelle clip (`applyTemplate()`).
+  - Nel prototipo i template sono salvati nel browser (`localStorage`); nel sito vanno salvati sull'account.
 - **Anteprima TikTok**: il telefono mostra le icone di TikTok. I lyrics restano automaticamente fuori dalle zone coperte (`safeZone`).
 
 ## Parti da collegare nel sito (segnate `PROTOTIPO` nel codice)
