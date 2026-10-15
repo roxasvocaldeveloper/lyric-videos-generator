@@ -58,7 +58,12 @@ h1{font-family:'Schoolbell',cursive;font-weight:400;font-size:40px;}
 #lyrCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;}
 .cap{position:absolute;left:0;right:0;text-align:center;font:700 14px Montserrat;text-shadow:0 1px 4px rgba(0,0,0,.6);z-index:6;outline:none;padding:0 22%;}
 .cap[data-pos=top]{top:21%;}.cap[data-pos=center]{top:48%;}.cap[data-pos=bottom]{top:70%;}
-.cap.hide,.capBtn.hide{display:none;}
+.cap:empty::before{content:'Type your caption here';opacity:.45;}
+.cap.hide,.capBtn.hide,.capClr.hide{display:none;}
+.capClr{position:absolute;width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.45);z-index:9;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}
+.capClr svg{width:10px;height:10px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;}
+.capClr:hover{background:rgba(0,0,0,.65);border-color:#fff;}
+.capClr:disabled{opacity:.35;cursor:default;}
 .capBtn{position:absolute;width:32px;height:32px;border-radius:8px;border:none;background:var(--b);z-index:9;display:flex;align-items:center;justify-content:center;transform:translateX(-50%);box-shadow:0 2px 8px rgba(0,0,0,.35);}
 .capBtn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 .capBtn:hover{filter:brightness(1.12);}
@@ -260,6 +265,7 @@ textarea:focus{border-color:var(--p);}
           <canvas id="lyrCanvas"></canvas>
           <div class="cap" id="cap" data-pos="top" contenteditable="true" spellcheck="false">Type your caption here</div>
           <button class="capBtn" id="capBtn" title="Cambia caption"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg></button>
+          <button class="capClr" id="capClr" title="Cancella caption"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           <div id="noClip">Carica le tue clip con il pulsante <b>□</b> in alto a destra</div>
           <button class="corner" id="clipBtn" title="Clip video"></button>
           <div class="tk">
@@ -404,8 +410,8 @@ wanna be happy</textarea>
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
    Editor "Submit to Virality" con lyrics — prototipo.
-   Parti PROTOTIPO da sostituire nel sito: le clip di esempio (gradienti in CLIPS, usate finché non si caricano clip vere), le pagine TikTok nel modal,
-   e l'azione finale "Programma" (oggi mostra solo la conferma).
+   Parti PROTOTIPO da sostituire nel sito (cerca "PROTOTIPO"): i video di esempio Mixkit nei pianeti, le collezioni e i template
+   salvati solo nel browser, le pagine TikTok nel modal e l'azione finale "Programma" (oggi mostra solo la conferma). Vedi README.md.
    ═══════════════════════════════════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -705,10 +711,15 @@ function placeCapBtn(){
   btn.classList.toggle('hide',cap.classList.contains('hide'));
   btn.style.left=($('videoCon').clientWidth/2)+'px';
   btn.style.top=(cap.dataset.pos!=='bottom'?cap.offsetTop+cap.offsetHeight+8:cap.offsetTop-40)+'px';
+  const clr=$('capClr');   // cancella caption: piccolo, a destra del pulsante blu
+  clr.classList.toggle('hide',cap.classList.contains('hide'));
+  clr.style.left=($('videoCon').clientWidth/2+22)+'px';clr.style.top=(parseFloat(btn.style.top)+5)+'px';
+  clr.disabled=!cap.textContent.trim();
 }
 document.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>setCapSize(b.dataset.size));
 document.querySelectorAll('[data-pos]').forEach(b=>b.onclick=()=>setCapPos(b.dataset.pos));
 $('capBtn').onclick=()=>{UI.capI=(UI.capI+1)%CAPTIONS.length;$('cap').textContent=CAPTIONS[UI.capI];$('capBtn').title='Cambia caption ('+(UI.capI+1)+'/'+CAPTIONS.length+')';placeCapBtn();};
+$('capClr').onclick=()=>{UI.capI=-1;$('cap').textContent='';$('capBtn').title='Cambia caption';placeCapBtn();$('cap').focus();};
 new ResizeObserver(placeCapBtn).observe($('cap'));
 $('cap').addEventListener('input',placeCapBtn);
 
