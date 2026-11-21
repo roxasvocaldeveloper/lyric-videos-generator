@@ -3,7 +3,7 @@
 Prototipo funzionante dell'editor **"Submit to Virality"** di Soundvertise, con l'aggiunta di:
 
 - lyrics animati sul video (17 stili);
-- sync automatico (Whisper nel browser) o manuale;
+- lyrics trascritti in automatico dalla canzone (Whisper nel browser), correggibili, oppure sync manuale;
 - cambi video a tempo di musica (BPM);
 - fino a 7 varianti dello stesso video;
 - template;
@@ -39,11 +39,23 @@ python3 -m http.server 8765
 
 Poi apri `http://localhost:8765` con Chrome (consigliato) o con Edge, Safari o Firefox.
 
+**Trascrizione lyrics di qualità (facoltativa, solo Mac con chip Apple)**: un server locale con whisper-large-v3-turbo, lo stesso modello usato dai competitor. Se è acceso l'editor lo usa da solo; se è spento usa Whisper small nel browser.
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install mlx-whisper
+```
+
+```bash
+.venv/bin/python tools/transcribe_server.py
+```
+
+Al primo avvio scarica il modello (~1,6 GB), poi resta in cache. Gira su `http://127.0.0.1:8766`.
+
 Per provare tutto:
 
 1. Carica una canzone con l'icona ↑ nell'editor audio.
 2. Apri le clip con il quadrato in alto a destra nella preview, poi *My videos* → "+" per caricare i tuoi video.
-3. Premi *Add lyrics*, scrivi una frase per riga e premi *Sync automatico*.
+3. Aspetta la trascrizione automatica (la percentuale compare nel blocco lyrics), poi premi *Add lyrics*: il testo è già scritto e a tempo.
 4. Premi *+ 6 video* e poi *SUBMIT*.
 
 ## 2. File
@@ -52,13 +64,15 @@ Per provare tutto:
 |---|---|---|---|
 | `index.html` | ~970 | L'editor completo: HTML, CSS e script inline (UI, stato, anteprima, più video, modal clip, modal submit, template). | Va portato nel framework del sito (React, Vue, ecc.). La logica è in funzioni piccole e commentate. |
 | `lyrics-engine.js` | ~300 | Motore che disegna una riga di lyrics su un canvas 2D, in tutti gli stili, con le animazioni. Non dipende dall'editor. | **Così com'è.** Va usato sia nell'anteprima sia nel render finale. |
-| `lyrics-sync.js` | ~90 | Sync automatico: Whisper (Transformers.js) trascrive la parte selezionata con i tempi di ogni parola, poi un allineamento abbina le parole scritte a quelle riconosciute. | Così com'è (o spostabile su server, vedi §7.2). |
+| `lyrics-sync.js` | ~150 | Lyrics automatici: trascrive tutta la canzone con Whisper (tempi di ogni parola), divide le parole in caption brevi e mette a tempo le righe corrette dall'utente. | Così com'è (o la trascrizione spostata su server, vedi §7.2). |
+| `lyrics-worker.js` | ~60 | Web Worker in cui gira Whisper (Transformers.js): taglia l'audio in finestre da 30 s, rileva la lingua, restituisce le parole con i tempi. | Così com'è, nella stessa cartella di `lyrics-sync.js`. |
+| `tools/transcribe_server.py` | ~120 | Server locale di trascrizione con whisper-large-v3-turbo (mlx-whisper). Mostra anche il formato esatto che deve avere l'endpoint del backend. | Esempio/riferimento: nel sito lo sostituisce il backend. |
 | `beat-detect.js` | ~70 | Rilevamento BPM e griglia dei battiti, in JavaScript puro. | **Così com'è.** |
 
 Gli script sono globali, non moduli ES:
 
 - `lyrics-engine.js` espone `LyricsEngine`;
-- `lyrics-sync.js` espone `whisperAlign`;
+- `lyrics-sync.js` espone `whisperTranscribe`, `groupWords`, `alignLines` e `whisperAlign` (e avvia da solo `lyrics-worker.js`, un worker di tipo modulo);
 - `beat-detect.js` espone `BeatDetect`.
 
 Per usarli come moduli basta aggiungere un `export` alla fine di ciascun file.
@@ -70,9 +84,11 @@ Per usarli come moduli basta aggiungere un `export` alla fine di ciascun file.
 | Dipendenza | Dove | A cosa serve | Note |
 |---|---|---|---|
 | **Google Fonts** | `<link>` in `index.html` | UI: Montserrat (testo) e Schoolbell (titoli, come nel sito). Stili dei lyrics: Archivo Black, Syne 800, Gaegu, Playfair Display 700/700 italic, Cormorant Garamond 700, UnifrakturCook 700, Shadows Into Light, Sedgwick Ave Display, Reenie Beanie. | Tutti con licenza OFL, quindi si possono anche ospitare sul vostro server. Il canvas usa un font solo se è già caricato: per questo `LyricsEngine.loadFonts()` va chiamato prima di disegnare. **Nel render lato server servono gli stessi font installati.** |
-| **Transformers.js 2.17.2** (`@xenova/transformers`) | `import()` dinamico da `https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2` in `lyrics-sync.js` | Esegue Whisper nel browser (ONNX Runtime Web, WASM). | Si carica solo al primo *Sync automatico*. Licenza Apache-2.0. Versione fissata: non aggiornarla senza testare, perché la v3 (`@huggingface/transformers`) ha un'API leggermente diversa. |
+| **Transformers.js 2.17.2** (`@xenova/transformers`) | `import` da `https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2` in `lyrics-worker.js` | Esegue Whisper nel browser (ONNX Runtime Web, WASM). | Si carica solo al primo *Sync automatico*. Licenza Apache-2.0. Versione fissata: non aggiornarla senza testare, perché la v3 (`@huggingface/transformers`) ha un'API leggermente diversa. |
 | **Modello `Xenova/whisper-small`** (quantizzato) | Scaricato da Hugging Face Hub da Transformers.js | Riconoscimento vocale con i tempi di ogni parola (`return_timestamps:'word'`). | **~150 MB** al primo uso, poi resta nella cache del browser (Cache API). Licenza MIT (OpenAI Whisper). Si può ospitare su un vostro CDN: vedi `env.remoteHost` di Transformers.js. |
 | **Mixkit** (video gratuiti) | `sampleUrl()` in `index.html` | **Solo prototipo**: un video di esempio a caso in ogni "pianeta" della finestra Video Templates. | URL `https://assets.mixkit.co/videos/{id}/{id}-720.mp4` con id casuali (se l'id non esiste ne prova un altro). Il server non manda CORS, quindi il canvas diventa "tainted" (vedi §11). **Da rimuovere nel sito.** |
+
+| **mlx-whisper** + modello `mlx-community/whisper-large-v3-turbo` | `tools/transcribe_server.py` (Python, in `.venv`) | Trascrizione locale veloce e precisa sui Mac con chip Apple. | Solo per l'uso in locale. Licenze MIT. Il modello pesa ~1,6 GB (cache di Hugging Face); versione leggera: `whisper-large-v3-turbo-q4`, ~460 MB, con `WHISPER_MODEL`. |
 
 Le icone sono SVG inline. Non ci sono altre librerie, non servono chiavi API e non ci sono chiamate a servizi a pagamento.
 
@@ -133,7 +149,7 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 ### Canzone e selezione
 - L'icona ↑ carica il file (qualsiasi formato decodificabile dal browser: mp3, wav, m4a…).
 - La selezione parte da 8 s (`SEL_LEN`). Si può trascinare, spostare cliccando sulla waveform e ridimensionare dai cursori laterali, da 2 a 15 s (`SEL_MIN`/`SEL_MAX`). L'anteprima va in loop sulla selezione.
-- Cambiare la selezione azzera il sync (`rangeChanged()`), perché i tempi sono relativi alla selezione.
+- Cambiando la selezione i lyrics si rifanno da soli per la nuova parte, dalla trascrizione già pronta (`rangeChanged()` → `lyricsAllVideos(true)`).
 
 ### BPM
 - Al caricamento `BeatDetect.analyze()` analizza la canzone intera (meno di 1 s per 3–4 minuti).
@@ -144,7 +160,12 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 - *Add lyrics* (pulsante viola) apre il blocco.
 - *Solo lyrics* nasconde la caption; *Lyrics + caption* la tiene come hook.
 - Il testo va scritto **una frase per riga**: ogni riga appare da sola sul video.
-- **Sync automatico**: Whisper sulla selezione dà il tempo di ogni riga e di ogni parola. Le parole non riconosciute vengono interpolate.
+- **Trascrizione automatica** (come fa 0dB.studio): appena si carica la canzone, Whisper trascrive **tutta la canzone** in background (`transcribe()` → `AUD.words`), senza bloccare l'editor. La percentuale compare nel blocco lyrics.
+  - Il testo della parte selezionata si riempie da solo, diviso in **caption brevi da 2–5 parole** spezzate sulle pause della voce (`groupWords`), già a tempo parola per parola.
+  - Se l'utente **corregge il testo**, le sue righe vengono rimesse a tempo all'istante sulle parole trascritte (`alignLines`), senza rifare Whisper. Il link *ripristina trascrizione* torna al testo automatico.
+  - Se si sposta la selezione: il testo automatico si rifà per la nuova parte; il testo corretto resta finché corrisponde alla voce (almeno il 40% delle parole ritrovate), altrimenti torna la trascrizione della nuova parte.
+  - *Sync automatico* rimette a tempo il testo attuale (o riprova la trascrizione se era fallita).
+  - Ogni video ha il flag `auto` (testo dalla trascrizione o corretto a mano); tutte le varianti si aggiornano insieme.
 - **Sync manuale**: la selezione riparte e l'utente batte SPAZIO, o tocca il video, all'inizio di ogni frase. ESC annulla. Si ottengono solo i tempi delle righe; le parole vengono distribuite nella riga.
 - **Lyrics in anticipo o in ritardo?** −/+ sposta tutto di 0,05 s alla volta. Il valore è salvato in `off`.
 - **Stili**: griglia con 17 stili. Con *Mix* se ne scelgono più di uno, alternati una riga per stile.
@@ -188,7 +209,7 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 {
   clips: [3, 0, 5],                 // ordine delle clip: indici in CLIPS (nel sito: id delle clip)
   capSize: 's' | 'm' | 'l',         // dimensione caption → CAP_PX = {s:10, m:12, l:14} px su preview alta 502
-  capPos: 'top' | 'center' | 'bottom', // posizione caption → CAP_Y = {top:.21, center:.48, bottom:.70} (frazione altezza)
+  capPos: 'top' | 'center' | 'bottom', // posizione caption → CAP_Y = {top:.21, center:.48, bottom:.77} (frazione altezza; per 'bottom' è il bordo inferiore: la caption cresce verso l'alto)
   caption: 'POV: …',                // testo della caption
   capI: -1,                         // indice della caption preimpostata in uso (-1 = testo libero)
   bars: false,                      // barre cinematic
@@ -200,7 +221,8 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
   set: ['brat'],                    // stili scelti (chiavi di LyricsEngine.STYLES); riga i → set[i % set.length]
   text: 'riga 1\nriga 2',           // lyrics, una frase per riga (le righe vuote sono ignorate)
   times: [0.12, 1.85] | null,       // inizio di ogni riga, in SECONDI DALL'INIZIO DELLA SELEZIONE (null = non sincronizzate)
-  wts: [[0.12, 0.40], [1.85, 2.1, 2.3]] | null, // inizio di ogni parola (solo sync automatico)
+  wts: [[0.12, 0.40], [1.85, 2.1, 2.3]] | null, // inizio di ogni parola (dalla trascrizione)
+  auto: true,                       // testo preso dalla trascrizione (false = scritto/corretto dall'utente)
   sync: 'auto' | 'man' | null,
   off: 0                            // correzione utente in secondi, da sommare a times e wts
 }
@@ -266,29 +288,58 @@ LyricsEngine.STYLES  // { key: { label, btn, family?, font?, … } } — `label`
   - `gen`: motore generico parola per parola, con rivelazione `type`, `ink` o `glitch`, contorno, glow, gradiente, ecc.
 - **INKED** usa un filtro SVG "gooey" (`feGaussianBlur` + `feColorMatrix`), che il motore inserisce nel DOM una volta sola, applicato con `ctx.filter = 'url(#lyrInkGoo)'`. Altri bagliori usano `ctx.filter = 'blur()'`.
 
-### 7.2 `whisperAlign` (`lyrics-sync.js`)
+### 7.2 Lyrics automatici (`lyrics-sync.js` + `lyrics-worker.js`)
 
 ```js
-const r = await whisperAlign(file, start, end, ['riga 1', 'riga 2'], {
-  onStatus: msg => …,   // testi di stato (caricamento, download %, ascolto)
-  language: 'italian',  // opzionale; se omesso Whisper rileva la lingua
+// 1) una volta per canzone: trascrive tutto (Whisper gira nel worker, l'editor non si blocca)
+const t = await whisperTranscribe(file, {
+  onStatus:   msg => …,   // caricamento, download modello %, "Riconosco la lingua…"
+  onProgress: pct => …,   // 0–100
+  language:   'it',       // opzionale; se omesso la rileva il modello
 });
-// r.lineTimes  = [sec, …]          inizio di ogni riga, SECONDI ASSOLUTI nella canzone
-// r.wordTimes  = [[sec, …], …]     inizio di ogni parola
-// r.recognized = N                 parole riconosciute da Whisper
+// t.words    = [{w:'parola', start:12.34, end:12.71}, …]   SECONDI ASSOLUTI nella canzone
+// t.language = 'en'
+
+// 2) caption brevi per la parte selezionata (2–5 parole, spezzate sulle pause e sulla punteggiatura)
+const groups = groupWords(t.words.filter(w => w.start >= start && w.start < end));
+
+// 3) righe scritte o corrette dall'utente → tempi, all'istante, usando le parole già trascritte
+const r = alignLines(['riga 1', 'riga 2'], t.words, start, end);
+// r.lineTimes = [sec, …], r.wordTimes = [[sec, …], …], r.matched = 0–1 (quota di parole ritrovate)
+
+// versione "tutto in uno" su una sola parte (trascrive solo start–end e allinea)
+await whisperAlign(file, start, end, lines, {onStatus});
 ```
 
-L'editor converte i tempi in relativi alla selezione (`- AUD.rs`) prima di salvarli in `times`/`wts`.
+L'editor converte i tempi in relativi alla selezione (`- AUD.rs`) prima di salvarli in `times`/`wts` (`lyricsFor()` in `index.html`).
 
 Come funziona:
 
-1. Decodifica l'audio e ricampiona solo la selezione a 16 kHz mono (`OfflineAudioContext`).
-2. Esegue Whisper con `return_timestamps:'word'`.
-3. Normalizza le parole (minuscole, senza accenti né punteggiatura).
-4. Allinea parole scritte e parole riconosciute con programmazione dinamica (tipo Needleman-Wunsch).
-5. Interpola le righe e le parole mancanti e garantisce tempi crescenti.
+1. Decodifica la canzone e la ricampiona a 16 kHz mono (`OfflineAudioContext`, nel thread principale), poi la passa al worker.
+2. Nel worker la taglia in finestre da 30 s che si sovrappongono di 5 s: ogni parola viene presa dalla finestra in cui cade più al centro, così non ci sono buchi né doppioni. Il taglio automatico di Transformers.js v2 (`chunk_length_s`) è stato scartato perché perdeva interi pezzi di canzone.
+3. Rileva la lingua: primo token del modello dopo `<|startoftranscript|>`, a maggioranza sulle 3 finestre più forti. Serve perché Whisper small in Transformers.js v2, senza lingua, non restituisce nulla.
+4. Esegue Whisper con `return_timestamps:'word'` e scarta i non-testi (`[Music]`, `♪`…).
+5. `alignLines`: normalizza le parole (minuscole, senza accenti né punteggiatura), le allinea con programmazione dinamica (tipo Needleman-Wunsch), interpola righe e parole mancanti e garantisce tempi crescenti.
 
-**Alternativa server**: lo stesso allineamento si può fare in Python con `openai-whisper`/`faster-whisper` (`word_timestamps=True`) e lo stesso algoritmo di `lsAlign`. Così si evitano i 150 MB di download per l'utente, al costo della GPU/CPU sul server.
+Prestazioni nel browser (Chrome, Mac): circa 2–2,5 minuti per una canzone di 2:30, più il download del modello la prima volta. Con il server locale (whisper-large-v3-turbo su M1 Max): vedi §10.
+
+**Trascrizione sul server (`TRANSCRIBE_API`).** È il punto che fa la differenza di qualità. Nel browser ci sta solo Whisper *small*, che perde le parti cantate piano (sulla canzone di prova i primi 20 s) e sbaglia di più su rap e voci effettate. I competitor (per esempio 0dB.studio) usano **whisper-large-v3-turbo** sul backend e trascrivono tutta la canzone in circa 15 s.
+
+Per questo `transcribe()` in `index.html` prova prima `TRANSCRIBE_API` e solo se non risponde usa il browser:
+
+- **in locale**: `TRANSCRIBE_API = 'http://127.0.0.1:8766/transcribe'`, cioè `tools/transcribe_server.py` (mlx-whisper con whisper-large-v3-turbo, solo Mac con chip Apple);
+- **nel sito**: l'endpoint del backend, per esempio `'/api/lyrics/transcribe'`, che usa whisper-large-v3-turbo con `faster-whisper` (`word_timestamps=True`) su GPU, oppure un'API come Groq (`whisper-large-v3-turbo`, `timestamp_granularities:['word']`).
+
+Formato dell'endpoint (lo stesso del server locale):
+
+```
+POST /transcribe   multipart/form-data, campo "audio" = file della canzone
+→ { "language": "en", "duration": 154.3, "words": [ { "w": "parola", "start": 12.34, "end": 12.71 }, … ] }
+```
+
+Impostazioni consigliate per la musica: `word_timestamps=True`, `condition_on_previous_text=False` (evita che un errore si ripeta per tutta la canzone), `hallucination_silence_threshold≈2` (scarta il testo inventato nelle parti strumentali). La lingua la rileva il modello.
+
+L'editor pulisce le parole del server come quelle del browser (`lsWords`: via punteggiatura e `[Music]`), poi `groupWords` e `alignLines` restano gli stessi.
 
 ### 7.3 `BeatDetect` (`beat-detect.js`)
 
@@ -330,7 +381,8 @@ Cerca `PROTOTIPO` nel codice per trovare i punti esatti.
 | 5 | **Pagine TikTok** | 3 esempi fissi in `.pages` (`@soundvertise`, ecc.). | Le pagine TikTok collegate all'account. |
 | 6 | **Canzone** | File locale caricato dall'utente. | Se nel sito la canzone c'è già (campagna), passare `File`/`Blob`/URL ad `audIn` (stessa logica: `decodeAudioData`, picchi, `BeatDetect.analyze`). Titolo e artista vanno in `#songT`/`#songA`. |
 | 7 | **Programma** (`#mConfirm`) | Mostra solo la conferma. | Inviare il payload del §6.2 al backend, che renderizza i video (§9) e li pubblica secondo `perDay`/`slots`/`page`. |
-| 8 | **Testi UI** | In italiano, scritti nell'HTML. | Passarli all'i18n del sito se serve. |
+| 8 | **Trascrizione lyrics** (`TRANSCRIBE_API`) | Server locale con whisper-large-v3-turbo (`tools/transcribe_server.py`), oppure Whisper small nel browser come ripiego. | L'endpoint del backend con whisper-large-v3-turbo, stesso formato (§7.2). |
+| 9 | **Testi UI** | In italiano, scritti nell'HTML. | Passarli all'i18n del sito se serve. |
 
 Non c'è da modificare nulla in `lyrics-engine.js`, `beat-detect.js` e `lyrics-sync.js`.
 
@@ -344,7 +396,7 @@ for (let f = 0; f < (end - start) * fps; f++) {
   ctx.clearRect(0, 0, W, H);
   drawClip(ctx, clipAt(v, t), W, H);       // frame della clip, modalità cover
   if (v.bars) { /* bande nere: altezza (H - W*9/16)/2 sopra e sotto */ }
-  if (!(v.on && v.show === 'lyrics')) { /* caption: font Montserrat 700, size CAP_PX[v.capSize] * H/502, y = CAP_Y[v.capPos]*H */ }
+  if (!(v.on && v.show === 'lyrics')) { /* caption: font Montserrat 700, size CAP_PX[v.capSize] * H/502, y = CAP_Y[v.capPos]*H, per 'bottom' meno l'altezza del testo */ }
   if (v.on) {
     const seg = segmentsOf(v).filter(s => t >= s.time).pop();
     if (seg) LyricsEngine.drawLine(ctx, W, H, {
@@ -378,7 +430,7 @@ Cose da rispettare:
 - **Latenza audio in anteprima**: casse e cuffie, soprattutto Bluetooth, riproducono il suono in ritardo rispetto ad `audio.currentTime`. `measureLatency()` legge `AudioContext.outputLatency + baseLatency` (fino a 0,5 s) e `curT()` lo sottrae, così i lyrics non appaiono in anticipo. Riguarda solo l'anteprima.
 - **Performance**:
   - `BeatDetect.analyze` impiega meno di 1 s per una canzone di 3–4 minuti; `grid` è istantaneo.
-  - Whisper: download del modello (~150 MB) solo la prima volta. L'analisi di 8–15 s di audio richiede qualche secondo su un laptop recente; su dispositivi lenti può arrivare a 10–20 s.
+  - Whisper: download del modello (~150 MB) solo la prima volta. La trascrizione di tutta la canzone gira in un Web Worker (l'editor resta fluido) e richiede circa 1 minuto per minuto di audio su un laptop recente; sui dispositivi lenti di più. Per questo nel sito va spostata sul server (§7.2).
   - L'anteprima disegna ogni frame la preview più fino a 7 miniature: è leggera su desktop. Sui telefoni economici conviene ridurre la frequenza delle miniature.
 - **Mobile**: il layout attuale è pensato per desktop, come l'editor del sito.
 
@@ -388,7 +440,8 @@ Cose da rispettare:
   - se il ritmo è poco chiaro viene mostrato "?" e si usa il passo fisso;
   - l'utente può correggere a mano (numero, ½, ×2).
 - **Whisper sulla musica**: con voce molto effettata, rap veloce o strumenti forti alcune parole non vengono riconosciute. Le righe e le parole mancanti vengono interpolate, quindi possono avere un piccolo scarto, che l'utente corregge con −/+ (`off`) o con il sync manuale. Sul test con voce chiara la precisione è di circa ±30 ms.
-- **Sync e selezione**: i tempi valgono per la selezione corrente. Se la selezione cambia, il sync viene azzerato.
+- **Trascrizione nel browser**: Whisper small perde le parti cantate molto piano o sussurrate (sulla canzone di prova, i primi 20 s) e trascrive meno parole di un modello grande. Va spostata sul server (§7.2).
+- **Selezione e testo corretto**: se l'utente corregge il testo e poi sposta la selezione su una parte molto diversa, le sue correzioni vengono sostituite dalla trascrizione della nuova parte.
 - **CORS e canvas "tainted"**: i video Mixkit non mandano `Access-Control-Allow-Origin`, quindi dopo averli disegnati il canvas non si può leggere (`toDataURL`, `getImageData`, `captureStream`). Per il prototipo non è un problema, ma lo diventa se si fa il render nel browser. **Le clip reali vanno servite con CORS e caricate con `crossOrigin='anonymous'`.**
 - **Video di esempio Mixkit**: sono scelti a caso a ogni apertura e possono non essere coerenti con il genere del pianeta. Vanno sostituiti (§8).
 - **Persistenza**: progetti, varianti, collezioni e clip caricate si perdono ricaricando la pagina. Solo i template sopravvivono, in `localStorage`.

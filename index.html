@@ -57,7 +57,7 @@ h1{font-family:'Schoolbell',cursive;font-weight:400;font-size:40px;}
 .bars .cbar{display:block;}
 #lyrCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;}
 .cap{position:absolute;left:0;right:0;text-align:center;font:700 14px Montserrat;text-shadow:0 1px 4px rgba(0,0,0,.6);z-index:6;outline:none;padding:0 22%;}
-.cap[data-pos=top]{top:21%;}.cap[data-pos=center]{top:48%;}.cap[data-pos=bottom]{top:70%;}
+.cap[data-pos=top]{top:21%;}.cap[data-pos=center]{top:48%;}.cap[data-pos=bottom]{top:auto;bottom:23%;}   /* in basso cresce verso l'alto: le caption lunghe non coprono il nome utente */
 .cap:empty::before{content:'Type your caption here';opacity:.45;}
 .cap.hide,.capBtn.hide,.capClr.hide{display:none;}
 .capClr{position:absolute;width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.45);z-index:9;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}
@@ -317,7 +317,7 @@ textarea:focus{border-color:var(--p);}
             <button class="pill is-unsel" data-show="lyrics">Solo lyrics</button>
             <button class="pill is-sel" data-show="both">Lyrics + caption</button>
           </div>
-          <textarea id="lyrTA" rows="3" placeholder="Incolla le lyrics della parte selezionata (una riga = una frase)">i'm in the corner wishing
+          <textarea id="lyrTA" rows="3" placeholder="Carica la canzone: i lyrics vengono trascritti da soli (una riga = una caption)">i'm in the corner wishing
 when i see you at night
 you look so pretty
 wanna be happy</textarea>
@@ -424,9 +424,13 @@ const STYLES=LyricsEngine.STYLES;
 const MAX_VIDEOS=7;                          // video principale + 6
 const SEL_LEN=8,SEL_MIN=2,SEL_MAX=15;        // parte selezionata: 8 s all'inizio, ridimensionabile da 2 a 15 s
 const CAP_PX={s:10,m:12,l:14};               // dimensioni caption (pulsanti TT)
-const CAP_Y={top:.21,center:.48,bottom:.70}; // posizione caption (frazione dell'altezza)
+const CAP_Y={top:.21,center:.48,bottom:.77}; // posizione caption (frazione dell'altezza): bordo superiore; per 'bottom' bordo inferiore
 const CUTS=[0,1,2,4,8];                      // cambio video a tempo: OFF → ogni 1, 2, 4, 8 battiti
-const CAPTIONS=['this remix in the club >>>',"POV: it's 2AM and this song comes on",'my type of song for late drives'];
+const CAPTIONS=['this remix in the club >>>',"POV: it's 2AM and this song comes on",'my type of song for late drives',
+  // test: caption lunghe (3–4 righe)
+  "POV: you finally found the song that's been stuck in your head all week",
+  'when the beat drops and the whole car screams every single word',
+  'this song at 3AM hits different and nobody talks about it'];
 const CLIPS=[];   // clip usate: {name,url,el,mine} (el = <video> muto in loop; mine = caricata dall'utente)
 // disegna la clip i in modalità "cover" (nero se non ci sono clip o non è ancora pronta)
 function drawClip(x,i,W,H){
@@ -439,10 +443,11 @@ function drawClip(x,i,W,H){
 const UI={
   on:false,show:'both',mix:false,set:['brat'],      // lyrics: attive, solo lyrics / + caption, Mix, stili scelti
   times:null,wts:null,sync:null,off:0,               // tempi righe/parole (secondi dall'inizio della selezione), 'auto'|'man', correzione (s)
+  auto:true,                                          // testo preso dalla trascrizione (false = scritto/corretto dall'utente)
   capSize:'l',capI:-1,bars:false,cutBeats:0,cutLyrics:false,clips:[],shownClip:null,
   playing:true,t0:performance.now(),range:SEL_LEN,tap:{on:false,i:0},
 };
-const AUD={file:null,dur:0,rs:0,re:SEL_LEN,peaks:null,beat:null,grid:[]},aud=$('aud');   // canzone caricata e parte selezionata
+const AUD={file:null,dur:0,rs:0,re:SEL_LEN,peaks:null,beat:null,grid:[],words:null,trans:null,transPct:0},aud=$('aud');   // canzone caricata e parte selezionata
 
 // ─────────────────────────── modello di un video ───────────────────────────
 // Ogni video (anche le varianti) è un oggetto con queste impostazioni; l'editor lavora sempre su quello aperto.
@@ -450,7 +455,7 @@ function liveV(){
   return{clips:[...UI.clips],capSize:UI.capSize,bars:UI.bars,cutBeats:UI.cutBeats,cutLyrics:UI.cutLyrics,
     caption:$('cap').textContent,capPos:$('cap').dataset.pos,capI:UI.capI,
     on:UI.on,show:UI.show,mix:UI.mix,set:[...UI.set],text:$('lyrTA').value,
-    times:UI.times&&[...UI.times],wts:UI.wts&&UI.wts.map(a=>[...a]),sync:UI.sync,off:UI.off};
+    times:UI.times&&[...UI.times],wts:UI.wts&&UI.wts.map(a=>[...a]),sync:UI.sync,off:UI.off,auto:UI.auto};
 }
 function cloneV(v,firstClip){   // stesse impostazioni e stesse clip, ma con una prima clip diversa
   const rest=v.clips.filter(x=>x!==firstClip);
@@ -461,7 +466,7 @@ function applyV(v){
   setCapSize(v.capSize);setBars(v.bars);
   $('cap').textContent=v.caption;setCapPos(v.capPos);
   UI.on=v.on;UI.show=v.show;UI.mix=v.mix;UI.set=[...v.set];
-  $('lyrTA').value=v.text;UI.times=v.times&&[...v.times];UI.wts=v.wts&&v.wts.map(a=>[...a]);UI.sync=v.sync;UI.off=v.off||0;
+  $('lyrTA').value=v.text;UI.times=v.times&&[...v.times];UI.wts=v.wts&&v.wts.map(a=>[...a]);UI.sync=v.sync;UI.off=v.off||0;UI.auto=!!v.auto;
   lyricsUI();showUI();buildStyles();syncUI();cutUI();renderClipPop();restart();
 }
 const linesOf=v=>v.text.split('\n').map(s=>s.trim()).filter(Boolean);
@@ -519,7 +524,8 @@ function drawThumb(c,v,t){
     const fs=H*CAP_PX[v.capSize]/REF_H,out=[];let cur='';
     x.font=`700 ${fs}px Montserrat`;x.fillStyle='#fff';x.textAlign='center';x.textBaseline='top';x.shadowColor='rgba(0,0,0,.6)';x.shadowBlur=fs*.3;
     v.caption.split(/\s+/).forEach(w=>{const tt=cur?cur+' '+w:w;if(x.measureText(tt).width>W*.56&&cur){out.push(cur);cur=w;}else cur=tt;});if(cur)out.push(cur);
-    out.forEach((l,i)=>x.fillText(l,W/2,CAP_Y[v.capPos]*H+i*fs*1.25));x.shadowBlur=0;
+    const y0=CAP_Y[v.capPos]*H-(v.capPos==='bottom'?out.length*fs*1.25:0);
+    out.forEach((l,i)=>x.fillText(l,W/2,y0+i*fs*1.25));x.shadowBlur=0;
   }
   drawLyrics(x,W,H,v,t);
 }
@@ -586,9 +592,10 @@ $('bpmBtn').onclick=()=>{$('bpmEdit').hidden=false;$('bpmIn').value=Math.round(A
 $('bpmIn').onkeydown=e=>{if(e.key==='Enter'){setBpm(+$('bpmIn').value);closeBpmEdit();}else if(e.key==='Escape')closeBpmEdit();};
 $('bpmIn').onblur=e=>{if(e.relatedTarget&&e.relatedTarget.closest('#bpmEdit'))return;setBpm(+$('bpmIn').value);closeBpmEdit();};
 document.querySelectorAll('[data-mul]').forEach(b=>b.onclick=()=>{const v=Math.round(AUD.beat.bpm*+b.dataset.mul);setBpm(v);$('bpmIn').value=Math.round(AUD.beat.bpm);$('bpmIn').focus();});
-function rangeChanged(){   // i tempi del sync valgono per la parte selezionata: se cambia vanno rifatti
+function rangeChanged(){   // i tempi valgono per la parte selezionata: con la trascrizione si rifanno da soli, senza vanno rifatti
   if(UI.tap.on)endTap(false);
-  if(UI.times||UI.sync){UI.times=null;UI.wts=null;UI.sync=null;syncUI('Hai cambiato la parte della canzone: rifai il sync');}
+  if(AUD.words)lyricsAllVideos(true);
+  else if(UI.times||UI.sync){UI.times=null;UI.wts=null;UI.sync=null;syncUI('Hai cambiato la parte della canzone: rifai il sync');}
   restart();
 }
 $('audIn').onchange=async e=>{
@@ -600,7 +607,8 @@ $('audIn').onchange=async e=>{
   const ch=buf.getChannelData(0),n=150,blk=Math.max(1,Math.floor(ch.length/n)),pk=[];
   for(let i=0;i<n;i++){let m=0;for(let j=0;j<blk;j+=64){const v=Math.abs(ch[i*blk+j]||0);if(v>m)m=v;}pk.push(m);}
   const mx=Math.max(...pk)||1;AUD.peaks=pk.map(v=>v/mx);
-  measureLatency();$('wave').classList.add('has-audio');setRange(0,SEL_LEN);cutUI();UI.times=null;UI.wts=null;UI.sync=null;syncUI();UI.playing=true;restart();
+  measureLatency();$('wave').classList.add('has-audio');setRange(0,SEL_LEN);cutUI();UI.times=null;UI.wts=null;UI.sync=null;UI.off=0;syncUI();UI.playing=true;restart();
+  transcribe();
 };
 $('sel').addEventListener('pointerdown',e=>{   // trascina la selezione; dai cursori laterali la allarga/restringe (2–15 s)
   if(!AUD.file)return;e.preventDefault();e.stopPropagation();
@@ -634,31 +642,86 @@ $('lyrTog').onclick=()=>{
   lyricsUI();restart();
 };
 document.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>{UI.show=b.dataset.show;showUI();});
-$('lyrTA').addEventListener('input',()=>{if(UI.tap.on)endTap(false);UI.times=null;UI.wts=null;UI.sync=null;syncUI();});
+let editT=0;
+$('lyrTA').addEventListener('input',()=>{   // testo corretto dall'utente: con la trascrizione si rimette a tempo da solo
+  if(UI.tap.on)endTap(false);UI.auto=false;
+  if(AUD.words){clearTimeout(editT);editT=setTimeout(()=>{setLive(lyricsFor(liveV()));},250);}
+  else{UI.times=null;UI.wts=null;UI.sync=null;syncUI();}
+});
 
 // ─────────────────────────── sync automatico (Whisper) e manuale (SPAZIO) ───────────────────────────
 function syncUI(msg){
   $('syncAuto').classList.toggle('active',UI.sync==='auto');$('syncMan').classList.toggle('active',UI.sync==='man');
-  $('syncSt').innerHTML=msg?esc(msg):UI.sync==='auto'?'<span class="ok">●</span> Parole a tempo con la voce'
+  const busy=AUD.trans==='busy'&&!UI.tap.on;
+  $('syncSt').innerHTML=msg?esc(msg):busy?esc(AUD.transMsg||'Trascrivo la canzone…')
+    :UI.sync==='auto'&&AUD.words&&!lines().length?'Nessuna voce nella parte selezionata'
+    :UI.sync==='auto'&&AUD.words&&UI.auto?'<span class="ok">●</span> Lyrics trascritti dalla canzone · correggi il testo se serve'
+    :UI.sync==='auto'&&AUD.words?'<span class="ok">●</span> Testo a tempo con la voce · <a href="#" id="reTrans">ripristina trascrizione</a>'
+    :UI.sync==='auto'?'<span class="ok">●</span> Parole a tempo con la voce'
     :UI.sync==='man'?'<span class="ok">●</span> Sync manuale salvato · premi di nuovo per rifarlo':'Scegli come mettere a tempo le parole';
+  const re=$('reTrans');if(re)re.onclick=e=>{e.preventDefault();UI.auto=true;setLive(lyricsFor(liveV()));};
   $('offRow').classList.toggle('on',!!UI.sync&&!msg);
   $('offV').textContent=(UI.off>=0?'+':'')+UI.off.toFixed(2)+'s';
 }
 document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{UI.off=Math.round((UI.off+parseFloat(b.dataset.off))*100)/100;syncUI();});
-let syncBusy=false;
-const AUTO_DELAY=0;   // correzione iniziale dopo il sync automatico (regolabile dall'utente con − / +)
-$('syncAuto').onclick=async()=>{
-  if(UI.tap.on)endTap(false);
-  const L=lines();
-  if(!L.length)return syncUI('Scrivi prima le lyrics');
-  if(!AUD.file){$('syncSt').innerHTML='Carica prima la canzone con <b style="color:#fff">↑</b> nell\'editor audio';return;}
-  if(syncBusy)return;syncBusy=true;
-  $('syncAuto').classList.add('active');$('syncMan').classList.remove('active');
+// Trascrizione automatica: al caricamento della canzone Whisper trascrive TUTTA la canzone una volta sola (AUD.words).
+// Da lì i lyrics di ogni video si ricavano all'istante per la parte selezionata:
+//  - testo automatico (auto): le parole trascritte, divise in caption brevi sulle pause della voce;
+//  - testo scritto/corretto dall'utente: le sue righe messe a tempo sulle parole trascritte.
+// Prima prova TRANSCRIBE_API: in locale è tools/transcribe_server.py (whisper-large-v3-turbo sul Mac), nel sito l'endpoint del backend.
+// Se non risponde, usa Whisper small nel browser (lyrics-sync.js), più lento e meno preciso.
+const TRANSCRIBE_API='http://127.0.0.1:8766/transcribe';   // PROTOTIPO: nel sito es. '/api/lyrics/transcribe' — POST multipart (campo "audio") → {language, words:[{w,start,end}]}
+async function transcribeOnServer(f){
+  const fd=new FormData();fd.append('audio',f,f.name);
+  const r=await fetch(TRANSCRIBE_API,{method:'POST',body:fd});
+  if(!r.ok)throw new Error('il server ha risposto '+r.status);
+  const j=await r.json();
+  // stessa pulizia delle parole del browser: toglie punteggiatura e [Music], tiene le fini di frase per dividere le caption
+  return{language:j.language,words:lsWords((j.words||[]).map(x=>({text:String(x.w??x.word??''),timestamp:[+x.start,+x.end]})),0)};
+}
+async function transcribe(){
+  const f=AUD.file;AUD.words=null;AUD.trans='busy';AUD.transMsg='Trascrivo la canzone…';syncUI();
+  const st=m=>{if(AUD.file!==f)return;AUD.transMsg=m;syncUI();};
   try{
-    const r=await whisperAlign(AUD.file,AUD.rs,AUD.re,L,{onStatus:s=>{$('syncSt').textContent=s;}});
-    UI.times=r.lineTimes.map(x=>x-AUD.rs);UI.wts=r.wordTimes.map(a=>a.map(x=>x-AUD.rs));UI.sync='auto';UI.off=AUTO_DELAY;syncUI();restart();
-  }catch(err){console.error(err);UI.sync=null;syncUI('Sync automatico non riuscito: '+err.message);}
-  finally{syncBusy=false;}
+    let r=null;
+    if(TRANSCRIBE_API){
+      st('Trascrivo la canzone (whisper-large-v3-turbo)…');
+      try{r=await transcribeOnServer(f);}
+      catch(e){console.warn('Trascrizione sul server non disponibile, uso il browser:',e.message);}
+    }
+    if(!r)r=await whisperTranscribe(f,{onStatus:st,onProgress:p=>st('Trascrivo la canzone… '+p+'%')});
+    if(AUD.file!==f)return;   // nel frattempo è stata caricata un'altra canzone
+    AUD.words=r.words;AUD.lang=r.language;AUD.trans='done';lyricsAllVideos();
+  }catch(err){console.error(err);if(AUD.file!==f)return;AUD.trans='error';syncUI('Trascrizione non riuscita: '+err.message);}
+}
+// lyrics di un video per la parte selezionata, dalla trascrizione → {text,times,wts,sync}
+function lyricsFor(v,newRange){   // newRange: la parte selezionata è cambiata
+  const rs=AUD.rs,W=AUD.words.filter(w=>w.start>=rs-.05&&w.start<AUD.re-.1);
+  if(v.auto){
+    const G=groupWords(W);
+    return{text:G.map(g=>g.map(w=>w.w).join(' ')).join('\n'),times:G.map(g=>g[0].start-rs),wts:G.map(g=>g.map(w=>w.start-rs)),sync:'auto'};
+  }
+  const L=linesOf(v);if(!L.length)return{text:v.text,times:null,wts:null,sync:null};
+  const r=alignLines(L,W,rs,AUD.re);
+  if(newRange&&W.length&&r.matched<.4)return{...lyricsFor({...v,auto:true}),auto:true};   // testo di un'altra parte della canzone
+  return{text:v.text,times:r.lineTimes.map(x=>x-rs),wts:r.wordTimes.map(a=>a.map(x=>x-rs)),sync:'auto'};
+}
+function setLive(r){
+  if($('lyrTA').value!==r.text)$('lyrTA').value=r.text;
+  if(r.auto)UI.auto=true;
+  UI.times=r.times;UI.wts=r.wts;UI.sync=r.sync;syncUI();
+}
+function lyricsAllVideos(newRange){   // tutte le varianti condividono canzone e parte selezionata
+  VIDS.list.forEach((v,i)=>{if(i!==VIDS.cur)Object.assign(v,lyricsFor(v,newRange));});
+  setLive(lyricsFor(liveV(),newRange));
+}
+$('syncAuto').onclick=()=>{
+  if(UI.tap.on)endTap(false);
+  if(!AUD.file){$('syncSt').innerHTML='Carica prima la canzone con <b style="color:#fff">↑</b> nell\'editor audio';return;}
+  if(AUD.trans==='busy')return syncUI();
+  if(!AUD.words)return transcribe();   // trascrizione non riuscita prima: riprova
+  if(!lines().length)UI.auto=true;
+  setLive(lyricsFor(liveV()));
 };
 // sync manuale: la selezione riparte e l'utente batte SPAZIO (o tocca il video) all'inizio di ogni frase
 function tapMsg(){const L=lines(),i=UI.tap.i;$('syncSt').innerHTML=`<kbd>SPAZIO</kbd> o tocca il video all'inizio di ogni frase · ${i+1}/${L.length} <q>${esc(L[i]||'')}</q> · <kbd>ESC</kbd> annulla`;}
@@ -908,7 +971,7 @@ function applyTemplate(i,list){
   const vids=T.videos.map((s,k)=>{const f=list[k%list.length];return{...JSON.parse(JSON.stringify(s)),clips:[f,...shuffle(list.filter(x=>x!==f))]};});
   VIDS.list=vids.length>1?vids:[];VIDS.cur=0;
   $('multi').classList.toggle('open',vids.length>1);$('multiBtn').style.display=vids.length>1?'none':'';
-  renderThumbs();applyV(vids[0]);closeClips();
+  renderThumbs();applyV(vids[0]);if(AUD.words)lyricsAllVideos();closeClips();
 }
 function renderTplPick(){
   const box=$('tplPick'),arrow='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
