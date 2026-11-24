@@ -51,6 +51,14 @@ python3 -m venv .venv && .venv/bin/pip install mlx-whisper
 
 Al primo avvio scarica il modello (~1,6 GB), poi resta in cache. Gira su `http://127.0.0.1:8766`.
 
+**Tempi precisi delle parole (facoltativo, consigliato)**: Whisper capisce bene le parole ma, con la musica sotto, spesso le mette in anticipo o in ritardo (fino a 1 s sulle note lunghe). Con questi pacchetti il server separa la voce dalla musica (Demucs) e mette le parole sulla voce pulita con un allineatore (MMS, torchaudio): misurato su canzoni vere, le parole cadono sulla voce entro ~0,05 s. Aggiunge circa 30–60 s alla prima trascrizione di ogni canzone.
+
+```bash
+.venv/bin/pip install "torch==2.8.0" "torchaudio==2.8.0" demucs soundfile
+```
+
+Il server lo usa da solo se i pacchetti ci sono (`tools/align_words.py`); per spegnerlo: `ALIGN=0 .venv/bin/python tools/transcribe_server.py`. Serve `ffmpeg` funzionante nel PATH (lo usano sia mlx-whisper sia Demucs).
+
 Per provare tutto:
 
 1. Carica una canzone con l'icona ↑ nell'editor audio.
@@ -161,7 +169,7 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 - *Solo lyrics* nasconde la caption; *Lyrics + caption* la tiene come hook.
 - Il testo va scritto **una frase per riga**: ogni riga appare da sola sul video.
 - **Trascrizione automatica** (come fa 0dB.studio): appena si carica la canzone, Whisper trascrive **tutta la canzone** in background (`transcribe()` → `AUD.words`), senza bloccare l'editor. La percentuale compare nel blocco lyrics.
-  - Il testo della parte selezionata si riempie da solo, diviso in **caption brevi da 2–5 parole** spezzate sulle pause della voce (`groupWords`), già a tempo parola per parola.
+  - Il testo della parte selezionata si riempie da solo, diviso in **righe per frase** (`groupWords`: riga nuova su pause della voce, punteggiatura e parole maiuscole; frasi oltre 7 parole / 32 caratteri tagliate nel punto più naturale, meglio prima di "I"; parole quasi simultanee distribuite), già a tempo parola per parola.
   - Se l'utente **corregge il testo**, le sue righe vengono rimesse a tempo all'istante sulle parole trascritte (`alignLines`), senza rifare Whisper. Il link *ripristina trascrizione* torna al testo automatico.
   - Se si sposta la selezione: il testo automatico si rifà per la nuova parte; il testo corretto resta finché corrisponde alla voce (almeno il 40% delle parole ritrovate), altrimenti torna la trascrizione della nuova parte.
   - *Sync automatico* rimette a tempo il testo attuale (o riprova la trascrizione se era fallita).

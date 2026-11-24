@@ -8,7 +8,7 @@
  *   → { words:[{w, start, end}, …], language:'en', duration }   tempi ASSOLUTI nella canzone (secondi); lingua rilevata da sola
  *
  *   groupWords(words, {max, gap})
- *     divide le parole in caption brevi (2–5 parole), spezzando sulle pause della voce e sulla punteggiatura
+ *     divide le parole in righe brevi per frase (max 7 parole / 32 caratteri): pause della voce, punteggiatura, parole maiuscole
  *   → [[word, …], …]
  *
  *   alignLines(lines, words, start, end)
@@ -64,7 +64,9 @@ function lsWords(chunks,offset){
     const w=raw.replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu,'');
     if(!w)continue;
     const s=c.timestamp[0]+offset,e=(c.timestamp[1]!=null?c.timestamp[1]:c.timestamp[0]+.3)+offset;
-    out.push({w,start:+s.toFixed(3),end:+Math.max(s+.05,e).toFixed(3),brk:/[.,!?;:…]$/.test(raw)});
+    const o={w,start:+s.toFixed(3),end:+Math.max(s+.05,e).toFixed(3),brk:/[.,!?;:…]$/.test(raw)};
+    if(c.group)o.group=[c.group[0]+offset,c.group[1]+offset];   // tempi di Whisper per dividere le righe, se i tempi mostrati sono allineati
+    out.push(o);
   }
   return out;
 }
@@ -76,25 +78,63 @@ async function whisperTranscribe(file,opt){
   return{words:lsWords(r.chunks,0),language:r.language,duration};
 }
 
+// Divide le parole in righe brevi, per frase:
+//  - riga nuova dopo una pausa della voce (gap), dopo la punteggiatura o prima di una parola maiuscola (inizio frase);
+//  - una frase troppo lunga per lo schermo (max parole / chars caratteri) è tagliata nel punto più naturale:
+//    la pausa più lunga, meglio se prima di "I" ("in all of the words you say | I lost my shore"), vicino al centro;
+//  - una parola rimasta da sola si unisce alla riga vicina più "attaccata";
+//  - parole che Whisper mette quasi nello stesso istante sono distribuite fino alla parola successiva (niente "scatti").
 function groupWords(words,opt){
-  opt=opt||{};const MAX=opt.max||5,GAP=opt.gap!=null?opt.gap:.35;
-  const G=[];let cur=[];
+  opt=opt||{};const MAX=opt.max||7,CHARS=opt.chars||32,GAP=opt.gap!=null?opt.gap:.35;
+  const fits=g=>g.length<=MAX&&g.map(w=>w.w).join(' ').length<=CHARS;
+  // pause tra le parole: con i tempi allineati sulla voce (server) si usano quelli di Whisper, che seguono meglio le frasi
+  const gs=w=>w.group?w.group[0]:w.start,ge=w=>w.group?w.group[1]:w.end;
+  const capital=w=>/^['’]?\p{Lu}/u.test(w.w)&&!/^I(['’]|$)/.test(w.w);
+  const isI=w=>/^I(['’]|$)/.test(w.w);
+  // 1. frasi
+  const P=[];let cur=[];
   words.forEach((w,i)=>{
     const prev=words[i-1];
-    if(cur.length&&(cur.length>=MAX||w.start-prev.end>=GAP||prev.brk)){G.push(cur);cur=[];}
+    if(cur.length&&(gs(w)-ge(prev)>=GAP||prev.brk||(capital(w)&&cur.length>=2))){P.push(cur);cur=[];}
     cur.push(w);
   });
-  if(cur.length)G.push(cur);
-  // una parola da sola si unisce al gruppo vicino più "attaccato", se c'è spazio; altrimenti prende con sé l'ultima parola del gruppo prima
+  if(cur.length)P.push(cur);
+  // 2. frasi lunghe tagliate dove suona naturale
+  const split=ph=>{
+    const n=ph.length;if(n<2||fits(ph))return[ph];
+    const edge=n>=4?2:1;let best=1,bs=-Infinity;
+    for(let c=edge;c<=n-edge;c++){
+      const sc=(gs(ph[c])-ge(ph[c-1]))+(isI(ph[c])?.35:0)-.06*Math.abs(c-n/2);
+      if(sc>bs){bs=sc;best=c;}
+    }
+    return[...split(ph.slice(0,best)),...split(ph.slice(best))];
+  };
+  const G=P.flatMap(split);
+  // 3. una parola da sola si unisce al gruppo vicino più "attaccato", se ci sta; altrimenti prende con sé l'ultima parola del gruppo prima
   for(let i=0;i<G.length;i++){
     if(G[i].length!==1||G.length<2)continue;
     const w=G[i][0],p=G[i-1],n=G[i+1];
-    const gp=p?w.start-p[p.length-1].end:1e9,gn=n?n[0].start-w.end:1e9;
-    if(p&&p.length<MAX&&gp<=gn&&gp<1){p.push(w);G.splice(i--,1);}
-    else if(n&&n.length<MAX&&gn<1){n.unshift(w);G.splice(i--,1);}
+    const gp=p?gs(w)-ge(p[p.length-1]):1e9,gn=n?gs(n[0])-ge(w):1e9;
+    if(p&&fits([...p,w])&&gp<=gn&&gp<1){p.push(w);G.splice(i--,1);}
+    else if(n&&fits([w,...n])&&gn<1){n.unshift(w);G.splice(i--,1);}
     else if(p&&p.length>=3&&gp<1)G[i].unshift(p.pop());   // gruppo vicino pieno: gli prende l'ultima parola ("…chase | the stars")
   }
-  return G;
+  return G.map(lsSmooth);
+}
+// parole quasi nello stesso istante (< 0,12 s) distribuite in modo uniforme fino alla parola ben tempificata successiva
+function lsSmooth(g){
+  const MIN=.12,t=g.map(w=>w.start),n=t.length;
+  for(let i=1;i<n;i++)t[i]=Math.max(t[i],t[i-1]);   // mai all'indietro
+  const end=Math.max(g[n-1].end,t[n-1]+MIN);
+  for(let i=1;i<n;i++){
+    if(t[i]-t[i-1]>=MIN)continue;
+    const first=i-1;let last=i;
+    while(last+1<n&&t[last+1]-t[first]<MIN*(last+1-first))last++;
+    const anchor=last+1<n?t[last+1]:end,step=(anchor-t[first])/(last-first+1);
+    for(let k=first+1;k<=last;k++)t[k]=t[first]+step*(k-first);
+    i=last;
+  }
+  return g.map((w,i)=>({...w,start:+t[i].toFixed(3)}));
 }
 
 // allineamento parole scritte ↔ parole riconosciute (programmazione dinamica)

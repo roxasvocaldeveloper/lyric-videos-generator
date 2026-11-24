@@ -666,7 +666,8 @@ async function transcribeOnServer(f){
   if(!r.ok)throw new Error('il server ha risposto '+r.status);
   const j=await r.json();
   // stessa pulizia delle parole del browser: toglie punteggiatura e [Music], tiene le fini di frase per dividere le caption
-  return{language:j.language,words:lsWords((j.words||[]).map(x=>({text:String(x.w??x.word??''),timestamp:[+x.start,+x.end]})),0)};
+  // ws/we (se ci sono): tempi originali di Whisper, usati per dividere le righe; start/end: allineati sulla voce
+  return{language:j.language,words:lsWords((j.words||[]).map(x=>({text:String(x.w??x.word??''),timestamp:[+x.start,+x.end],group:x.ws!=null?[+x.ws,+x.we]:null})),0)};
 }
 async function transcribe(){
   const f=AUD.file;AUD.words=null;AUD.trans='busy';AUD.transMsg='Trascrivo la canzone…';syncUI();

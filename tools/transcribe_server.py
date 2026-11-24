@@ -27,6 +27,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import mlx_whisper
 from huggingface_hub import snapshot_download
 
+# Tempi precisi (voce separata + allineatore): facoltativo, vedi tools/align_words.py. ALIGN=0 per spegnerlo.
+try:
+    if os.environ.get("ALIGN", "1") == "0":
+        raise ImportError("spento con ALIGN=0")
+    import align_words
+except ImportError as e:
+    align_words = None
+    print(f"Allineamento preciso non attivo ({e}): uso i tempi di Whisper.", flush=True)
+
 MODEL = os.environ.get("WHISPER_MODEL", "mlx-community/whisper-large-v3-turbo")
 HOST, PORT = "127.0.0.1", int(os.environ.get("PORT", "8766"))
 
@@ -46,6 +55,11 @@ def transcribe(path):
             if t:
                 words.append({"w": t, "start": round(float(w["start"]), 3), "end": round(float(w["end"]), 3)})
     dur = r["segments"][-1]["end"] if r.get("segments") else 0
+    if align_words is not None:
+        try:
+            words = align_words.align(path, words)
+        except Exception as e:   # se qualcosa va storto restano i tempi di Whisper
+            print("  allineamento non riuscito:", e, file=sys.stderr, flush=True)
     return {"language": r.get("language"), "duration": dur, "words": words}
 
 
