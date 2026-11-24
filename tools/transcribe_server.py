@@ -68,6 +68,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "*")
+        # permette le chiamate anche dalla pagina pubblica (GitHub Pages) verso questo server sul Mac
+        self.send_header("Access-Control-Allow-Private-Network", "true")
 
     def reply(self, code, obj):
         data = json.dumps(obj).encode()

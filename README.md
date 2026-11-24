@@ -7,7 +7,7 @@ Prototipo funzionante dell'editor **"Submit to Virality"** di Soundvertise, con 
 - cambi video a tempo di musica (BPM);
 - fino a 7 varianti dello stesso video;
 - template;
-- modal di programmazione (post al giorno, fasce orarie, pagina TikTok).
+- **Download** dei video creati come MP4 1080×1920, con audio, pronti per le ads.
 
 Il prototipo è **solo frontend**: niente backend, niente account, niente render del video finale. Questa guida spiega cosa riusare così com'è, cosa sostituire con i dati reali del sito (le parti segnate `PROTOTIPO` nel codice) e cosa va costruito lato server.
 
@@ -56,13 +56,13 @@ Per provare tutto:
 1. Carica una canzone con l'icona ↑ nell'editor audio.
 2. Apri le clip con il quadrato in alto a destra nella preview, poi *My videos* → "+" per caricare i tuoi video.
 3. Aspetta la trascrizione automatica (la percentuale compare nel blocco lyrics), poi premi *Add lyrics*: il testo è già scritto e a tempo.
-4. Premi *+ 6 video* e poi *SUBMIT*.
+4. Premi *+ 6 video* e poi *DOWNLOAD*.
 
 ## 2. File
 
 | File | Righe | Cosa contiene | Riuso nel sito |
 |---|---|---|---|
-| `index.html` | ~970 | L'editor completo: HTML, CSS e script inline (UI, stato, anteprima, più video, modal clip, modal submit, template). | Va portato nel framework del sito (React, Vue, ecc.). La logica è in funzioni piccole e commentate. |
+| `index.html` | ~970 | L'editor completo: HTML, CSS e script inline (UI, stato, anteprima, più video, modal clip, modal download, template). | Va portato nel framework del sito (React, Vue, ecc.). La logica è in funzioni piccole e commentate. |
 | `lyrics-engine.js` | ~300 | Motore che disegna una riga di lyrics su un canvas 2D, in tutti gli stili, con le animazioni. Non dipende dall'editor. | **Così com'è.** Va usato sia nell'anteprima sia nel render finale. |
 | `lyrics-sync.js` | ~150 | Lyrics automatici: trascrive tutta la canzone con Whisper (tempi di ogni parola), divide le parole in caption brevi e mette a tempo le righe corrette dall'utente. | Così com'è (o la trascrizione spostata su server, vedi §7.2). |
 | `lyrics-worker.js` | ~60 | Web Worker in cui gira Whisper (Transformers.js): taglia l'audio in finestre da 30 s, rileva la lingua, restituisce le parole con i tempi. | Così com'è, nella stessa cartella di `lyrics-sync.js`. |
@@ -106,7 +106,7 @@ Tutto lo stato vive in pochi oggetti globali dentro lo script di `index.html`:
 | `VIDS` | Le varianti: `{list:[video,…], cur}`. Vuoto finché non si preme *+ 6 video*. |
 | `COLLS` | Collezioni dell'utente in *My videos*: `{name, clips:[indici in CLIPS]}`. |
 | `TEMPLATES` | Template salvati: `{name, videos:[impostazioni senza clip]}`. |
-| `SUB` | Modal di submit: `perDay` (1/2/3), `slots` (fasce orarie), `page` (pagina TikTok), `open`. |
+| `SUB` / `EXP` | Modal di download (`open`) ed esportazione: dimensioni, fps, stato, audio verso la registrazione. |
 | `MV` | Stato della finestra clip: vista (`templates`/`myvideos`), collezione aperta, selezione multipla, template scelto. |
 
 ### 4.2 Un video = un oggetto
@@ -193,13 +193,16 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 - *+ 6 video* crea fino a 7 varianti in totale (`MAX_VIDEOS`) con le stesse impostazioni e una prima clip diversa.
 - Clic su una miniatura = la apre nell'editor. Il cestino la elimina; "+" ne aggiunge una.
 
-### Submit
-- La modal mostra il riepilogo animato di tutti i video, con lo stile di ognuno.
-- **Post al giorno**: 1, 2 o 3.
-- **Fasce orarie**: Mattina (8–12), Pomeriggio (12–18) e Sera (18–24). Se ne possono scegliere "fino a N", dove N sono i post al giorno, e anche una sola, così tutti i post finiscono in quella fascia. Ne resta sempre almeno una selezionata; oltre il limite viene sostituita la più vecchia.
-- **Pagina TikTok**: una delle pagine collegate.
+### Download
+- Il pulsante *DOWNLOAD* (o *DOWNLOAD N VIDEO* con le varianti) apre la modal con il riepilogo animato di tutti i video, formato e durata.
+- **Scarica N video**: ogni video viene riprodotto una volta su un canvas **1080×1920** e registrato con `MediaRecorder`: immagine del canvas a 30 fps (12 Mbit/s) più l'audio della parte selezionata. Poi viene scaricato come `titolo-brano-01.mp4`, `-02.mp4`, ecc.
+  - Formato: **MP4** (H.264 + AAC) su Chrome; dove non è supportato, WebM.
+  - Durata: l'esportazione avviene in tempo reale, cioè circa quanto la parte selezionata per ogni video. La scheda va tenuta aperta e visibile, perché il browser rallenta le schede in background.
+  - Nel video finale c'è solo il video: niente icone di TikTok né suggerimenti dell'editor. Se la caption è vuota, il video esce senza caption.
+  - *Interrompi* ferma l'esportazione; i video già finiti restano scaricati.
+  - Le clip vengono caricate con `crossOrigin='anonymous'`: serve perché il canvas resti esportabile. Le clip di siti che non lo permettono (senza CORS) bloccano l'esportazione con un messaggio.
 - **Save as template**: salva le impostazioni di tutti i video, senza le clip.
-- **Programma N video**: è attivo quando sono scelte almeno una fascia e una pagina. Oggi mostra solo la conferma con il numero di giorni, cioè `ceil(video / post al giorno)`.
+- Codice: `openSubmit()`, `exportOne()`, `$('mConfirm').onclick` in `index.html`. Ogni fotogramma è disegnato da `drawThumb(canvas, video, t, true)`, la stessa funzione delle miniature, con i lyrics animati.
 
 ## 6. Modello dati
 
@@ -230,14 +233,13 @@ La caption è un `contenteditable` HTML (`#cap`) sopra i canvas. Nelle miniature
 
 ### 6.2 Progetto da inviare al backend (proposta)
 
-Oggi `#mConfirm` non invia nulla. Il payload naturale è questo:
+Nel prototipo i video si esportano nel browser (§5, *Download*). Per generarli sul server il payload naturale è questo:
 
 ```js
 {
   song: { file: AUD.file /* da caricare */, start: AUD.rs, end: AUD.re, bpm: AUD.beat?.bpm, beatsConfident: AUD.beat?.confident },
   beatGrid: AUD.grid,               // istanti assoluti dei battiti nella selezione (servono se un video ha cutBeats)
-  videos: allVideos(),              // array di oggetti video (§6.1) con clips → id reali delle clip
-  schedule: { perDay: SUB.perDay, slots: SUB.slots /* ['Mattina','Sera'] */, page: SUB.page }
+  videos: allVideos()               // array di oggetti video (§6.1) con clips → id reali delle clip
 }
 ```
 
@@ -378,9 +380,9 @@ Cerca `PROTOTIPO` nel codice per trovare i punti esatti.
 | 2 | **Upload clip** | `URL.createObjectURL(file)`, solo in locale. | Upload sullo storage (S3 o simile), poi `registerClips([{name, url}])` con l'URL remoto. Servire le clip con header CORS (`Access-Control-Allow-Origin`) e impostare `el.crossOrigin = 'anonymous'` in `registerClips()` (vedi §11). |
 | 3 | **Collezioni** (`COLLS`) | In memoria. | CRUD sull'account: crea, rinomina, aggiungi video. |
 | 4 | **Template** (`TEMPLATES`) | `localStorage`. | Salvati sull'account. Sostituire `saveTemplates()` e il caricamento iniziale. |
-| 5 | **Pagine TikTok** | 3 esempi fissi in `.pages` (`@soundvertise`, ecc.). | Le pagine TikTok collegate all'account. |
+| 5 | **Pagine TikTok** | Rimosse: il prototipo scarica i video invece di programmarli. | Se serve la pubblicazione, aggiungere la scelta della pagina. |
 | 6 | **Canzone** | File locale caricato dall'utente. | Se nel sito la canzone c'è già (campagna), passare `File`/`Blob`/URL ad `audIn` (stessa logica: `decodeAudioData`, picchi, `BeatDetect.analyze`). Titolo e artista vanno in `#songT`/`#songA`. |
-| 7 | **Programma** (`#mConfirm`) | Mostra solo la conferma. | Inviare il payload del §6.2 al backend, che renderizza i video (§9) e li pubblica secondo `perDay`/`slots`/`page`. |
+| 7 | **Download** (`#mConfirm`) | Esporta nel browser con `MediaRecorder`, in tempo reale. | Per lavori lunghi o in serie, generare sul server con il payload del §6.2 (§9). |
 | 8 | **Trascrizione lyrics** (`TRANSCRIBE_API`) | Server locale con whisper-large-v3-turbo (`tools/transcribe_server.py`), oppure Whisper small nel browser come ripiego. | L'endpoint del backend con whisper-large-v3-turbo, stesso formato (§7.2). |
 | 9 | **Testi UI** | In italiano, scritti nell'HTML. | Passarli all'i18n del sito se serve. |
 
@@ -388,7 +390,7 @@ Non c'è da modificare nulla in `lyrics-engine.js`, `beat-detect.js` e `lyrics-s
 
 ## 9. Render del video finale
 
-Il render va costruito. L'obiettivo è che il video finale sia **identico all'anteprima**. Per ogni video del payload, a `fps` (es. 30) e a 1080×1920 (o 720×1280):
+Nel prototipo il render c'è già, nel browser (§5, *Download*: `exportOne()`). Questa sezione serve per farlo sul server. L'obiettivo è che il video finale sia **identico all'anteprima**. Per ogni video del payload, a `fps` (es. 30) e a 1080×1920 (o 720×1280):
 
 ```js
 for (let f = 0; f < (end - start) * fps; f++) {

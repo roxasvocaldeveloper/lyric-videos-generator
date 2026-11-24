@@ -86,7 +86,7 @@ h1{font-family:'Schoolbell',cursive;font-weight:400;font-size:40px;}
 .col{width:610px;display:flex;flex-direction:column;gap:22px;}
 .song{display:flex;gap:12px;align-items:center;}
 .song .art{width:44px;height:44px;border-radius:6px;background:linear-gradient(135deg,#2b2a3f,#7b4b2a);flex-shrink:0;}
-.song b{font-size:14px;}.song small{display:block;color:var(--tx3);font-size:12px;margin-top:2px;}
+.song b{font-size:14px;}.song b.empty{color:var(--tx3);font-weight:500;}.song small:empty{display:none;}.song small{display:block;color:var(--tx3);font-size:12px;margin-top:2px;}
 .card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
 .wave{position:relative;height:150px;}
 .wave canvas{position:absolute;inset:0;width:100%;height:100%;}
@@ -97,6 +97,12 @@ h1{font-family:'Schoolbell',cursive;font-weight:400;font-size:40px;}
 .has-audio .hdl{display:flex;}
 .ph{position:absolute;top:6px;bottom:6px;width:2px;background:#fff;left:0;border-radius:1px;opacity:.9;}
 .up{position:absolute;top:0;right:0;cursor:pointer;}
+.up .upTxt{display:none;}
+/* senza canzone: la waveform è vuota e tutta l'area serve a caricarla */
+.wave:not(.has-audio) .sel{display:none;}
+.wave:not(.has-audio) .up{inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1.5px dashed #333;border-radius:10px;color:var(--tx3);font:500 13px Montserrat;}
+.wave:not(.has-audio) .up:hover{border-color:var(--p2);color:#fff;}
+.wave:not(.has-audio) .up .upTxt{display:block;}
 .wrow{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:#ddd;}
 .circ{width:20px;height:20px;border-radius:50%;background:var(--p);border:none;display:inline-flex;align-items:center;justify-content:center;margin-right:8px;}
 .circ svg{width:8px;height:8px;fill:#fff;}
@@ -204,7 +210,12 @@ textarea:focus{border-color:var(--p);}
 .tplX{position:fixed;top:16px;right:24px;background:none;border:none;color:#aaa;font-size:26px;line-height:1;z-index:101;}
 .tplX:hover{color:#fff;}
 
-/* ── modal submit ── */
+/* ── modal download ── */
+.expSt{text-align:center;font-size:12px;color:var(--tx3);min-height:16px;}
+.expBar{height:4px;border-radius:2px;background:#262626;overflow:hidden;display:none;}
+.expBar.on{display:block;}
+.expBar i{display:block;height:100%;width:0;background:var(--b);transition:width .2s;}
+.rc.done .thumb{border-color:var(--b);}.rc.done small{color:#4ade80;}
 .modal{position:fixed;inset:0;background:rgba(10,10,10,.82);backdrop-filter:blur(3px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
 .modal.open{display:flex;}
 .mbox{position:relative;width:min(860px,96vw);max-height:92vh;overflow-y:auto;border:2px solid transparent;border-radius:16px;padding:28px 32px 30px;
@@ -219,12 +230,6 @@ textarea:focus{border-color:var(--p);}
 .rc{display:flex;flex-direction:column;align-items:center;gap:6px;width:92px;}
 .rc .thumb{cursor:default;}.rc .thumb:hover{transform:none;border-color:#2b2b2b;}
 .rc small{font-size:10px;color:var(--tx3);max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pages{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-.page{display:flex;align-items:center;gap:10px;border:1.5px solid #333;border-radius:12px;padding:10px 16px 10px 10px;background:#141414;color:#fff;min-width:200px;text-align:left;}
-.page:hover{border-color:#555;}
-.page.on{border-color:var(--b);background:rgba(17,109,255,.12);}
-.page i{width:34px;height:34px;border-radius:50%;flex-shrink:0;}
-.page b{display:block;font-size:13px;}.page small{color:var(--tx3);font-size:11px;}
 .done{display:none;flex-direction:column;gap:10px;align-items:center;padding:18px 0 6px;}
 .done.open{display:flex;}
 .done .ck{width:52px;height:52px;border-radius:50%;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:24px;}
@@ -263,7 +268,7 @@ textarea:focus{border-color:var(--p);}
           <canvas id="bgCanvas"></canvas>
           <div class="cbar t"></div><div class="cbar b"></div>
           <canvas id="lyrCanvas"></canvas>
-          <div class="cap" id="cap" data-pos="top" contenteditable="true" spellcheck="false">Type your caption here</div>
+          <div class="cap" id="cap" data-pos="top" contenteditable="true" spellcheck="false"></div>
           <button class="capBtn" id="capBtn" title="Cambia caption"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg></button>
           <button class="capClr" id="capClr" title="Cancella caption"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           <div id="noClip">Carica le tue clip con il pulsante <b>□</b> in alto a destra</div>
@@ -296,17 +301,17 @@ textarea:focus{border-color:var(--p);}
 
     <!-- ═══ CANZONE + LYRICS ═══ -->
     <div class="col">
-      <div class="song"><div class="art"></div><div><b id="songT">i killed all your plants</b><small id="songA">Noktis</small></div></div>
+      <div class="song"><div class="art"></div><div><b id="songT" class="empty">Nessuna canzone</b><small id="songA">Carica il brano con ↑</small></div></div>
 
       <div class="card">
         <div class="wave" id="wave">
           <canvas id="waveC"></canvas>
           <div class="sel" id="sel"><div class="ph" id="ph"></div><div class="hdl l" data-edge="l" title="Trascina per allargare o restringere"></div><div class="hdl r" data-edge="r" title="Trascina per allargare o restringere"></div></div>
-          <label class="up" title="Carica la canzone (MP3, WAV…)"><span class="circ" style="margin:0;width:22px;height:22px;"><svg viewBox="0 0 10 10"><path d="M5 0l4 4H6v4H4V4H1z"/></svg></span><input type="file" id="audIn" accept="audio/*" hidden></label>
+          <label class="up" title="Carica la canzone (MP3, WAV…)"><span class="circ" style="margin:0;width:22px;height:22px;"><svg viewBox="0 0 10 10"><path d="M5 0l4 4H6v4H4V4H1z"/></svg></span><span class="upTxt">Carica la canzone (MP3, WAV, M4A)</span><input type="file" id="audIn" accept="audio/*" hidden></label>
         </div>
         <div class="wrow">
           <span><button class="circ" id="wPlay"><svg viewBox="0 0 10 12"><path d="M0 0L10 6 0 12z"/></svg></button><button class="circ" id="wStop"><svg viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg></button></span>
-          <span><span id="rngLbl">[0:00-0:08]</span><button class="bpmBtn" id="bpmBtn" title="BPM rilevato · clicca per correggerlo" hidden></button><span class="bpmEdit" id="bpmEdit" hidden><input id="bpmIn" type="number" min="40" max="220" step="1"><button data-mul=".5" title="Metà">½</button><button data-mul="2" title="Doppio">×2</button> BPM</span></span><span id="tLbl">0:00</span>
+          <span><span id="rngLbl"></span><button class="bpmBtn" id="bpmBtn" title="BPM rilevato · clicca per correggerlo" hidden></button><span class="bpmEdit" id="bpmEdit" hidden><input id="bpmIn" type="number" min="40" max="220" step="1"><button data-mul=".5" title="Metà">½</button><button data-mul="2" title="Doppio">×2</button> BPM</span></span><span id="tLbl">0:00</span>
         </div>
       </div>
 
@@ -340,7 +345,7 @@ wanna be happy</textarea>
   </div>
   <div class="actions">
     <button class="pill ghost" id="multiBtn" title="Prepara in automatico altri 6 video con le stesse impostazioni">+ 6 video</button>
-    <button class="submit" id="submitBtn">SUBMIT</button>
+    <button class="submit" id="dlBtn">DOWNLOAD</button>
   </div>
 </main>
 
@@ -362,36 +367,20 @@ wanna be happy</textarea>
   </div>
 </div>
 
-<!-- ═══ MODAL SUBMIT: riepilogo + fascia oraria + pagina TikTok ═══ -->
+<!-- ═══ MODAL DOWNLOAD: riepilogo + esportazione dei video ═══ -->
 <div class="modal" id="subModal">
   <div class="mbox">
     <button class="mx" id="mClose" aria-label="Chiudi">×</button>
     <div class="mform" id="mForm">
-      <h2>Ready to submit</h2>
+      <h2>Download</h2>
       <div class="msub" id="mSub"></div>
       <div class="rcp" id="rcp"></div>
       <div class="saveTpl" id="saveTpl"></div>
-      <div class="mlbl">Post al giorno</div>
-      <div class="pills">
-        <button class="pill ghost freq" data-freq="1">1 post/day</button>
-        <button class="pill ghost freq" data-freq="2">2 post/day</button>
-        <button class="pill ghost freq" data-freq="3">3 post/day</button>
-      </div>
-      <div class="mlbl" id="slotLbl">Fascia oraria di pubblicazione</div>
-      <div class="pills">
-        <button class="pill ghost slot" data-slot="Mattina">Mattina<small>8:00 – 12:00</small></button>
-        <button class="pill ghost slot" data-slot="Pomeriggio">Pomeriggio<small>12:00 – 18:00</small></button>
-        <button class="pill ghost slot" data-slot="Sera">Sera<small>18:00 – 24:00</small></button>
-      </div>
-      <div class="mlbl">Pagina TikTok</div>
-      <div class="pages">   <!-- PROTOTIPO: pagine di esempio -->
-        <button class="page" data-page="@soundvertise"><i style="background:linear-gradient(135deg,#116dff,#a46ad6)"></i><span><b>@soundvertise</b><small>412K follower</small></span></button>
-        <button class="page" data-page="@latenight.vibes"><i style="background:linear-gradient(135deg,#1d1b3a,#4a2a6c)"></i><span><b>@latenight.vibes</b><small>186K follower</small></span></button>
-        <button class="page" data-page="@noktis.music"><i style="background:linear-gradient(135deg,#7b4b2a,#2b2a3f)"></i><span><b>@noktis.music</b><small>58K follower</small></span></button>
-      </div>
+      <div class="expSt" id="expSt"></div>
+      <div class="expBar" id="expBar"><i></i></div>
       <div class="pills" style="margin-top:6px;">
         <button class="pill ghost" id="mCancel">Annulla</button>
-        <button class="pill blue" id="mConfirm" disabled>Programma</button>
+        <button class="pill blue" id="mConfirm">Scarica</button>
       </div>
     </div>
     <div class="done" id="mDone">
@@ -507,16 +496,16 @@ function clipAt(v,t){
 // ─────────────────────────── disegno ───────────────────────────
 const cv=$('lyrCanvas'),ctx=cv.getContext('2d'),bg=$('bgCanvas'),bctx=bg.getContext('2d');
 let REF_H=502;   // altezza della preview: riferimento per le dimensioni dei font
-function drawLyrics(c,W,H,v,t){
+function drawLyrics(c,W,H,v,t,anim=UI.playing){   // anim: parole che entrano a tempo (false = riga intera, ferma)
   if(!v.on)return;
   let seg=null;for(const s of segmentsOf(v))if(t>=s.time)seg=s;
   if(!seg)return;
   const st=STYLES[seg.style];
   LyricsEngine.drawLine(c,W,H,{text:seg.text,style:seg.style,y:(st.y!=null&&v.show==='lyrics')?st.y:lyricsY(v),
-    wordTimes:UI.playing?seg.wt:null,time:t,refHeight:REF_H,safeZone:true});
+    wordTimes:anim?seg.wt:null,time:t,refHeight:REF_H,safeZone:true});
 }
-// miniatura di un video: clip + barre + caption + lyrics
-function drawThumb(c,v,t){
+// un fotogramma completo di un video: clip + barre + caption + lyrics (miniature ed esportazione)
+function drawThumb(c,v,t,anim){
   const x=c.getContext('2d'),W=c.width,H=c.height;
   drawClip(x,clipAt(v,t),W,H);
   if(v.bars){const bh=(H-W*9/16)/2;x.fillStyle='#000';x.fillRect(0,0,W,bh);x.fillRect(0,H-bh,W,bh);}
@@ -527,7 +516,7 @@ function drawThumb(c,v,t){
     const y0=CAP_Y[v.capPos]*H-(v.capPos==='bottom'?out.length*fs*1.25:0);
     out.forEach((l,i)=>x.fillText(l,W/2,y0+i*fs*1.25));x.shadowBlur=0;
   }
-  drawLyrics(x,W,H,v,t);
+  drawLyrics(x,W,H,v,t,anim);
 }
 function frame(){
   if(AUD.file){if(UI.playing&&aud.currentTime>=AUD.re-.03){if(UI.tap.on)endTap(true);aud.currentTime=AUD.rs;}}   // loop sulla selezione
@@ -564,9 +553,9 @@ function restart(){UI.t0=performance.now();if(AUD.file){aud.currentTime=AUD.rs;i
 function drawWave(){
   const c=$('waveC'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;
   const x=c.getContext('2d'),W=c.width,H=c.height,n=150,s0=AUD.file?AUD.rs/AUD.dur:0,s1=AUD.file?AUD.re/AUD.dur:.07;
-  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;   // waveform decorativa finché non c'è la canzone
+  if(!AUD.peaks)return;   // senza canzone la waveform resta vuota
   for(let i=0;i<n;i++){
-    const v=AUD.peaks?Math.max(.04,AUD.peaks[i]):(.15+.85*Math.pow(rnd(),1.6))*(.5+.5*Math.abs(Math.sin(i*.21))),h=v*H*.8,f=i/n;
+    const v=Math.max(.04,AUD.peaks[i]),h=v*H*.8,f=i/n;
     x.fillStyle=(f>=s0&&f<s1)?'#3f7bff':`rgba(${110+i*.6|0},70,${190+i*.3|0},.55)`;x.fillRect(f*W,(H-h)/2,Math.max(1,W/n*.45),h);
   }
 }
@@ -601,7 +590,7 @@ function rangeChanged(){   // i tempi valgono per la parte selezionata: con la t
 $('audIn').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;e.target.value='';
   AUD.file=f;aud.src=URL.createObjectURL(f);
-  $('songT').textContent=f.name.replace(/\.[^.]+$/,'');$('songA').textContent='Canzone caricata';
+  $('songT').textContent=f.name.replace(/\.[^.]+$/,'');$('songT').classList.remove('empty');$('songA').textContent='';
   const ac=new AudioContext(),buf=await ac.decodeAudioData(await f.arrayBuffer());ac.close();
   AUD.dur=buf.duration;AUD.beat=BeatDetect.analyze(buf);
   const ch=buf.getChannelData(0),n=150,blk=Math.max(1,Math.floor(ch.length/n)),pk=[];
@@ -898,7 +887,7 @@ addEventListener('keydown',e=>{if(e.code==='Escape'&&!(e.target.isContentEditabl
 function registerClips(list){
   return list.map(c=>{
     const el=document.createElement('video');
-    el.src=c.url;el.muted=true;el.loop=true;el.playsInline=true;el.preload='auto';el.play().catch(()=>{});
+    el.crossOrigin='anonymous';el.src=c.url;el.muted=true;el.loop=true;el.playsInline=true;el.preload='auto';el.play().catch(()=>{});
     CLIPS.push({...c,el});return CLIPS.length-1;
   });
 }
@@ -938,7 +927,7 @@ function renderThumbs(){
     d.onclick=()=>openVideo(i);box.appendChild(d);
   });
   if(VIDS.list.length<MAX_VIDEOS){const a=document.createElement('div');a.className='thumb add';a.textContent='+';a.title='Aggiungi un video';a.onclick=addVideo;box.appendChild(a);}
-  $('submitBtn').textContent=VIDS.list.length>1?'SUBMIT '+VIDS.list.length+' VIDEO':'SUBMIT';
+  $('dlBtn').textContent=VIDS.list.length>1?'DOWNLOAD '+VIDS.list.length+' VIDEO':'DOWNLOAD';
 }
 function freeClip(){const used=VIDS.list.map(v=>v.clips[0]),P=UI.clips,f=P.find(i=>!used.includes(i));return f!=null?f:P[Math.floor(Math.random()*P.length)];}   // tra le clip del video aperto; undefined se non ce ne sono
 function openVideo(i){if(i===VIDS.cur)return;if(UI.tap.on)endTap(false);VIDS.list[VIDS.cur]=liveV();VIDS.cur=i;applyV(VIDS.list[i]);renderThumbs();}
@@ -957,10 +946,10 @@ $('multiBtn').onclick=()=>{   // le varianti copiano le impostazioni del video a
 };
 const allVideos=()=>{if(!VIDS.list.length)return[liveV()];VIDS.list[VIDS.cur]=liveV();return VIDS.list;};
 
-// ─────────────────────────── SUBMIT: riepilogo, fascia oraria, pagina TikTok ───────────────────────────
-const SUB={open:false,slots:[],page:null,perDay:1};   // fasce orarie (al massimo una per post del giorno), pagina TikTok, post al giorno
+// ─────────────────────────── DOWNLOAD: riepilogo ed esportazione dei video ───────────
+const SUB={open:false};   // modal di download aperto
 // ─────────────────────────── template: salvano le impostazioni di tutti i video (senza le clip) ───────────────────────────
-// Si salvano dal modal di submit ("Save as template"); si scelgono nella finestra clip, sopra a "My videos":
+// Si salvano dal modal di download ("Save as template"); si scelgono nella finestra clip, sopra a "My videos":
 // scegliendo poi i video, il progetto diventa i video del template con quelle clip.
 // PROTOTIPO: salvati nel browser (localStorage); nel sito vanno salvati sull'account.
 const TEMPLATES=(()=>{try{return JSON.parse(localStorage.getItem('virality.templates'))||[];}catch(e){return[];}})();
@@ -997,41 +986,100 @@ function renderSaveTpl(mode){
 }
 
 function openSubmit(){
+  if(EXP.busy)return;
   renderSaveTpl();
   if(UI.tap.on)endTap(false);
   const L=allVideos();SUB.open=true;
-  $('mSub').textContent=L.length===1?'1 video pronto':L.length+' video pronti';
+  $('mSub').textContent=(L.length===1?'1 video':L.length+' video')+' · '+EXP.W+'×'+EXP.H+' · '+fmtLen(AUD.file?AUD.re-AUD.rs:UI.range)+' · '+expExt().toUpperCase();
   $('rcp').innerHTML=L.map((v,i)=>{const st=v.on?v.set.map(k=>STYLES[k].label).join(' + '):'senza lyrics';
     return`<div class="rc"><div class="thumb"><canvas width="184" height="328"></canvas><span>${String(i+1).padStart(2,'0')}</span></div><small title="${esc(st)}">${esc(st)}</small></div>`;}).join('');
-  $('mForm').style.display='';$('mDone').classList.remove('open');subUI();$('subModal').classList.add('open');
+  expUI('');$('mForm').style.display='';$('mDone').classList.remove('open');$('subModal').classList.add('open');
 }
-function closeSubmit(){SUB.open=false;$('subModal').classList.remove('open');}
-function subUI(){
-  document.querySelectorAll('.freq').forEach(b=>b.classList.toggle('active',+b.dataset.freq===SUB.perDay));
-  document.querySelectorAll('.slot').forEach(b=>b.classList.toggle('active',SUB.slots.includes(b.dataset.slot)));
-  $('slotLbl').textContent=SUB.perDay===1?'Fascia oraria di pubblicazione':'Scegli fino a '+SUB.perDay+' fasce orarie';
-  document.querySelectorAll('.page').forEach(b=>b.classList.toggle('on',b.dataset.page===SUB.page));
-  const n=allVideos().length;$('mConfirm').disabled=!(SUB.slots.length&&SUB.page);$('mConfirm').textContent='Programma '+(n===1?'1 video':n+' video');
+function closeSubmit(){if(EXP.busy)return;SUB.open=false;$('subModal').classList.remove('open');}
+
+// Esportazione: ogni video viene "riprodotto" una volta su un canvas 1080×1920 e registrato con MediaRecorder
+// (video del canvas + audio della parte selezionata), poi scaricato. Dura quanto la parte selezionata, per ogni video.
+const EXP={W:1080,H:1920,FPS:30,busy:false,cancel:false,el:null,dest:null};
+const fmtLen=x=>x.toFixed(1).replace('.',',')+' s';
+function expMime(){
+  for(const m of['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp9,opus','video/webm'])
+    if(window.MediaRecorder&&MediaRecorder.isTypeSupported(m))return m;
+  return'';
 }
-document.querySelectorAll('.freq').forEach(b=>b.onclick=()=>{SUB.perDay=+b.dataset.freq;SUB.slots=SUB.slots.slice(-SUB.perDay);subUI();});
-// fasce orarie: con 1 post se ne sceglie una; con 2 o 3 post fino a 2 o 3 (anche una sola: tutti i post in quella fascia)
-document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{
-  const s=b.dataset.slot,i=SUB.slots.indexOf(s);
-  if(i>=0){if(SUB.slots.length>1)SUB.slots.splice(i,1);}   // almeno una fascia resta scelta
-  else{SUB.slots.push(s);if(SUB.slots.length>SUB.perDay)SUB.slots.shift();}   // oltre il limite: sostituisce la più vecchia
-  subUI();
-});
-document.querySelectorAll('.page').forEach(b=>b.onclick=()=>{SUB.page=b.dataset.page;subUI();});
-$('submitBtn').onclick=openSubmit;
-$('mClose').onclick=$('mCancel').onclick=$('mOk').onclick=closeSubmit;
-$('subModal').addEventListener('pointerdown',e=>{if(e.target===$('subModal'))closeSubmit();});
-addEventListener('keydown',e=>{if(SUB.open&&e.code==='Escape')closeSubmit();});
-$('mConfirm').onclick=()=>{   // PROTOTIPO: qui il sito invia i video da programmare (allVideos(), SUB.perDay, SUB.slots, SUB.page)
+const expExt=()=>expMime().startsWith('video/mp4')?'mp4':'webm';
+function expUI(msg,pct){
+  $('expSt').innerHTML=msg;$('expBar').classList.toggle('on',pct!=null);$('expBar').firstElementChild.style.width=(pct||0)+'%';
   const n=allVideos().length;
-  $('doneTitle').textContent=n===1?'1 video programmato':n+' video programmati';const days=Math.ceil(n/SUB.perDay);
-  $('doneSub').textContent=SUB.perDay+' post/day · '+['Mattina','Pomeriggio','Sera'].filter(x=>SUB.slots.includes(x)).join(' + ')+' · '+SUB.page+' · '+(days===1?'1 giorno':days+' giorni');
+  $('mConfirm').textContent=EXP.busy?'Esporto…':'Scarica '+(n===1?'1 video':n+' video');$('mConfirm').disabled=EXP.busy;
+  $('mCancel').textContent=EXP.busy?'Interrompi':'Annulla';
+}
+function expAudio(){   // audio della canzone verso la registrazione (non verso le casse)
+  if(!AUD.file)return null;
+  if(!EXP.el){
+    EXP.el=new Audio();EXP.ac=new AudioContext();
+    EXP.dest=EXP.ac.createMediaStreamDestination();EXP.ac.createMediaElementSource(EXP.el).connect(EXP.dest);
+  }
+  if(EXP.el.src!==aud.src)EXP.el.src=aud.src;
+  return EXP.el;
+}
+async function exportOne(v,onPct){
+  const c=document.createElement('canvas');c.width=EXP.W;c.height=EXP.H;
+  const el=expAudio(),dur=el?AUD.re-AUD.rs:UI.range;
+  const tracks=[...c.captureStream(EXP.FPS).getVideoTracks()];
+  if(el){await EXP.ac.resume();el.currentTime=AUD.rs;await new Promise(r=>el.addEventListener('seeked',r,{once:true}));tracks.push(...EXP.dest.stream.getAudioTracks());}
+  const mime=expMime(),chunks=[];
+  const rec=new MediaRecorder(new MediaStream(tracks),{mimeType:mime,videoBitsPerSecond:12e6,audioBitsPerSecond:192e3});
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const done=new Promise(r=>rec.onstop=r);
+  drawThumb(c,v,0,true);
+  rec.start(250);const t0=performance.now();if(el)await el.play();
+  await new Promise(res=>{
+    const step=()=>{
+      const t=el?el.currentTime-AUD.rs:(performance.now()-t0)/1000;
+      if(EXP.cancel||t>=dur){res();return;}
+      drawThumb(c,v,Math.max(0,t),true);onPct(t/dur);requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+  if(el)el.pause();rec.stop();await done;
+  tracks.filter(t=>t.kind==='video').forEach(t=>t.stop());
+  return new Blob(chunks,{type:mime.split(';')[0]});
+}
+function saveBlob(b,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+}
+$('mConfirm').onclick=async()=>{
+  if(EXP.busy)return;
+  if(!expMime())return expUI('Questo browser non può esportare video: usa Chrome.');
+  const L=allVideos(),n=L.length,name=(AUD.file?$('songT').textContent:'video').replace(/[\\/:*?"<>|]+/g,'').trim()||'video';
+  const wasPlaying=UI.playing;UI.playing=false;aud.pause();
+  EXP.busy=true;EXP.cancel=false;let saved=0;
+  document.querySelectorAll('#rcp .rc').forEach(r=>r.classList.remove('done'));
+  try{
+    for(let i=0;i<n&&!EXP.cancel;i++){
+      const lbl=`Video ${i+1} di ${n} · tieni aperta questa scheda`;
+      expUI(lbl,i/n*100);
+      const b=await exportOne(L[i],p=>expUI(lbl,(i+p)/n*100));
+      if(EXP.cancel)break;
+      saveBlob(b,`${name}-${String(i+1).padStart(2,'0')}.${expExt()}`);saved++;
+      document.querySelectorAll('#rcp .rc')[i]?.classList.add('done');
+    }
+  }catch(err){
+    console.error(err);EXP.busy=false;UI.playing=wasPlaying;restart();
+    return expUI(err.name==='SecurityError'?'Una delle clip non si può esportare (bloccata dal sito da cui arriva): usa clip caricate da te.':'Esportazione non riuscita: '+esc(err.message));
+  }
+  EXP.busy=false;UI.playing=wasPlaying;restart();
+  if(EXP.cancel){expUI(saved?`Interrotto · ${saved} video scaricati`:'Interrotto');return;}
+  $('doneTitle').textContent=n===1?'1 video scaricato':n+' video scaricati';
+  $('doneSub').textContent='Li trovi nella cartella Download · '+EXP.W+'×'+EXP.H+' · '+expExt().toUpperCase();
   $('mForm').style.display='none';$('mDone').classList.add('open');
 };
+$('dlBtn').onclick=openSubmit;
+$('mCancel').onclick=()=>{if(EXP.busy){EXP.cancel=true;return;}closeSubmit();};
+$('mClose').onclick=$('mOk').onclick=closeSubmit;
+$('subModal').addEventListener('pointerdown',e=>{if(e.target===$('subModal'))closeSubmit();});
+addEventListener('keydown',e=>{if(SUB.open&&e.code==='Escape')closeSubmit();});
 
 // ─────────────────────────── avvio ───────────────────────────
 sizeCanvas();drawWave();setCapSize('l');buildStyles();syncUI();cutUI();renderClipPop();placeCapBtn();
