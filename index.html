@@ -587,11 +587,24 @@ function rangeChanged(){   // i tempi valgono per la parte selezionata: con la t
   else if(UI.times||UI.sync){UI.times=null;UI.wts=null;UI.sync=null;syncUI('Hai cambiato la parte della canzone: rifai il sync');}
   restart();
 }
+// AudioBuffer → file WAV (PCM 16 bit), per riprodurre la canzone con salti precisi al campione
+function wavBlob(buf){
+  const ch=Math.min(2,buf.numberOfChannels),n=buf.length,sr=buf.sampleRate,data=[...Array(ch).keys()].map(c=>buf.getChannelData(c));
+  const out=new DataView(new ArrayBuffer(44+n*ch*2)),str=(o,t)=>[...t].forEach((c,i)=>out.setUint8(o+i,c.charCodeAt(0)));
+  str(0,'RIFF');out.setUint32(4,36+n*ch*2,true);str(8,'WAVEfmt ');out.setUint32(16,16,true);out.setUint16(20,1,true);out.setUint16(22,ch,true);
+  out.setUint32(24,sr,true);out.setUint32(28,sr*ch*2,true);out.setUint16(32,ch*2,true);out.setUint16(34,16,true);str(36,'data');out.setUint32(40,n*ch*2,true);
+  for(let i=0,o=44;i<n;i++)for(let c=0;c<ch;c++,o+=2){const v=Math.max(-1,Math.min(1,data[c][i]));out.setInt16(o,v<0?v*32768:v*32767,true);}
+  return new Blob([out],{type:'audio/wav'});
+}
 $('audIn').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;e.target.value='';
   AUD.file=f;aud.src=URL.createObjectURL(f);
   $('songT').textContent=f.name.replace(/\.[^.]+$/,'');$('songT').classList.remove('empty');$('songA').textContent='';
   const ac=new AudioContext(),buf=await ac.decodeAudioData(await f.arrayBuffer());ac.close();
+  if(AUD.file!==f)return;   // nel frattempo è stata caricata un'altra canzone
+  // Si ascolta (anteprima ed export) una copia WAV della canzone: negli MP3 a bitrate variabile il browser, quando salta
+  // a un punto (inizio del range, export), può sbagliare di alcuni decimi di secondo; nel WAV il salto è esatto.
+  URL.revokeObjectURL(aud.src);aud.src=URL.createObjectURL(wavBlob(buf));
   AUD.dur=buf.duration;AUD.beat=BeatDetect.analyze(buf);
   const ch=buf.getChannelData(0),n=150,blk=Math.max(1,Math.floor(ch.length/n)),pk=[];
   for(let i=0;i<n;i++){let m=0;for(let j=0;j<blk;j+=64){const v=Math.abs(ch[i*blk+j]||0);if(v>m)m=v;}pk.push(m);}
